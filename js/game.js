@@ -21,6 +21,9 @@ function applyMode(){
  if(bowlingMode){updateBowlingHud();applyBowlingVisibility()}
  else{document.getElementById('bowlingHud').classList.remove('show');document.getElementById('bowlingControls').classList.remove('show');players.forEach(p=>{p.root.visible=true});document.querySelectorAll('[id^="tag"]').forEach(tag=>tag.style.display='')}
  document.getElementById('touchControls').dataset.mode=gameMode;
+ // Batalha das Bolas: câmera mais afastada para caber a arena maior
+ if(gameMode==='ball')camera.position.set(0,12.9,18.8);else camera.position.set(0,10.7,15.5);
+ camera.lookAt(0,.6,0);
  updateHud();
 }
 document.getElementById('gameMode').addEventListener('change',()=>{reset();applyMode()});
@@ -28,8 +31,8 @@ document.getElementById('gameMode').addEventListener('change',()=>{reset();apply
 function reset(){
  running=false;ended=false;cancelScoreOverlay();stopLastPlayerTimer();clearBots();
  projectiles.forEach(o=>scene.remove(o.mesh));projectiles.length=0;
- balls.forEach((b,i)=>{b.vx=0;b.vz=0;b.alive=true;b.stun=0;b.falling=false;b.fallAt=0;b.fallVx=0;b.fallVz=0;b.mesh.rotation.set(0,0,0);b.mesh.position.set(Math.cos(players[i].angle)*4.2,.72,Math.sin(players[i].angle)*3.6);b.mesh.visible=gameMode==='ball'});
- players.forEach(p=>{p.count=0;p.finished=false;p.biting=false;p.throwAt=0;p.root.position.set(Math.cos(p.angle)*(gameMode==='ball'?4.2:5.2),gameMode==='ball'?.72:0,Math.sin(p.angle)*(gameMode==='ball'?3.6:4.5));p.root.rotation.set(0,Math.atan2(-p.root.position.x,-p.root.position.z),0);p.root.visible=true;p.rig.position.set(0,0,0);p.rig.rotation.set(0,0,0);p.rig.scale.set(1,1,1);p.legs.forEach(l=>l.rotation.set(0,0,0));p.arms.forEach(a=>a.rotation.set(0,0,0))});
+ balls.forEach((b,i)=>{b.vx=0;b.vz=0;b.alive=true;b.stun=0;b.falling=false;b.fallAt=0;b.fallVx=0;b.fallVz=0;b.mesh.rotation.set(0,0,0);b.mesh.position.set(Math.cos(players[i].angle)*4.2*ARENA_SCALE,.72,Math.sin(players[i].angle)*3.6*ARENA_SCALE);b.mesh.visible=gameMode==='ball'});
+ players.forEach(p=>{p.count=0;p.finished=false;p.biting=false;p.throwAt=0;p.root.position.set(Math.cos(p.angle)*(gameMode==='ball'?4.2*ARENA_SCALE:5.2),gameMode==='ball'?.72:0,Math.sin(p.angle)*(gameMode==='ball'?3.6*ARENA_SCALE:4.5));p.root.rotation.set(0,Math.atan2(-p.root.position.x,-p.root.position.z),0);p.root.visible=true;p.rig.position.set(0,0,0);p.rig.rotation.set(0,0,0);p.rig.scale.set(1,1,1);p.legs.forEach(l=>l.rotation.set(0,0,0));p.arms.forEach(a=>a.rotation.set(0,0,0))});
  [...breadRoot.children].slice(5).forEach(c=>breadRoot.remove(c)); // remove cremes
  breadRoot.scale.set(1,1,1);breadRoot.rotation.set(0,0,0);
  document.getElementById('status').textContent=gameMode==='ball'?'Prepare-se! Derrube os rivais da arena!':'Prepare-se para a batalha pelo pão!';

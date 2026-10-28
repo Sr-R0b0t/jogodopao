@@ -2,7 +2,7 @@
    ~20x por segundo; os convidados só mostram essas fotos e enviam seus comandos (toque, analógico, mira).
    Vagas sem jogador humano continuam sendo bots (rodam no anfitrião). */
 const net={role:'offline',ws:null,slot:0,code:'',names:[null,null,null,null,null],humans:new Set(),mv:{},
- target:null,sm:null,smb:null,lastSnap:0,lastMv:0,lastMvKey:'',bwKey:'',prevTurn:-1,pref:0};
+ target:null,sm:null,smb:null,lastSnap:0,lastMv:0,lastMvKey:'',bwKey:'',prevTurn:-1,pref:0,hostSlot:0,prevNames:null,flash:new Set()};
 const NET_TICK_MS=50;
 /* Se o jogo estiver hospedado num site estático (Netlify, GitHub Pages...), coloque aqui o endereço
    do servidor online (ex.: 'jogo-do-pao.onrender.com'). Deixe vazio se o servidor serve o próprio jogo. */
@@ -45,16 +45,16 @@ function netLeave(silent){
  tournamentCharacterLocked=false;
  document.body.classList.remove('net-client');
  document.getElementById('netLobby').hidden=true;
- document.getElementById('netJoinBox').hidden=false;
+ document.getElementById('netJoinBox').hidden=false;document.getElementById('netName').disabled=false;net.prevNames=null;
  if(!silent)netSetStatus('');
 }
 const netName=()=>(document.getElementById('netName').value||'').trim()||'Jogador';
 const netPref=()=>net.pref;
-document.getElementById('netCreate').addEventListener('click',()=>netConnect(()=>netSendRaw({t:'create',name:netName(),pref:netPref()})));
+document.getElementById('netCreate').addEventListener('click',()=>netConnect(()=>netSendRaw({t:'create',name:netName()})));
 document.getElementById('netJoin').addEventListener('click',()=>{
  const code=document.getElementById('netCode').value.trim().toUpperCase();
  if(code.length<4){netSetStatus('Digite o código da sala.',true);return}
- netConnect(()=>netSendRaw({t:'join',code,name:netName(),pref:netPref()}));
+ netConnect(()=>netSendRaw({t:'join',code,name:netName()}));
 });
 document.getElementById('netStart').addEventListener('click',()=>{
  if(net.role!=='host')return;
@@ -75,11 +75,13 @@ function netOnMessage(m){
   case 'joined':
    net.slot=m.slot;net.pref=m.slot;net.code=m.code;net.role=m.host?'host':'client';humanIndex=m.slot;
    document.getElementById('netJoinBox').hidden=true;document.getElementById('netLobby').hidden=false;
+   document.getElementById('netName').disabled=true;net.prevNames=null;
    document.getElementById('netCodeShow').textContent=m.code;
    document.getElementById('netStart').style.display=m.host?'':'none';
    document.getElementById('netWait').style.display=m.host?'none':'';
    netSetStatus('');break;
-  case 'lobby':net.names=m.names;setPlayerNames();netRenderGrid();break;
+  case 'lobby':netOnLobby(m);break;
+  case 'pickfail':netSetStatus('Esse personagem acabou de ser escolhido por outro jogador.',true);break;
   case 'slot':net.slot=m.slot;net.pref=m.slot;humanIndex=m.slot;netRenderGrid();break;
   case 'err':netSetStatus(m.m,true);break;
   case 'in':if(net.role==='host')netHostInput(m.slot,m.d);break;
@@ -93,9 +95,9 @@ function netOnMessage(m){
 function netRenderGrid(){
  const g=document.getElementById('netGrid');if(!g)return;
  g.replaceChildren();
- const inRoom=net.role!=='offline';
+ if(net.role==='offline')return; // a escolha só acontece DENTRO da sala
  for(let i=0;i<5;i++){
-  const owner=net.names[i],mine=inRoom?i===net.slot:i===net.pref,taken=inRoom&&owner&&i!==net.slot;
+  const owner=net.names[i],mine=i===net.slot,taken=owner&&!mine;
   const b=document.createElement('button');b.type='button';
   b.className='character-card'+(mine?' selected':'')+(taken?' taken':'');
   b.disabled=!!taken;
@@ -104,15 +106,39 @@ function netRenderGrid(){
   if(url){const im=new Image();im.alt='';im.src=url;av.append(im)}else av.textContent='🙂';
   const nm=document.createElement('span');nm.className='character-name';nm.textContent=specs[i].name;
   const rl=document.createElement('span');rl.className='character-role';
-  rl.textContent=taken?owner:(mine?(inRoom?(owner||'Você')+' (você)':'Você'):'Livre');
+  rl.textContent=taken?owner:(mine?'Você':'Livre');
   b.append(av,nm,rl);
   b.addEventListener('click',()=>netPick(i));
   g.append(b);
  }
 }
-function netPick(i){
- if(net.role==='offline'){net.pref=i;netRenderGrid()}
- else if(!net.names[i]&&i!==net.slot)netSendRaw({t:'pick',slot:i});
+function netPick(i){if(net.role!=='offline'&&!net.names[i]&&i!==net.slot)netSendRaw({t:'pick',slot:i})}
+/* Lista de quem está na sala (o anfitrião vê os jogadores chegando). */
+function netRenderPlayers(){
+ const box=document.getElementById('netPlayers');if(!box)return;
+ box.replaceChildren();
+ const count=net.names.filter(Boolean).length;
+ document.getElementById('netCount').textContent='👥 Jogadores na sala ('+count+'/5)';
+ net.names.forEach((n,i)=>{
+  if(!n)return;
+  const row=document.createElement('div');row.className='net-row human'+(i===net.slot?' me':'')+(net.flash.has(n)?' flash':'');
+  const a=document.createElement('b');a.textContent=n+(i===net.slot?' (você)':'');
+  if(i===net.hostSlot){const h=document.createElement('span');h.className='tag-host';h.textContent='👑 anfitrião';a.append(h)}
+  const c=document.createElement('span');c.textContent=specs[i].name;
+  row.append(a,c);box.append(row);
+ });
+}
+function netOnLobby(m){
+ const prev=net.prevNames,now=m.names.filter(Boolean);
+ net.names=m.names;net.hostSlot=m.host;net.flash.clear();
+ if(prev){
+  const joined=now.filter(n=>!prev.includes(n)),left=prev.filter(n=>!now.includes(n));
+  joined.forEach(n=>net.flash.add(n));
+  if(joined.length){netSetStatus('👋 '+joined.join(', ')+' entrou na sala!');if(audioEnabled)tone(660,.1,'triangle',.08)}
+  else if(left.length)netSetStatus(left.join(', ')+' saiu da sala.',true);
+ }
+ net.prevNames=now;
+ setPlayerNames();netRenderPlayers();netRenderGrid();
 }
 /* Mostra o nome escolhido pelo jogador (online) no lugar do nome do personagem. */
 function setPlayerNames(){

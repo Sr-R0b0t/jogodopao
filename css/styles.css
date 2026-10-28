@@ -177,3 +177,7 @@ body.net-client #start,body.net-client #reset,body.net-client #gameMode,body.net
 .net-grid .character-role{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.66rem}
 .character-card.taken{opacity:.5;cursor:not-allowed;filter:grayscale(.4)}
 .character-card.taken:hover{transform:none;border-color:#65517e}
+
+@keyframes netFlash{0%{background:#65e39c55;transform:scale(1.02)}100%{background:#29203d;transform:none}}
+.net-row.flash{animation:netFlash 1.6s ease-out}
+.net-row .tag-host{color:#ffdf79;font-size:.7rem;margin-left:6px}

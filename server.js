@@ -81,7 +81,8 @@ wss.on('connection',ws=>{
    case 'pick':{ // trocar de personagem enquanto está no lobby
     if(!room||room.started)return;
     const n=m.slot;
-    if(!Number.isInteger(n)||n<0||n>=SLOTS||room.slots[n])return;
+    if(!Number.isInteger(n)||n<0||n>=SLOTS)return;
+    if(room.slots[n])return send(ws,{t:'pickfail'});
     room.slots[n]=room.slots[ws.slot];room.slots[ws.slot]=null;ws.slot=n;
     send(ws,{t:'slot',slot:n});lobby(room);break;
    }
