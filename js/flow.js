@@ -3,7 +3,8 @@ function showFlowScreen(id){
  ['screenHome','screenCharacters','screenOnline','screenMinigames'].forEach(screenId=>{
   document.getElementById(screenId).style.display=screenId===id?'':'none';
  });
- if(id==='screenCharacters'&&typeof ensurePreviews==='function')ensurePreviews();
+ if((id==='screenCharacters'||id==='screenOnline')&&typeof ensurePreviews==='function')ensurePreviews();
+ if(id==='screenOnline')netRenderGrid();
  window.scrollTo({top:0,behavior:'smooth'});
 }
 document.getElementById('goCharacters').addEventListener('click',()=>showFlowScreen('screenCharacters'));

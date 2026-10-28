@@ -2,7 +2,7 @@
    ~20x por segundo; os convidados só mostram essas fotos e enviam seus comandos (toque, analógico, mira).
    Vagas sem jogador humano continuam sendo bots (rodam no anfitrião). */
 const net={role:'offline',ws:null,slot:0,code:'',names:[null,null,null,null,null],humans:new Set(),mv:{},
- target:null,sm:null,smb:null,lastSnap:0,lastMv:0,lastMvKey:'',bwKey:'',prevTurn:-1};
+ target:null,sm:null,smb:null,lastSnap:0,lastMv:0,lastMvKey:'',bwKey:'',prevTurn:-1,pref:0};
 const NET_TICK_MS=50;
 /* Se o jogo estiver hospedado num site estático (Netlify, GitHub Pages...), coloque aqui o endereço
    do servidor online (ex.: 'jogo-do-pao.onrender.com'). Deixe vazio se o servidor serve o próprio jogo. */
@@ -41,7 +41,7 @@ function netConnect(onOpen){
 }
 function netLeave(silent){
  const ws=net.ws;net.ws=null;if(ws){try{ws.close()}catch(e){}}
- net.role='offline';net.humans.clear();net.mv={};net.target=null;net.sm=null;net.smb=null;net.prevTurn=-1;net.bwKey='';
+ net.role='offline';net.names=[null,null,null,null,null];setPlayerNames();netRenderGrid();net.humans.clear();net.mv={};net.target=null;net.sm=null;net.smb=null;net.prevTurn=-1;net.bwKey='';
  tournamentCharacterLocked=false;
  document.body.classList.remove('net-client');
  document.getElementById('netLobby').hidden=true;
@@ -49,7 +49,7 @@ function netLeave(silent){
  if(!silent)netSetStatus('');
 }
 const netName=()=>(document.getElementById('netName').value||'').trim()||'Jogador';
-const netPref=()=>Number(document.getElementById('netChar').value)||0;
+const netPref=()=>net.pref;
 document.getElementById('netCreate').addEventListener('click',()=>netConnect(()=>netSendRaw({t:'create',name:netName(),pref:netPref()})));
 document.getElementById('netJoin').addEventListener('click',()=>{
  const code=document.getElementById('netCode').value.trim().toUpperCase();
@@ -59,7 +59,7 @@ document.getElementById('netJoin').addEventListener('click',()=>{
 document.getElementById('netStart').addEventListener('click',()=>{
  if(net.role!=='host')return;
  net.humans=new Set(net.names.map((n,i)=>n&&i!==net.slot?i:-1).filter(i=>i>=0));
- humanIndex=net.slot;tournamentCharacterLocked=true;
+ humanIndex=net.slot;tournamentCharacterLocked=true;setPlayerNames();
  netSendRaw({t:'lock'});netBroadcast({k:'begin'});
  reset();showFlowScreen('screenMinigames');
 });
@@ -73,13 +73,14 @@ const _qs=new URLSearchParams(location.search);if(_qs.get('server'))document.get
 function netOnMessage(m){
  switch(m.t){
   case 'joined':
-   net.slot=m.slot;net.code=m.code;net.role=m.host?'host':'client';humanIndex=m.slot;
+   net.slot=m.slot;net.pref=m.slot;net.code=m.code;net.role=m.host?'host':'client';humanIndex=m.slot;
    document.getElementById('netJoinBox').hidden=true;document.getElementById('netLobby').hidden=false;
    document.getElementById('netCodeShow').textContent=m.code;
    document.getElementById('netStart').style.display=m.host?'':'none';
    document.getElementById('netWait').style.display=m.host?'none':'';
    netSetStatus('');break;
-  case 'lobby':net.names=m.names;netRenderLobby();break;
+  case 'lobby':net.names=m.names;setPlayerNames();netRenderGrid();break;
+  case 'slot':net.slot=m.slot;net.pref=m.slot;humanIndex=m.slot;netRenderGrid();break;
   case 'err':netSetStatus(m.m,true);break;
   case 'in':if(net.role==='host')netHostInput(m.slot,m.d);break;
   case 's':if(net.role==='client')netClientMsg(m.d);break;
@@ -87,13 +88,39 @@ function netOnMessage(m){
   case 'closed':netLeave(true);reset();showFlowScreen('screenOnline');netSetStatus('O anfitrião encerrou a sala.',true);break;
  }
 }
-function netRenderLobby(){
- const box=document.getElementById('netPlayers');box.replaceChildren();
- net.names.forEach((n,i)=>{
-  const row=document.createElement('div');row.className='net-row'+(n?' human':'')+(i===net.slot?' me':'');
-  const a=document.createElement('b');a.textContent=specs[i].name;
-  const b=document.createElement('span');b.textContent=n?(n+(i===net.slot?' (você)':'')):'🤖 Bot';
-  row.append(a,b);box.append(row);
+/* Grade de personagens (igual à do modo offline). Antes de entrar na sala escolhe a preferência;
+   dentro da sala mostra quem está em cada personagem e permite trocar para um livre. */
+function netRenderGrid(){
+ const g=document.getElementById('netGrid');if(!g)return;
+ g.replaceChildren();
+ const inRoom=net.role!=='offline';
+ for(let i=0;i<5;i++){
+  const owner=net.names[i],mine=inRoom?i===net.slot:i===net.pref,taken=inRoom&&owner&&i!==net.slot;
+  const b=document.createElement('button');b.type='button';
+  b.className='character-card'+(mine?' selected':'')+(taken?' taken':'');
+  b.disabled=!!taken;
+  const av=document.createElement('span');av.className='character-avatar character-preview-slot';
+  const url=typeof previewCache!=='undefined'?previewCache[i+'s']:null;
+  if(url){const im=new Image();im.alt='';im.src=url;av.append(im)}else av.textContent='🙂';
+  const nm=document.createElement('span');nm.className='character-name';nm.textContent=specs[i].name;
+  const rl=document.createElement('span');rl.className='character-role';
+  rl.textContent=taken?owner:(mine?(inRoom?(owner||'Você')+' (você)':'Você'):'Livre');
+  b.append(av,nm,rl);
+  b.addEventListener('click',()=>netPick(i));
+  g.append(b);
+ }
+}
+function netPick(i){
+ if(net.role==='offline'){net.pref=i;netRenderGrid()}
+ else if(!net.names[i]&&i!==net.slot)netSendRaw({t:'pick',slot:i});
+}
+/* Mostra o nome escolhido pelo jogador (online) no lugar do nome do personagem. */
+function setPlayerNames(){
+ players.forEach((p,i)=>{
+  const n=net.role!=='offline'&&net.names[i];
+  p.name=n||specs[i].name;
+  const tag=document.getElementById('tag'+i);
+  if(tag&&tag.firstChild&&tag.firstChild.nodeType===3)tag.firstChild.textContent=p.name;
  });
 }
 
@@ -140,7 +167,7 @@ function netClientMsg(d){
  if(!d)return;
  switch(d.k){
   case 'begin':
-   humanIndex=net.slot;tournamentCharacterLocked=true;document.body.classList.add('net-client');
+   humanIndex=net.slot;tournamentCharacterLocked=true;document.body.classList.add('net-client');setPlayerNames();
    reset();showFlowScreen('screenMinigames');
    document.getElementById('status').textContent='Aguardando o anfitrião iniciar a partida…';break;
   case 'start':

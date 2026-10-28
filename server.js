@@ -26,7 +26,12 @@ const SLOTS=5,CODE_CHARS='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 function newCode(){let c;do{c=Array.from({length:5},()=>CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)]).join('')}while(rooms.has(c));return c}
 const send=(ws,o)=>{if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))};
 const cleanName=n=>String(n||'').replace(/[<>&"']/g,'').trim().slice(0,12)||'Jogador';
+function uniqueName(room,name){
+ const used=new Set(room.slots.filter(Boolean).map(s=>s.name));let n=name,k=2;
+ while(used.has(n))n=name.slice(0,10)+' '+k++;return n;
+}
 function takeSlot(room,ws,name,pref){
+ name=uniqueName(room,name);
  let slot=Number.isInteger(pref)&&pref>=0&&pref<SLOTS&&!room.slots[pref]?pref:room.slots.findIndex(s=>!s);
  if(slot<0)return -1;
  room.slots[slot]={ws,name};ws.room=room;ws.slot=slot;return slot;
@@ -73,6 +78,13 @@ wss.on('connection',ws=>{
     if(room&&room.host!==ws)send(room.host,{t:'in',slot:ws.slot,d:m.d});break;
    case 'bc': // anfitrião -> todos os outros
     if(room&&room.host===ws)room.slots.forEach(s=>s&&s.ws!==ws&&send(s.ws,{t:'s',d:m.d}));break;
+   case 'pick':{ // trocar de personagem enquanto está no lobby
+    if(!room||room.started)return;
+    const n=m.slot;
+    if(!Number.isInteger(n)||n<0||n>=SLOTS||room.slots[n])return;
+    room.slots[n]=room.slots[ws.slot];room.slots[ws.slot]=null;ws.slot=n;
+    send(ws,{t:'slot',slot:n});lobby(room);break;
+   }
    case 'lock':
     if(room&&room.host===ws)room.started=true;break;
   }

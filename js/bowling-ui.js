@@ -11,7 +11,7 @@ function bowlingPortraitSvg(name){
 function updateBowlingTopScore(){
  const el=document.getElementById('bowlingTopScore');if(!el)return;
  if(gameMode!=='bowling'){el.classList.remove('show');return}
- el.innerHTML=players.map((p,i)=>`<div class="bowling-score-chip ${bowlingTurn<bowlingOrder.length&&bowlingOrder[bowlingTurn]===i?'active':''}"><span class="bowling-face" aria-label="Rosto de ${p.name}">${bowlingPortraitSvg(p.name)}</span><span class="bowling-player-name">${p.name}${i===humanIndex?' · VOCÊ':''}</span><b>${bowlingScores[i]||0}</b></div>`).join('');
+ el.innerHTML=players.map((p,i)=>`<div class="bowling-score-chip ${bowlingTurn<bowlingOrder.length&&bowlingOrder[bowlingTurn]===i?'active':''}"><span class="bowling-face" aria-label="Rosto de ${p.name}">${bowlingPortraitSvg(specs[i].name)}</span><span class="bowling-player-name">${p.name}${i===humanIndex?' · VOCÊ':''}</span><b>${bowlingScores[i]||0}</b></div>`).join('');
  el.classList.add('show');
 }
 function showBowlingArrowHint(){

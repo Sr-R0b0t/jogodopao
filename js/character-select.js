@@ -26,6 +26,7 @@ function renderPreviewImages(){
 function ensurePreviews(){
  if(previewsReady)return;previewsReady=true;
  renderPreviewImages();initializeCharacterPreviews();updateFeaturedCharacterPreview(humanIndex);
+ netRenderGrid();
 }
 function setPreviewImage(container,i,featured){
  const img=new Image();img.alt='';img.decoding='async';img.src=previewCache[i+(featured?'f':'s')]||'';
