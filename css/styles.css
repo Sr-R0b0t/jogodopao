@@ -171,3 +171,9 @@ body.touch-ui .bowling-controls,body.touch-ui .bowling-move-controls,body.touch-
 #netWait,.net-wait{text-align:center;font-weight:900;color:#ffdf79}
 body.net-client #start,body.net-client #reset,body.net-client #gameMode,body.net-client label[for="gameMode"]{display:none}
 .character-preview-slot img,.preview-avatar img{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none}
+
+.net-label{font-size:.8rem;font-weight:900;color:#d8c8ee}
+.net-grid{gap:8px}
+.net-grid .character-role{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.66rem}
+.character-card.taken{opacity:.5;cursor:not-allowed;filter:grayscale(.4)}
+.character-card.taken:hover{transform:none;border-color:#65517e}

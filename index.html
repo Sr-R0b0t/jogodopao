@@ -37,10 +37,9 @@
   <div class="online-card">
     <h2>🌐 Jogar online</h2>
     <label>Seu nome <input id="netName" maxlength="12" placeholder="Jogador" autocomplete="off"></label>
+    <div class="net-label">Escolha seu personagem</div>
+    <div class="character-grid net-grid" id="netGrid"></div>
     <div id="netJoinBox">
-      <label>Personagem preferido
-        <select id="netChar"><option value="0">Astronauta</option><option value="1">Raposa</option><option value="2">Sapo</option><option value="3">Panda</option><option value="4">Macaco</option></select>
-      </label>
       <div class="online-actions"><button id="netCreate" class="primary-flow-button">➕ CRIAR SALA</button></div>
       <div class="online-or">ou entre com o código de um amigo</div>
       <div class="online-actions"><input id="netCode" maxlength="5" placeholder="CÓDIGO" autocomplete="off"><button id="netJoin" class="primary-flow-button">ENTRAR</button></div>
@@ -51,8 +50,7 @@
     <div id="netStatus" aria-live="polite"></div>
     <div id="netLobby" hidden>
       <div class="net-code">Código da sala <strong id="netCodeShow">-----</strong></div>
-      <div id="netPlayers"></div>
-      <p class="net-hint">Vagas sem jogador viram bots 🤖. Compartilhe o código com seus amigos.</p>
+      <p class="net-hint">Vagas sem jogador viram bots 🤖. Compartilhe o código; seus amigos escolhem os personagens livres.</p>
       <button id="netStart" class="primary-flow-button">▶ INICIAR PARTIDA</button>
       <div id="netWait" style="display:none">⏳ Aguardando o anfitrião iniciar…</div>
     </div>
