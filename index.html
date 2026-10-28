@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jogo do Pão — 3D</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%8D%9E%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div id="bootLoader"><div class="boot-bread">🍞</div><div id="bootMsg">Carregando…</div></div>
+<button id="settingsBtn" class="settings-btn" aria-label="Configurações">⚙️</button>
+<div id="settingsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+  <div class="modal-card">
+    <h2 id="settingsTitle">⚙️ Configurações</h2>
+    <label class="setting-row"><span>🎵 Música</span><input type="checkbox" id="optMusic" checked></label>
+    <label class="setting-row"><span>🔊 Efeitos sonoros</span><input type="checkbox" id="optSfx" checked></label>
+    <button id="leaveRoom" class="secondary-btn" style="display:none">🚪 Sair da sala online</button>
+    <button id="closeSettings" class="primary-flow-button">FECHAR</button>
+  </div>
+</div>
+<main>
+
+<section id="screenHome" class="flow-screen home-screen">
+  <div class="home-orbit">🍞</div>
+  <div class="kicker">ARENA 3D • 5 COMPETIDORES</div>
+  <h1>JOGO DO PÃO</h1>
+  <p>Escolha seu personagem, entre na arena e dispute a vitória em minigames divertidos.</p>
+  <button id="goCharacters" class="primary-flow-button">▶ INICIAR JOGO</button>
+  <button id="goOnline" class="primary-flow-button online-btn">🌐 JOGAR ONLINE</button>
+  <div class="home-features"><span>⚡ Ação</span><span>🏆 Competição</span><span>🎮 3 minigames</span></div>
+</section>
+
+<section id="screenOnline" class="flow-screen" style="display:none">
+  <div class="flow-top"><button class="back-flow-button" id="backHomeOnline">← Voltar</button><span>MULTIJOGADOR</span></div>
+  <div class="online-card">
+    <h2>🌐 Jogar online</h2>
+    <label>Seu nome <input id="netName" maxlength="12" placeholder="Jogador" autocomplete="off"></label>
+    <div id="netJoinBox">
+      <label>Personagem preferido
+        <select id="netChar"><option value="0">Astronauta</option><option value="1">Raposa</option><option value="2">Sapo</option><option value="3">Panda</option><option value="4">Macaco</option></select>
+      </label>
+      <div class="online-actions"><button id="netCreate" class="primary-flow-button">➕ CRIAR SALA</button></div>
+      <div class="online-or">ou entre com o código de um amigo</div>
+      <div class="online-actions"><input id="netCode" maxlength="5" placeholder="CÓDIGO" autocomplete="off"><button id="netJoin" class="primary-flow-button">ENTRAR</button></div>
+      <details class="online-adv"><summary>Servidor (avançado)</summary>
+        <input id="netServer" placeholder="automático — ex.: meu-jogo.onrender.com ou 192.168.0.10:3000">
+      </details>
+    </div>
+    <div id="netStatus" aria-live="polite"></div>
+    <div id="netLobby" hidden>
+      <div class="net-code">Código da sala <strong id="netCodeShow">-----</strong></div>
+      <div id="netPlayers"></div>
+      <p class="net-hint">Vagas sem jogador viram bots 🤖. Compartilhe o código com seus amigos.</p>
+      <button id="netStart" class="primary-flow-button">▶ INICIAR PARTIDA</button>
+      <div id="netWait" style="display:none">⏳ Aguardando o anfitrião iniciar…</div>
+    </div>
+  </div>
+</section>
+
+<div class="kicker game-kicker">Arena 3D • 5 competidores • modo offline de partida</div>
+<h1 class="game-title">JOGO DO PÃO 🍞</h1>
+<p class="game-description">Chegue a 100 cliques! Quem terminar primeiro joga creme no pão. Quem terminar por último... vai ter que dar a mordida final! 😂</p>
+
+<section id="screenCharacters" class="flow-screen" style="display:none">
+  <div class="flow-top"><button class="back-flow-button" id="backHome">← Voltar</button><span>ETAPA 1 DE 2</span></div>
+  <section class="character-select" aria-label="Escolha de personagem">
+  <div class="character-head">
+    <div><div class="character-eyebrow">Monte sua equipe</div><h2 class="character-title">Escolha seu personagem</h2></div>
+    <div class="character-count">01 / 05 disponíveis</div>
+  </div>
+  <div class="character-layout">
+    <div class="character-grid" id="characterGrid">
+      <button class="character-card selected" type="button" data-character="0" aria-pressed="true"><span class="character-avatar character-preview-slot" data-preview="0"></span><span class="character-name">ASTRONAUTA</span><span class="character-role">Explorador</span></button>
+      <button class="character-card" type="button" data-character="1" aria-pressed="false"><span class="character-avatar character-preview-slot" data-preview="1"></span><span class="character-name">RAPOSA</span><span class="character-role">Ágil e esperta</span></button>
+      <button class="character-card" type="button" data-character="2" aria-pressed="false"><span class="character-avatar character-preview-slot" data-preview="2"></span><span class="character-name">SAPO</span><span class="character-role">Salto poderoso</span></button>
+      <button class="character-card" type="button" data-character="3" aria-pressed="false"><span class="character-avatar character-preview-slot" data-preview="3"></span><span class="character-name">PANDA</span><span class="character-role">Forte e tranquilo</span></button>
+      <button class="character-card" type="button" data-character="4" aria-pressed="false"><span class="character-avatar character-preview-slot" data-preview="4"></span><span class="character-name">MACACO</span><span class="character-role">Imprevisível</span></button>
+    </div>
+    <aside class="character-preview">
+      <div class="preview-avatar" id="previewAvatar"></div>
+      <div class="preview-name" id="previewName">Astronauta</div>
+      <p class="preview-description" id="previewDescription">Pronto para explorar a arena e disputar o pão.</p>
+      <span class="preview-badge">PERSONAGEM SELECIONADO</span>
+    </aside>
+  </div>
+  <select id="characterChoice" aria-label="Personagem escolhido">
+    <option value="0">Astronauta</option><option value="1">Raposa</option><option value="2">Sapo</option><option value="3">Panda</option><option value="4">Macaco</option>
+  </select>
+  </section>
+  <div class="flow-actions"><button id="goMinigames" class="primary-flow-button">CONTINUAR PARA MINIGAMES →</button></div>
+</section>
+
+<section id="screenMinigames" class="flow-screen" style="display:none">
+  <div class="flow-top"><button class="back-flow-button" id="backCharacters">← Personagens</button><span>ETAPA 2 DE 2 • MINIGAME</span></div>
+  <div id="scene">
+    <div class="hud">
+      <div class="tag" id="tag0">ASTRONAUTA<b>0 / 100</b></div>
+      <div class="tag" id="tag1">RAPOSA<b>0 / 100</b></div>
+      <div class="tag" id="tag2">SAPO<b>0 / 100</b></div>
+      <div class="tag" id="tag3">PANDA<b>0 / 100</b></div>
+      <div class="tag" id="tag4">MACACO<b>0 / 100</b></div>
+    </div>
+    <div id="bowlingTopScore" aria-live="polite"></div>
+    <div id="bowlingArrowHint"><div class="arrows"><span>⬅</span><span>⬆</span><span>➡</span></div><small>USE AS SETAS PARA SE MOVIMENTAR</small></div>
+
+    <!-- Controles de toque (estilo Among Us): analógico à esquerda, botões à direita -->
+    <div id="touchControls" data-mode="bread">
+      <div class="joy" id="joyBase"><div class="joy-stick" id="joyStick"></div></div>
+      <div class="tpower"><span id="touchPowerValue">70%</span><input id="touchPower" type="range" min="35" max="100" value="70" aria-label="Força do lançamento"></div>
+      <button id="touchAction" class="touch-action" type="button">👆 CLICAR</button>
+    </div>
+  </div>
+
+    <div class="status" id="status">Prepare-se para a batalha pelo pão!</div>
+  <div id="lastPlayerTimer"></div>
+  <div id="bowlingHud" class="bowling-hud"></div>
+  <div id="bowlingMoveControls" class="bowling-move-controls">
+    <button id="bowlingLeft" type="button">◀ MOVER À ESQUERDA</button>
+    <button id="bowlingCenter" type="button">MIRA CENTRAL</button>
+    <button id="bowlingRight" type="button">MOVER À DIREITA ▶</button>
+  </div>
+  <div id="bowlingControls" class="bowling-controls">
+    <label>💪 Força do lançamento <input id="bowlingPower" type="range" min="35" max="100" value="70"><span id="bowlingPowerValue">70%</span></label>
+    <p>Mova o personagem com as setas ou botões, escolha a força e lance. A direção é definida pela posição diante dos pinos.</p>
+  </div>
+
+  <div class="controls" style="margin-bottom:10px">
+    <label for="gameMode" style="align-self:center;font-weight:900">🎮 MINIGAME</label>
+    <select id="gameMode" style="border:2px solid #a78bca;border-radius:12px;padding:10px 14px;background:#2a1b43;color:#fff;font-weight:900;font-size:.95rem">
+      <option value="bread">🍞 Corrida do Pão</option>
+      <option value="ball">⚽ Batalha das Bolas</option>
+      <option value="bowling">🎳 Boliche na Ladeira</option>
+    </select>
+  </div>
+
+  <div class="controls">
+    <button id="start">▶ COMEÇAR PARTIDA</button>
+    <button id="tap" disabled>👆 CLICAR! (0/100)</button>
+    <button id="reset">↻ REINICIAR</button>
+  </div>
+
+  <div id="result"></div>
+  <p class="note" id="gameNote">Corrida: chegue a 100 cliques. É necessária conexão à internet para carregar a biblioteca 3D.</p>
+</section>
+</main>
+
+<div id="scoreOverlay" role="dialog" aria-modal="true" aria-labelledby="scoreOverlayTitle">
+  <div class="score-modal">
+    <h2 id="scoreOverlayTitle">🏆 Fim da rodada!</h2>
+    <p class="score-lead" id="scoreOverlayLead">Confira a classificação do campeonato.</p>
+    <div id="scoreOverlayContent"></div>
+  </div>
+</div>
+
+<script type="module" src="js/boot.js"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+/* HUD do boliche: retratos SVG, placar no topo e dica das setas. */
+let bowlingArrowHintTimer=null;
+function bowlingPortraitSvg(name){
+ const commonEyes=`<ellipse cx="39" cy="43" rx="4.2" ry="5.3" fill="#fff"/><ellipse cx="61" cy="43" rx="4.2" ry="5.3" fill="#fff"/><circle cx="40" cy="44" r="2.1" fill="#24172d"/><circle cx="62" cy="44" r="2.1" fill="#24172d"/>`;
+ if(name==='ASTRONAUTA')return `<svg viewBox="0 0 100 82" aria-hidden="true"><defs><linearGradient id="helmet" x2="0" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#bfefff"/></linearGradient></defs><path d="M19 42a31 31 0 0 1 62 0v15H19z" fill="#e9f5ff" stroke="#a9b6d8" stroke-width="4"/><ellipse cx="50" cy="43" rx="25" ry="27" fill="url(#helmet)" stroke="#7f9fbd" stroke-width="3"/><ellipse cx="50" cy="43" rx="18" ry="19" fill="#5ebce8"/>${commonEyes}<path d="M43 55q7 6 14 0" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="18" cy="49" r="6" fill="#f2f5ff" stroke="#9fb3d0" stroke-width="3"/><circle cx="82" cy="49" r="6" fill="#f2f5ff" stroke="#9fb3d0" stroke-width="3"/></svg>`;
+ if(name==='RAPOSA')return `<svg viewBox="0 0 100 82" aria-hidden="true"><path d="M18 35 10 5 36 20Q50 12 64 20L90 5 82 35 78 58Q50 82 22 58Z" fill="#f28a43" stroke="#a95029" stroke-width="3"/><path d="M15 12 31 24 23 37Z M85 12 69 24 77 37Z" fill="#fff0d0"/><ellipse cx="50" cy="49" rx="26" ry="25" fill="#f7ad67"/>${commonEyes}<path d="M44 55Q50 61 56 55L50 51Z" fill="#54313a"/><path d="M39 63q11 8 22 0" fill="none" stroke="#783c35" stroke-width="3" stroke-linecap="round"/></svg>`;
+ if(name==='SAPO')return `<svg viewBox="0 0 100 82" aria-hidden="true"><ellipse cx="28" cy="27" rx="15" ry="17" fill="#66d98d" stroke="#26995d" stroke-width="3"/><ellipse cx="72" cy="27" rx="15" ry="17" fill="#66d98d" stroke="#26995d" stroke-width="3"/><ellipse cx="50" cy="48" rx="35" ry="30" fill="#68d98b" stroke="#299b60" stroke-width="3"/><ellipse cx="28" cy="27" rx="8" ry="10" fill="#fff"/> <ellipse cx="72" cy="27" rx="8" ry="10" fill="#fff"/><circle cx="30" cy="29" r="4" fill="#1c3327"/><circle cx="70" cy="29" r="4" fill="#1c3327"/><ellipse cx="50" cy="57" rx="18" ry="10" fill="#d2f4ad"/><path d="M37 57q13 13 26 0" fill="none" stroke="#287b4c" stroke-width="3" stroke-linecap="round"/></svg>`;
+ if(name==='PANDA')return `<svg viewBox="0 0 100 82" aria-hidden="true"><ellipse cx="25" cy="23" rx="14" ry="15" fill="#26202c"/><ellipse cx="75" cy="23" rx="14" ry="15" fill="#26202c"/><ellipse cx="50" cy="45" rx="35" ry="34" fill="#f7f2e9" stroke="#c9c3c0" stroke-width="3"/><ellipse cx="35" cy="43" rx="10" ry="13" transform="rotate(25 35 43)" fill="#28212d"/><ellipse cx="65" cy="43" rx="10" ry="13" transform="rotate(-25 65 43)" fill="#28212d"/><circle cx="37" cy="43" r="3" fill="#fff"/><circle cx="63" cy="43" r="3" fill="#fff"/><ellipse cx="50" cy="54" rx="6" ry="4" fill="#28212d"/><path d="M43 61q7 7 14 0" fill="none" stroke="#28212d" stroke-width="3" stroke-linecap="round"/></svg>`;
+ return `<svg viewBox="0 0 100 82" aria-hidden="true"><circle cx="25" cy="23" r="14" fill="#a76a45" stroke="#71442f" stroke-width="3"/><circle cx="75" cy="23" r="14" fill="#a76a45" stroke="#71442f" stroke-width="3"/><ellipse cx="50" cy="45" rx="34" ry="33" fill="#a76a45" stroke="#71442f" stroke-width="3"/><ellipse cx="50" cy="55" rx="23" ry="17" fill="#ffcc86"/>${commonEyes}<ellipse cx="50" cy="53" rx="5" ry="4" fill="#5c342a"/><path d="M39 62q11 10 22 0" fill="none" stroke="#5c342a" stroke-width="3" stroke-linecap="round"/></svg>`;
+}
+function updateBowlingTopScore(){
+ const el=document.getElementById('bowlingTopScore');if(!el)return;
+ if(gameMode!=='bowling'){el.classList.remove('show');return}
+ el.innerHTML=players.map((p,i)=>`<div class="bowling-score-chip ${bowlingTurn<bowlingOrder.length&&bowlingOrder[bowlingTurn]===i?'active':''}"><span class="bowling-face" aria-label="Rosto de ${p.name}">${bowlingPortraitSvg(p.name)}</span><span class="bowling-player-name">${p.name}${i===humanIndex?' · VOCÊ':''}</span><b>${bowlingScores[i]||0}</b></div>`).join('');
+ el.classList.add('show');
+}
+function showBowlingArrowHint(){
+ const el=document.getElementById('bowlingArrowHint');if(!el)return;
+ if(bowlingArrowHintTimer)clearTimeout(bowlingArrowHintTimer);
+ el.style.display='block';el.classList.remove('show');void el.offsetWidth;el.classList.add('show');
+ bowlingArrowHintTimer=setTimeout(()=>{el.classList.remove('show');el.style.display='none'},3900);
+}
