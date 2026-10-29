@@ -1,6 +1,6 @@
 /* Núcleo do jogo: estado global, modos, reset/start, entrada e loop de animação.
    Carregado por último. */
-function resize(){const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
+function resize(){const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;applyCameraPose();camera.updateProjectionMatrix()}
 new ResizeObserver(resize).observe(host);resize();
 
 let running=false,ended=false,botTimers=[],lastTime=performance.now(),celebrateStart=0;
@@ -15,15 +15,13 @@ function applyMode(){
  const ballMode=gameMode==='ball',bowlingMode=gameMode==='bowling';
  document.getElementById('tap').disabled=!running;
  document.getElementById('tap').textContent=ballMode?'🎯 EMPURRÃO!':bowlingMode?'🎳 JOGAR BOLA!':'👆 CLICAR!';
- document.querySelector('main > p').textContent=ballMode?'Fique em cima da sua bola e derrube os 4 rivais da arena! Último personagem em pé vence. Use WASD ou as setas para se mover.':bowlingMode?'Cada personagem tem um lançamento pela ladeira. Derrube o máximo de pinos; quem derrubar mais vence!':'Chegue a 100 cliques! Quem terminar primeiro joga creme no pão. Quem terminar por último... vai ter que dar a mordida final! 😂';
+ document.querySelector('main > p').textContent=ballMode?'Fique em cima da sua bola e derrube os 5 rivais da arena! Último personagem em pé vence. Use WASD ou as setas para se mover.':bowlingMode?'Cada personagem tem um lançamento pela ladeira. Derrube o máximo de pinos; quem derrubar mais vence!':'Chegue a 100 cliques! Quem terminar primeiro joga creme no pão. Quem terminar por último... vai ter que dar a mordida final! 😂';
  document.getElementById('gameNote').textContent=ballMode?'Controles: WASD ou setas para mover; botão EMPURRÃO para dar uma arrancada. Bots tentam empurrar você para fora da arena.':bowlingMode?'Boliche: use as setas (ou os botões) para se posicionar, escolha a força e lance. Acertar nos cantos também derruba pinos.':'Corrida: chegue a 100 cliques. É necessária conexão à internet para carregar a biblioteca 3D.';
  breadRoot.visible=!ballMode&&!bowlingMode;arenaRing.visible=ballMode;bowlingRoot.visible=bowlingMode;balls.forEach(b=>b.mesh.visible=ballMode);
  if(bowlingMode){updateBowlingHud();applyBowlingVisibility()}
- else{document.getElementById('bowlingHud').classList.remove('show');document.getElementById('bowlingControls').classList.remove('show');players.forEach(p=>{p.root.visible=true});document.querySelectorAll('[id^="tag"]').forEach(tag=>tag.style.display='')}
+ else{document.getElementById('bowlingTopScore').classList.remove('show');document.getElementById('bowlingHud').classList.remove('show');document.getElementById('bowlingControls').classList.remove('show');players.forEach(p=>{p.root.visible=true});document.querySelectorAll('[id^="tag"]').forEach(tag=>tag.style.display='')}
  document.getElementById('touchControls').dataset.mode=gameMode;
- // Batalha das Bolas: câmera mais afastada para caber a arena maior
- if(gameMode==='ball')camera.position.set(0,12.9,18.8);else camera.position.set(0,10.7,15.5);
- camera.lookAt(0,.6,0);
+ applyCameraPose();
  updateHud();
 }
 document.getElementById('gameMode').addEventListener('change',()=>{reset();applyMode()});
@@ -123,6 +121,7 @@ function animate(now){
 
  updateBallMode(now,dt,t);
  updateTouchControls(dt);
+ updateSelfMarker(t);
  if(net.role==='client')netClientFrame(dt,now);else netHostFrame(now);
  breadRoot.rotation.y=Math.sin(t*.9)*.08;
  renderer.render(scene,camera);

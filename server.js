@@ -22,7 +22,7 @@ const server=http.createServer((req,res)=>{
 /* ---------- Salas ---------- */
 const wss=new WebSocketServer({server,maxPayload:64*1024});
 const rooms=new Map(); // código -> {code,host,slots:[{ws,name}|null ×5],started}
-const SLOTS=5,CODE_CHARS='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+const SLOTS=6,CODE_CHARS='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 function newCode(){let c;do{c=Array.from({length:5},()=>CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)]).join('')}while(rooms.has(c));return c}
 const send=(ws,o)=>{if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))};
 const cleanName=n=>String(n||'').replace(/[<>&"']/g,'').trim().slice(0,12)||'Jogador';
@@ -71,7 +71,7 @@ wss.on('connection',ws=>{
     if(!r)return send(ws,{t:'err',m:'Sala não encontrada. Confira o código.'});
     if(r.started)return send(ws,{t:'err',m:'Essa partida já começou.'});
     const slot=takeSlot(r,ws,cleanName(m.name),m.pref);
-    if(slot<0)return send(ws,{t:'err',m:'Sala cheia (5 jogadores).'});
+    if(slot<0)return send(ws,{t:'err',m:'Sala cheia (6 jogadores).'});
     send(ws,{t:'joined',code:r.code,slot,host:false});lobby(r);break;
    }
    case 'relay': // jogador -> anfitrião

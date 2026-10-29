@@ -11,7 +11,7 @@ canvas{display:block;width:100%;height:100%}
 .hud{position:absolute;inset:0;pointer-events:none}
 .tag{position:absolute;background:#241735d9;border:1px solid #c3a4e7;border-radius:12px;padding:7px 10px;font-size:.76rem;font-weight:900;box-shadow:0 4px 0 #140c20;min-width:78px}
 .tag b{display:block;color:#ffdc76;font-size:.85rem}
-#tag0{left:50%;top:10px;transform:translateX(-50%)}#tag1{right:10px;top:28%}#tag2{right:12%;bottom:10px}#tag3{left:12%;bottom:10px}#tag4{left:10px;top:28%}
+#tag0{left:50%;top:10px;transform:translateX(-50%)}#tag1{right:10px;top:24%}#tag2{right:10px;bottom:20%}#tag3{left:50%;bottom:10px;transform:translateX(-50%)}#tag4{left:10px;bottom:20%}#tag5{left:10px;top:24%}
 .status{min-height:28px;margin:19px 0 12px;font-weight:900}
 .controls{display:flex;gap:11px;justify-content:center;flex-wrap:wrap}
 button{border:0;border-radius:15px;padding:14px 20px;font-weight:1000;font-size:1rem;cursor:pointer;touch-action:manipulation;transition:transform .1s}
@@ -25,7 +25,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .audio-toggle{display:inline-flex;align-items:center;gap:8px;margin:0 auto 10px;padding:9px 13px;border:1px solid #a78bca;border-radius:12px;background:#2a1b43;color:#f7eaff;font-weight:800;font-size:.85rem;cursor:pointer}
 .audio-toggle[aria-pressed="true"]{background:#4c356c;border-color:#ffdc76}
 .note{font-size:.8rem;color:#c8b8df;margin-top:17px}
-@media(max-width:520px){body{padding:12px 8px}#scene{height:105vw;min-height:340px;border-radius:22px}.tag{font-size:.64rem;padding:5px 6px;min-width:62px}.tag b{font-size:.7rem}#tag1{right:4px}#tag4{left:4px}#tag2{right:6%}#tag3{left:6%}#tap{width:100%;max-width:320px}}
+@media(max-width:520px){body{padding:12px 8px}#scene{height:105vw;min-height:340px;border-radius:22px}.tag{font-size:.64rem;padding:5px 6px;min-width:62px}.tag b{font-size:.7rem}#tag1,#tag2{right:4px}#tag4,#tag5{left:4px}#tap{width:100%;max-width:320px}}
 
 /* ===== Seleção de personagem ===== */
 .character-select{max-width:850px;margin:20px auto 18px;padding:18px;border:1px solid #bca2e6;border-radius:24px;background:linear-gradient(135deg,#34234cF2,#1d152cF5);box-shadow:0 14px 35px #09061170;text-align:left}

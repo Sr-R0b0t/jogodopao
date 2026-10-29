@@ -39,12 +39,12 @@ const bowlingBall=new THREE.Mesh(new THREE.SphereGeometry(BOWLING.ballR,24,18),b
 const bowlingSeam=new THREE.Mesh(new THREE.TorusGeometry(.342,.012,6,24),mat('#d8f7ff',.35));bowlingSeam.rotation.x=Math.PI/2;bowlingBall.add(bowlingSeam);
 
 /* ---------- Estado ---------- */
-let bowlingOrder=[],bowlingTurn=0,bowlingScores=[0,0,0,0,0],bowlingBallState=null,bowlingNextTurnTimer=null;
+let bowlingOrder=[],bowlingTurn=0,bowlingScores=players.map(()=>0),bowlingBallState=null,bowlingNextTurnTimer=null;
 let bowlingAimValue=0,bowlingPowerValue=70; // posição lateral do jogador e força
 
 function setupBowling(){
  if(bowlingNextTurnTimer){clearInterval(bowlingNextTurnTimer);bowlingNextTurnTimer=null}
- bowlingScores=[0,0,0,0,0];bowlingTurn=0;bowlingOrder=[0,1,2,3,4].sort(()=>Math.random()-.5);bowlingBallState=null;
+ bowlingScores=players.map(()=>0);bowlingTurn=0;bowlingOrder=players.map((p,i)=>i).sort(()=>Math.random()-.5);bowlingBallState=null;
  resetBowlingPins();bowlingBall.position.set(0,.55,3.7);bowlingBall.visible=true;bowlingRoot.visible=true;
  bowlingAimValue=0;bowlingPowerValue=70;document.getElementById('bowlingPower').value='70';
  updateBowlingControlValues();updateBowlingHud();applyBowlingVisibility();updateBowlingMoveControls();
@@ -94,7 +94,7 @@ function updateBowlingHud(){
  el.classList.add('show');
  if(bowlingTurn>=bowlingOrder.length){el.innerHTML='🎳 Rodada concluída! '+players.map((p,i)=>p.name+': '+bowlingScores[i]+'/10').join(' • ');return}
  const cur=bowlingOrder[bowlingTurn];
- el.innerHTML='🎳 Jogada '+(bowlingTurn+1)+' de 5 — vez de <strong>'+players[cur].name+'</strong> · Pinos derrubados: '+bowlingScores[cur]+'/10'+(cur===humanIndex?' · Mira: '+(bowlingAimValue<-.1?'ESQUERDA':bowlingAimValue>.1?'DIREITA':'CENTRO'):'');
+ el.innerHTML='🎳 Jogada '+(bowlingTurn+1)+' de '+players.length+' — vez de <strong>'+players[cur].name+'</strong> · Pinos derrubados: '+bowlingScores[cur]+'/10'+(cur===humanIndex?' · Mira: '+(bowlingAimValue<-.1?'ESQUERDA':bowlingAimValue>.1?'DIREITA':'CENTRO'):'');
 }
 function updateBowlingMoveControls(){
  const el=document.getElementById('bowlingMoveControls');

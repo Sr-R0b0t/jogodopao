@@ -1,5 +1,5 @@
 /* Minigame: Batalha das Bolas — empurre os rivais para fora da arena. */
-const arenaRing=new THREE.Mesh(new THREE.TorusGeometry(6.25*ARENA_SCALE,.16,12,96),mat('#ffcf63',.35));
+const arenaRing=new THREE.Mesh(new THREE.TorusGeometry(ARENA_EDGE-.75,.16,12,96),mat('#ffcf63',.35));
 arenaRing.rotation.x=Math.PI/2;arenaRing.position.y=.02;scene.add(arenaRing);arenaRing.visible=false;
 const balls=players.map((p,i)=>{const ball=new THREE.Mesh(new THREE.SphereGeometry(.72,32,24),mat(specs[i].color,.32,.12));ball.castShadow=true;ball.receiveShadow=true;scene.add(ball);ball.visible=false;return {mesh:ball,vx:0,vz:0,alive:true,stun:0,falling:false,fallAt:0,fallVx:0,fallVz:0}});
 const keys={};let gameMode='bread',ballStart=0;let humanIndex=0;
@@ -43,7 +43,7 @@ function updateBallMode(now,dt,t){
     const edgeLen=Math.hypot(target.root.position.x,target.root.position.z)||1;
     const aimX=target.root.position.x+target.root.position.x/edgeLen*.9,aimZ=target.root.position.z+target.root.position.z/edgeLen*.9;
     dx=aimX-p.root.position.x;dz=aimZ-p.root.position.z;d=Math.hypot(dx,dz)||1;
-    const aggression=[0,0.82,0.88,0.78,0.85][i];
+    const aggression=[0,0.82,0.88,0.78,0.85,0.8][i];
     const ownR=Math.hypot(p.root.position.x,p.root.position.z);
     let steerX=dx/d,steerZ=dz/d;
     if(ownR>4.7*ARENA_SCALE){const inwardX=-p.root.position.x/(ownR||1),inwardZ=-p.root.position.z/(ownR||1),blend=Math.min(0.9,(ownR-4.7*ARENA_SCALE)/(1.5*ARENA_SCALE));steerX=steerX*(1-blend)+inwardX*blend;steerZ=steerZ*(1-blend)+inwardZ*blend;const sl=Math.hypot(steerX,steerZ)||1;steerX/=sl;steerZ/=sl}
@@ -60,7 +60,7 @@ function updateBallMode(now,dt,t){
    b.mesh.position.x+=b.vx*dt;b.mesh.position.z+=b.vz*dt;p.root.position.x=b.mesh.position.x;p.root.position.z=b.mesh.position.z;p.root.position.y=1.15+Math.min(.08,speed*.008);b.mesh.position.y=.72-Math.min(.08,speed*.02);
    p.rig.rotation.z=Math.max(-.10,Math.min(.10,-b.vx*.018));p.rig.rotation.x=Math.max(-.10,Math.min(.10,b.vz*.018));p.rig.position.y=Math.abs(Math.sin(t*8+i))*Math.min(.06,speed*.01);
    const radius=Math.hypot(p.root.position.x,p.root.position.z);
-   if(radius>6.55*ARENA_SCALE){b.alive=false;b.falling=true;b.fallAt=now;b.fallVx=b.vx*.45+p.root.position.x*.35;b.fallVz=b.vz*.45+p.root.position.z*.35;b.vx=0;b.vz=0;sfxCream();document.getElementById('status').textContent=p.name+' foi derrubado da arena!';updateHud()}
+   if(radius>ARENA_EDGE-.2){b.alive=false;b.falling=true;b.fallAt=now;b.fallVx=b.vx*.45+p.root.position.x*.35;b.fallVz=b.vz*.45+p.root.position.z*.35;b.vx=0;b.vz=0;sfxCream();document.getElementById('status').textContent=p.name+' foi derrubado da arena!';updateHud()}
   }
   // Colisões entre bolas.
   for(let i=0;i<players.length;i++)for(let j=i+1;j<players.length;j++){

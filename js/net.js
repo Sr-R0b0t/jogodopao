@@ -1,7 +1,7 @@
 /* Multijogador online. O ANFITRIÃO (quem cria a sala) roda o jogo inteiro e envia "fotos" do estado
    ~20x por segundo; os convidados só mostram essas fotos e enviam seus comandos (toque, analógico, mira).
    Vagas sem jogador humano continuam sendo bots (rodam no anfitrião). */
-const net={role:'offline',ws:null,slot:0,code:'',names:[null,null,null,null,null],humans:new Set(),mv:{},
+const net={role:'offline',ws:null,slot:0,code:'',names:Array(specs.length).fill(null),humans:new Set(),mv:{},
  target:null,sm:null,smb:null,lastSnap:0,lastMv:0,lastMvKey:'',bwKey:'',prevTurn:-1,pref:0,hostSlot:0,prevNames:null,flash:new Set()};
 const NET_TICK_MS=50;
 /* Se o jogo estiver hospedado num site estático (Netlify, GitHub Pages...), coloque aqui o endereço
@@ -41,7 +41,7 @@ function netConnect(onOpen){
 }
 function netLeave(silent){
  const ws=net.ws;net.ws=null;if(ws){try{ws.close()}catch(e){}}
- net.role='offline';net.names=[null,null,null,null,null];setPlayerNames();netRenderGrid();net.humans.clear();net.mv={};net.target=null;net.sm=null;net.smb=null;net.prevTurn=-1;net.bwKey='';
+ net.role='offline';net.names=Array(specs.length).fill(null);setPlayerNames();netRenderGrid();net.humans.clear();net.mv={};net.target=null;net.sm=null;net.smb=null;net.prevTurn=-1;net.bwKey='';
  tournamentCharacterLocked=false;
  document.body.classList.remove('net-client');
  document.getElementById('netLobby').hidden=true;
@@ -96,7 +96,7 @@ function netRenderGrid(){
  const g=document.getElementById('netGrid');if(!g)return;
  g.replaceChildren();
  if(net.role==='offline')return; // a escolha só acontece DENTRO da sala
- for(let i=0;i<5;i++){
+ for(let i=0;i<specs.length;i++){
   const owner=net.names[i],mine=i===net.slot,taken=owner&&!mine;
   const b=document.createElement('button');b.type='button';
   b.className='character-card'+(mine?' selected':'')+(taken?' taken':'');
@@ -118,7 +118,7 @@ function netRenderPlayers(){
  const box=document.getElementById('netPlayers');if(!box)return;
  box.replaceChildren();
  const count=net.names.filter(Boolean).length;
- document.getElementById('netCount').textContent='👥 Jogadores na sala ('+count+'/5)';
+ document.getElementById('netCount').textContent='👥 Jogadores na sala ('+count+'/'+specs.length+')';
  net.names.forEach((n,i)=>{
   if(!n)return;
   const row=document.createElement('div');row.className='net-row human'+(i===net.slot?' me':'')+(net.flash.has(n)?' flash':'');

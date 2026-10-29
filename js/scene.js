@@ -1,11 +1,12 @@
 /* Cena Three.js: renderer, câmera, luzes e chão da arena. */
 const host=document.getElementById('scene');
 const ARENA_SCALE=1.25; // tamanho da arena (1 = original)
+const ARENA_EDGE=7.5*ARENA_SCALE; // raio da plataforma (borda)
 /* Celulares: menos pixels e sombras menores = carrega e roda mais leve. */
 const LOW_POWER=matchMedia('(pointer:coarse)').matches||Math.min(innerWidth,innerHeight)<700;
 const scene=new THREE.Scene();
 scene.background=new THREE.Color('#392753');
-scene.fog=new THREE.Fog('#392753',18,40);
+scene.fog=new THREE.Fog('#392753',20,70);
 const camera=new THREE.PerspectiveCamera(42,1,0.1,100);
 camera.position.set(0,10.7,15.5);camera.lookAt(0,0.6,0);
 const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
@@ -23,3 +24,13 @@ const floor=new THREE.Mesh(new THREE.CylinderGeometry(7.5*ARENA_SCALE,7.5*ARENA_
 const rimMesh=new THREE.Mesh(new THREE.TorusGeometry(7.15*ARENA_SCALE,.13,12,100),mat('#d0a5ff',.35));rimMesh.rotation.x=Math.PI/2;rimMesh.position.y=-.08;scene.add(rimMesh);
 const inner=new THREE.Mesh(new THREE.CylinderGeometry(4.8*ARENA_SCALE,4.8*ARENA_SCALE,.06,80),mat('#654487'));inner.position.y=-.08;inner.receiveShadow=true;scene.add(inner);
 for(let i=0;i<24;i++){const a=i/24*Math.PI*2;const dot=new THREE.Mesh(new THREE.SphereGeometry(.07,12,8),mat(i%2?'#ffda70':'#a6f5c8'));dot.position.set(Math.cos(a)*6.7*ARENA_SCALE,.02,Math.sin(a)*6.7*ARENA_SCALE);scene.add(dot)}
+
+/* Câmera: enquadra a arena inteira (inclusive a parte de baixo). Em telas estreitas (celular em pé)
+   afasta mais para caber a largura. O boliche usa a câmera original, focada na pista. */
+function applyCameraPose(){
+ const aspect=host.clientWidth>0&&host.clientHeight>0?host.clientWidth/host.clientHeight:1.76; // tela escondida = proporção padrão
+ if(typeof gameMode!=='undefined'&&gameMode==='bowling'){camera.position.set(0,10.7,15.5);camera.lookAt(0,.6,0);return}
+ const s=Math.max(1,1.45/aspect),tz=3.1,by=13.5,bz=20;
+ camera.position.set(0,by*s,tz+(bz-tz)*s);
+ camera.lookAt(0,0,tz);
+}

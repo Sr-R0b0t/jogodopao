@@ -24,7 +24,7 @@
 
 <section id="screenHome" class="flow-screen home-screen">
   <div class="home-orbit">🍞</div>
-  <div class="kicker">ARENA 3D • 5 COMPETIDORES</div>
+  <div class="kicker">ARENA 3D • 6 COMPETIDORES</div>
   <h1>JOGO DO PÃO</h1>
   <p>Escolha seu personagem, entre na arena e dispute a vitória em minigames divertidos.</p>
   <button id="goCharacters" class="primary-flow-button">▶ INICIAR JOGO</button>
@@ -68,7 +68,7 @@
   <section class="character-select" aria-label="Escolha de personagem">
   <div class="character-head">
     <div><div class="character-eyebrow">Monte sua equipe</div><h2 class="character-title">Escolha seu personagem</h2></div>
-    <div class="character-count">01 / 05 disponíveis</div>
+    <div class="character-count">01 / 06 disponíveis</div>
   </div>
   <div class="character-layout">
     <div class="character-grid" id="characterGrid">
@@ -77,6 +77,7 @@
       <button class="character-card" type="button" data-character="2" aria-pressed="false"><span class="character-avatar character-preview-slot" data-preview="2"></span><span class="character-name">SAPO</span><span class="character-role">Salto poderoso</span></button>
       <button class="character-card" type="button" data-character="3" aria-pressed="false"><span class="character-avatar character-preview-slot" data-preview="3"></span><span class="character-name">PANDA</span><span class="character-role">Forte e tranquilo</span></button>
       <button class="character-card" type="button" data-character="4" aria-pressed="false"><span class="character-avatar character-preview-slot" data-preview="4"></span><span class="character-name">MACACO</span><span class="character-role">Imprevisível</span></button>
+      <button class="character-card" type="button" data-character="5" aria-pressed="false"><span class="character-avatar character-preview-slot" data-preview="5"></span><span class="character-name">DRAGÃO</span><span class="character-role">Bebê valente</span></button>
     </div>
     <aside class="character-preview">
       <div class="preview-avatar" id="previewAvatar"></div>
@@ -86,7 +87,7 @@
     </aside>
   </div>
   <select id="characterChoice" aria-label="Personagem escolhido">
-    <option value="0">Astronauta</option><option value="1">Raposa</option><option value="2">Sapo</option><option value="3">Panda</option><option value="4">Macaco</option>
+    <option value="0">Astronauta</option><option value="1">Raposa</option><option value="2">Sapo</option><option value="3">Panda</option><option value="4">Macaco</option><option value="5">Dragão</option>
   </select>
   </section>
   <div class="flow-actions"><button id="goMinigames" class="primary-flow-button">CONTINUAR PARA MINIGAMES →</button></div>
@@ -101,6 +102,7 @@
       <div class="tag" id="tag2">SAPO<b>0 / 100</b></div>
       <div class="tag" id="tag3">PANDA<b>0 / 100</b></div>
       <div class="tag" id="tag4">MACACO<b>0 / 100</b></div>
+      <div class="tag" id="tag5">DRAGÃO<b>0 / 100</b></div>
     </div>
     <div id="bowlingTopScore" aria-live="polite"></div>
     <div id="bowlingArrowHint"><div class="arrows"><span>⬅</span><span>⬆</span><span>➡</span></div><small>USE AS SETAS PARA SE MOVIMENTAR</small></div>
