@@ -44,7 +44,7 @@ let bowlingAimValue=0,bowlingPowerValue=70; // posição lateral do jogador e fo
 
 function setupBowling(){
  if(bowlingNextTurnTimer){clearInterval(bowlingNextTurnTimer);bowlingNextTurnTimer=null}
- bowlingScores=players.map(()=>0);bowlingTurn=0;bowlingOrder=players.map((p,i)=>i).sort(()=>Math.random()-.5);bowlingBallState=null;
+ bowlingScores=players.map(()=>0);bowlingTurn=0;bowlingOrder=activeIndices().sort(()=>Math.random()-.5);bowlingBallState=null;
  resetBowlingPins();bowlingBall.position.set(0,.55,3.7);bowlingBall.visible=true;bowlingRoot.visible=true;
  bowlingAimValue=0;bowlingPowerValue=70;document.getElementById('bowlingPower').value='70';
  updateBowlingControlValues();updateBowlingHud();applyBowlingVisibility();updateBowlingMoveControls();
@@ -76,7 +76,7 @@ function applyBowlingVisibility(){
  const mc=document.getElementById('bowlingMoveControls');if(mc&&gameMode!=='bowling')mc.classList.remove('show');
  const active=bowlingTurn<bowlingOrder.length?bowlingOrder[bowlingTurn]:-1;
  players.forEach((p,i)=>{p.root.visible=gameMode==='bowling'?(i===active):true});
- document.querySelectorAll('[id^="tag"]').forEach(tag=>tag.style.display=gameMode==='bowling'?'none':'');
+ refreshTags();
  const controls=document.getElementById('bowlingControls');
  if(controls)controls.classList.toggle('show',gameMode==='bowling'&&running&&active===humanIndex&&!bowlingBallState);
 }
@@ -92,9 +92,9 @@ function updateBowlingHud(){
  const el=document.getElementById('bowlingHud');if(!el)return;
  if(gameMode!=='bowling'){el.classList.remove('show');return}
  el.classList.add('show');
- if(bowlingTurn>=bowlingOrder.length){el.innerHTML='🎳 Rodada concluída! '+players.map((p,i)=>p.name+': '+bowlingScores[i]+'/10').join(' • ');return}
+ if(bowlingTurn>=bowlingOrder.length){el.innerHTML='🎳 Rodada concluída! '+players.map((p,i)=>isActive(i)?p.name+': '+bowlingScores[i]+'/10':null).filter(Boolean).join(' • ');return}
  const cur=bowlingOrder[bowlingTurn];
- el.innerHTML='🎳 Jogada '+(bowlingTurn+1)+' de '+players.length+' — vez de <strong>'+players[cur].name+'</strong> · Pinos derrubados: '+bowlingScores[cur]+'/10'+(cur===humanIndex?' · Mira: '+(bowlingAimValue<-.1?'ESQUERDA':bowlingAimValue>.1?'DIREITA':'CENTRO'):'');
+ el.innerHTML='🎳 Jogada '+(bowlingTurn+1)+' de '+bowlingOrder.length+' — vez de <strong>'+players[cur].name+'</strong> · Pinos derrubados: '+bowlingScores[cur]+'/10'+(cur===humanIndex?' · Mira: '+(bowlingAimValue<-.1?'ESQUERDA':bowlingAimValue>.1?'DIREITA':'CENTRO'):'');
 }
 function updateBowlingMoveControls(){
  const el=document.getElementById('bowlingMoveControls');
@@ -227,7 +227,7 @@ function resolveBowlingThrow(now){
 
 /* ---------- Placar do boliche ---------- */
 function showBowlingScoreScreen(winners,max){
- const order=players.map((p,i)=>({name:p.name,index:i,score:tournamentScores[i],pins:bowlingScores[i]})).sort((a,b)=>b.pins-a.pins||b.score-a.score);
+ const order=players.map((p,i)=>({name:p.name,index:i,score:tournamentScores[i],pins:bowlingScores[i]})).filter(o=>isActive(o.index)).sort((a,b)=>b.pins-a.pins||b.score-a.score);
  document.getElementById('scoreOverlayTitle').textContent='🎳 Fim do boliche!';
  document.getElementById('scoreOverlayLead').textContent=winners.length?('Mais pinos: '+winners.map(i=>players[i].name).join(', ')+' ('+max+'/10). Cada vencedor ganha 3 pontos.'):'Ninguém derrubou pinos desta vez. Ninguém pontua!';
  document.getElementById('scoreOverlayContent').innerHTML=`<div class="points-panel"><h3>🏆 Placar do campeonato</h3><div class="points-subtitle">Boliche na Ladeira • Rodada ${roundsPlayed} • Vitória vale 3 pontos</div><table class="points-table"><thead><tr><th>#</th><th>Personagem</th><th>Pinos</th><th>Pontos</th></tr></thead><tbody>${order.map((p,pos)=>`<tr data-slot="${p.index}" class="${pos===0?'current-leader':''}"><td>${pos===0?'🥇':pos===1?'🥈':pos===2?'🥉':pos+1}</td><td>${p.name}${p.index===humanIndex?' <strong class="you" style="color:#8af0b3">(VOCÊ)</strong>':''}${winners.includes(p.index)?' 🏆 +3':''}</td><td>${p.pins}/10</td><td>${p.score}</td></tr>`).join('')}</tbody></table><div class="points-actions"><button id="playNextRound">🎲 SORTEAR E INICIAR PRÓXIMO MINIGAME →</button><button id="resetTournament" class="secondary">↻ Zerar campeonato</button></div></div>`;

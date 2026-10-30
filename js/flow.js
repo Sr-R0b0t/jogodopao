@@ -9,7 +9,10 @@ function showFlowScreen(id){
 }
 document.getElementById('goCharacters').addEventListener('click',()=>showFlowScreen('screenCharacters'));
 document.getElementById('backHome').addEventListener('click',()=>showFlowScreen('screenHome'));
-document.getElementById('goMinigames').addEventListener('click',()=>{reset();showFlowScreen('screenMinigames')});
+document.getElementById('goMinigames').addEventListener('click',()=>{
+ if(!tournamentCharacterLocked)setActivePlayers(pickActive(Number(document.getElementById('playerCount').value)||MAX_PLAYERS,[humanIndex]));
+ reset();showFlowScreen('screenMinigames');
+});
 document.getElementById('backCharacters').addEventListener('click',()=>{
  if(running){running=false;clearBots()}
  reset();

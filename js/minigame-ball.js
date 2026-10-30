@@ -43,7 +43,7 @@ function updateBallMode(now,dt,t){
     const edgeLen=Math.hypot(target.root.position.x,target.root.position.z)||1;
     const aimX=target.root.position.x+target.root.position.x/edgeLen*.9,aimZ=target.root.position.z+target.root.position.z/edgeLen*.9;
     dx=aimX-p.root.position.x;dz=aimZ-p.root.position.z;d=Math.hypot(dx,dz)||1;
-    const aggression=[0,0.82,0.88,0.78,0.85,0.8][i];
+    const aggression=[0,0.82,0.88,0.78,0.85,0.8,0.86,0.84][i];
     const ownR=Math.hypot(p.root.position.x,p.root.position.z);
     let steerX=dx/d,steerZ=dz/d;
     if(ownR>4.7*ARENA_SCALE){const inwardX=-p.root.position.x/(ownR||1),inwardZ=-p.root.position.z/(ownR||1),blend=Math.min(0.9,(ownR-4.7*ARENA_SCALE)/(1.5*ARENA_SCALE));steerX=steerX*(1-blend)+inwardX*blend;steerZ=steerZ*(1-blend)+inwardZ*blend;const sl=Math.hypot(steerX,steerZ)||1;steerX/=sl;steerZ/=sl}

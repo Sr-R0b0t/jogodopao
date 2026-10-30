@@ -15,11 +15,11 @@ function applyMode(){
  const ballMode=gameMode==='ball',bowlingMode=gameMode==='bowling';
  document.getElementById('tap').disabled=!running;
  document.getElementById('tap').textContent=ballMode?'🎯 EMPURRÃO!':bowlingMode?'🎳 JOGAR BOLA!':'👆 CLICAR!';
- document.querySelector('main > p').textContent=ballMode?'Fique em cima da sua bola e derrube os 5 rivais da arena! Último personagem em pé vence. Use WASD ou as setas para se mover.':bowlingMode?'Cada personagem tem um lançamento pela ladeira. Derrube o máximo de pinos; quem derrubar mais vence!':'Chegue a 100 cliques! Quem terminar primeiro joga creme no pão. Quem terminar por último... vai ter que dar a mordida final! 😂';
+ document.querySelector('main > p').textContent=ballMode?'Fique em cima da sua bola e derrube todos os rivais da arena! Último personagem em pé vence. Use WASD ou as setas para se mover.':bowlingMode?'Cada personagem tem um lançamento pela ladeira. Derrube o máximo de pinos; quem derrubar mais vence!':'Chegue a 100 cliques! Quem terminar primeiro joga creme no pão. Quem terminar por último... vai ter que dar a mordida final! 😂';
  document.getElementById('gameNote').textContent=ballMode?'Controles: WASD ou setas para mover; botão EMPURRÃO para dar uma arrancada. Bots tentam empurrar você para fora da arena.':bowlingMode?'Boliche: use as setas (ou os botões) para se posicionar, escolha a força e lance. Acertar nos cantos também derruba pinos.':'Corrida: chegue a 100 cliques. É necessária conexão à internet para carregar a biblioteca 3D.';
- breadRoot.visible=!ballMode&&!bowlingMode;arenaRing.visible=ballMode;bowlingRoot.visible=bowlingMode;balls.forEach(b=>b.mesh.visible=ballMode);
+ breadRoot.visible=!ballMode&&!bowlingMode;arenaRing.visible=ballMode;bowlingRoot.visible=bowlingMode;balls.forEach((b,i)=>b.mesh.visible=ballMode&&isActive(i));
  if(bowlingMode){updateBowlingHud();applyBowlingVisibility()}
- else{document.getElementById('bowlingTopScore').classList.remove('show');document.getElementById('bowlingHud').classList.remove('show');document.getElementById('bowlingControls').classList.remove('show');players.forEach(p=>{p.root.visible=true});document.querySelectorAll('[id^="tag"]').forEach(tag=>tag.style.display='')}
+ else{document.getElementById('bowlingTopScore').classList.remove('show');document.getElementById('bowlingHud').classList.remove('show');document.getElementById('bowlingControls').classList.remove('show');players.forEach(p=>{p.root.visible=p.active!==false});refreshTags()}
  document.getElementById('touchControls').dataset.mode=gameMode;
  applyCameraPose();
  updateHud();
@@ -29,8 +29,8 @@ document.getElementById('gameMode').addEventListener('change',()=>{reset();apply
 function reset(){
  running=false;ended=false;cancelScoreOverlay();stopLastPlayerTimer();clearBots();
  projectiles.forEach(o=>scene.remove(o.mesh));projectiles.length=0;
- balls.forEach((b,i)=>{b.vx=0;b.vz=0;b.alive=true;b.stun=0;b.falling=false;b.fallAt=0;b.fallVx=0;b.fallVz=0;b.mesh.rotation.set(0,0,0);b.mesh.position.set(Math.cos(players[i].angle)*4.2*ARENA_SCALE,.72,Math.sin(players[i].angle)*3.6*ARENA_SCALE);b.mesh.visible=gameMode==='ball'});
- players.forEach(p=>{p.count=0;p.finished=false;p.biting=false;p.throwAt=0;p.root.position.set(Math.cos(p.angle)*(gameMode==='ball'?4.2*ARENA_SCALE:5.2),gameMode==='ball'?.72:0,Math.sin(p.angle)*(gameMode==='ball'?3.6*ARENA_SCALE:4.5));p.root.rotation.set(0,Math.atan2(-p.root.position.x,-p.root.position.z),0);p.root.visible=true;p.rig.position.set(0,0,0);p.rig.rotation.set(0,0,0);p.rig.scale.set(1,1,1);p.legs.forEach(l=>l.rotation.set(0,0,0));p.arms.forEach(a=>a.rotation.set(0,0,0))});
+ balls.forEach((b,i)=>{b.vx=0;b.vz=0;b.alive=isActive(i);b.stun=0;b.falling=false;b.fallAt=0;b.fallVx=0;b.fallVz=0;b.mesh.rotation.set(0,0,0);b.mesh.position.set(Math.cos(players[i].angle)*4.2*ARENA_SCALE,.72,Math.sin(players[i].angle)*3.6*ARENA_SCALE);b.mesh.visible=gameMode==='ball'&&isActive(i)});
+ players.forEach(p=>{p.count=0;p.finished=false;p.biting=false;p.throwAt=0;p.root.position.set(Math.cos(p.angle)*(gameMode==='ball'?4.2*ARENA_SCALE:5.2),gameMode==='ball'?.72:0,Math.sin(p.angle)*(gameMode==='ball'?3.6*ARENA_SCALE:4.5));p.root.rotation.set(0,Math.atan2(-p.root.position.x,-p.root.position.z),0);p.root.visible=p.active!==false;p.rig.position.set(0,0,0);p.rig.rotation.set(0,0,0);p.rig.scale.set(1,1,1);p.legs.forEach(l=>l.rotation.set(0,0,0));p.arms.forEach(a=>a.rotation.set(0,0,0))});
  [...breadRoot.children].slice(5).forEach(c=>breadRoot.remove(c)); // remove cremes
  breadRoot.scale.set(1,1,1);breadRoot.rotation.set(0,0,0);
  document.getElementById('status').textContent=gameMode==='ball'?'Prepare-se! Derrube os rivais da arena!':'Prepare-se para a batalha pelo pão!';
@@ -48,7 +48,7 @@ function start(){
  document.getElementById('characterChoice').disabled=true;document.getElementById('gameMode').disabled=true;
  document.getElementById('status').textContent='VALENDO! Clique sem parar!';
  if(gameMode==='bowling'){setupBowling();startBowlingTurn()}
- else players.filter((p,i)=>!isHumanSlot(i)).forEach((p,i)=>botTimers.push(setTimeout(()=>botTick(p),p.delay+i*45)));
+ else players.filter((p,i)=>!isHumanSlot(i)&&isActive(i)).forEach((p,i)=>botTimers.push(setTimeout(()=>botTick(p),p.delay+i*45)));
 }
 
 /* Botão principal (CLICAR / EMPURRÃO / LANÇAR) */

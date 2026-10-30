@@ -45,9 +45,9 @@ function showScoreScreen(winnerIndex,modeLabel,headline,lead){
  });
 }
 function finishAll(){
- if(ended||!players.every(p=>p.count>=100))return;
+ if(ended||!activePlayers().every(p=>p.count>=100))return;
  ended=true;running=false;clearBots();stopLastPlayerTimer();
- const loser=players.reduce((a,p)=>p.throwAt>a.throwAt?p:a,players[0]);
+ const ap=activePlayers(),loser=ap.reduce((a,p)=>p.throwAt>a.throwAt?p:a,ap[0]);
  document.getElementById('status').textContent='O perdedor vai dar a mordida final! 😬';
  if(audioEnabled){[784,659,523,392].forEach((f,i)=>tone(f,.22,'triangle',.09,i*.12));setTimeout(()=>{if(audioEnabled)sfxBite()},650)}
  const winnerIndex=players.reduce((best,p,i)=>p.throwAt>0&&(best<0||p.throwAt<players[best].throwAt)?i:best,-1);
@@ -58,7 +58,7 @@ function finishAll(){
 }
 function beginLastPlayerTimer(){
  if(gameMode!=='bread'||ended||lastPlayerTimerId||!running)return;
- const unfinished=players.filter(p=>p.count<100);
+ const unfinished=activePlayers().filter(p=>p.count<100);
  if(unfinished.length!==1)return;
  const last=unfinished[0];
  lastPlayerDeadline=Date.now()+30000;
@@ -79,7 +79,7 @@ function beginLastPlayerTimer(){
   showScoreScreen(winnerIndex,'Corrida do Pão','⏱️ Tempo esgotado!',`${last.name} não concluiu os 100 cliques em 30 segundos.`);
  },30000);
 }
-function finish(p){if(p.finished)return;p.count=100;throwCream(p);addCream();updateHud();if(players.every(x=>x.count>=100))finishAll();else beginLastPlayerTimer()}
+function finish(p){if(p.finished)return;p.count=100;throwCream(p);addCream();updateHud();if(activePlayers().every(x=>x.count>=100))finishAll();else beginLastPlayerTimer()}
 function botTick(p){
  if(!running||p.count>=100)return;
  p.count=Math.min(100,p.count+1);if(p.count%10===0)sfxClick();updateHud();

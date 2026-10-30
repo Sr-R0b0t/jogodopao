@@ -24,7 +24,7 @@
 
 <section id="screenHome" class="flow-screen home-screen">
   <div class="home-orbit">🍞</div>
-  <div class="kicker">ARENA 3D • 6 COMPETIDORES</div>
+  <div class="kicker">ARENA 3D • ATÉ 8 COMPETIDORES</div>
   <h1>JOGO DO PÃO</h1>
   <p>Escolha seu personagem, entre na arena e dispute a vitória em minigames divertidos.</p>
   <button id="goCharacters" class="primary-flow-button">▶ INICIAR JOGO</button>
@@ -54,6 +54,9 @@
       <div class="character-grid net-grid" id="netGrid"></div>
       <p class="net-hint">Vagas sem jogador viram bots 🤖. Espere todos entrarem e escolherem o personagem antes de iniciar.</p>
       <button id="netStart" class="primary-flow-button">▶ INICIAR PARTIDA</button>
+      <label id="netCountBox" style="display:none">👥 Jogadores na partida (o restante vira bot)
+        <select id="netPlayerCount"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8" selected>8</option></select>
+      </label>
       <div id="netWait" style="display:none">⏳ Aguardando o anfitrião iniciar…</div>
     </div>
   </div>
@@ -68,7 +71,7 @@
   <section class="character-select" aria-label="Escolha de personagem">
   <div class="character-head">
     <div><div class="character-eyebrow">Monte sua equipe</div><h2 class="character-title">Escolha seu personagem</h2></div>
-    <div class="character-count">01 / 06 disponíveis</div>
+    <div class="character-count">01 / 08 disponíveis</div>
   </div>
   <div class="character-layout">
     <div class="character-grid" id="characterGrid">
@@ -78,6 +81,8 @@
       <button class="character-card" type="button" data-character="3" aria-pressed="false"><span class="character-avatar character-preview-slot" data-preview="3"></span><span class="character-name">PANDA</span><span class="character-role">Forte e tranquilo</span></button>
       <button class="character-card" type="button" data-character="4" aria-pressed="false"><span class="character-avatar character-preview-slot" data-preview="4"></span><span class="character-name">MACACO</span><span class="character-role">Imprevisível</span></button>
       <button class="character-card" type="button" data-character="5" aria-pressed="false"><span class="character-avatar character-preview-slot" data-preview="5"></span><span class="character-name">DRAGÃO</span><span class="character-role">Bebê valente</span></button>
+      <button class="character-card" type="button" data-character="6" aria-pressed="false"><span class="character-avatar character-preview-slot" data-preview="6"></span><span class="character-name">FABOLA</span><span class="character-role">Estiloso</span></button>
+      <button class="character-card" type="button" data-character="7" aria-pressed="false"><span class="character-avatar character-preview-slot" data-preview="7"></span><span class="character-name">LUANA</span><span class="character-role">Princesa</span></button>
     </div>
     <aside class="character-preview">
       <div class="preview-avatar" id="previewAvatar"></div>
@@ -87,9 +92,12 @@
     </aside>
   </div>
   <select id="characterChoice" aria-label="Personagem escolhido">
-    <option value="0">Astronauta</option><option value="1">Raposa</option><option value="2">Sapo</option><option value="3">Panda</option><option value="4">Macaco</option><option value="5">Dragão</option>
+    <option value="0">Astronauta</option><option value="1">Raposa</option><option value="2">Sapo</option><option value="3">Panda</option><option value="4">Macaco</option><option value="5">Dragão</option><option value="6">Fabola</option><option value="7">Princesa Luana</option>
   </select>
   </section>
+  <div class="player-count-box"><label for="playerCount">👥 Quantidade de jogadores</label>
+    <select id="playerCount"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8" selected>8</option></select>
+    <small>você + bots</small></div>
   <div class="flow-actions"><button id="goMinigames" class="primary-flow-button">CONTINUAR PARA MINIGAMES →</button></div>
 </section>
 
@@ -103,6 +111,8 @@
       <div class="tag" id="tag3">PANDA<b>0 / 100</b></div>
       <div class="tag" id="tag4">MACACO<b>0 / 100</b></div>
       <div class="tag" id="tag5">DRAGÃO<b>0 / 100</b></div>
+      <div class="tag" id="tag6">FABOLA<b>0 / 100</b></div>
+      <div class="tag" id="tag7">LUANA<b>0 / 100</b></div>
     </div>
     <div id="bowlingTopScore" aria-live="polite"></div>
     <div id="bowlingArrowHint"><div class="arrows"><span>⬅</span><span>⬆</span><span>➡</span></div><small>USE AS SETAS PARA SE MOVIMENTAR</small></div>

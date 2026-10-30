@@ -1,5 +1,5 @@
 /* Placar do campeonato (vitória = 3 pontos) e botões do overlay de resultado. */
-const tournamentScores=[0,0,0,0,0,0];
+const tournamentScores=[0,0,0,0,0,0,0,0];
 let roundsPlayed=0;
 let tournamentCharacterLocked=false;
 /* Atraso entre o fim da partida e a exibição do placar (ms). */
@@ -10,7 +10,7 @@ function scheduleScoreOverlay(fn){cancelScoreOverlay();scoreOverlayTimer=setTime
 function buildScoreboard(winnerIndex,modeLabel){
  roundsPlayed++;
  if(winnerIndex>=0&&winnerIndex<tournamentScores.length)tournamentScores[winnerIndex]+=3;
- const order=players.map((p,i)=>({name:p.name,index:i,score:tournamentScores[i],isUser:i===humanIndex})).sort((a,b)=>b.score-a.score||Number(b.isUser)-Number(a.isUser)||a.index-b.index);
+ const order=players.map((p,i)=>({name:p.name,index:i,score:tournamentScores[i],isUser:i===humanIndex})).filter(o=>isActive(o.index)).sort((a,b)=>b.score-a.score||Number(b.isUser)-Number(a.isUser)||a.index-b.index);
  return `<div class="points-panel"><h3>🏆 Placar do campeonato</h3><div class="points-subtitle">${modeLabel} • Rodada ${roundsPlayed} • Vitória vale 3 pontos</div><table class="points-table"><thead><tr><th>#</th><th>Personagem</th><th>Pontos</th></tr></thead><tbody>${order.map((p,pos)=>`<tr data-slot="${p.index}" class="${pos===0?'current-leader':''}"><td>${pos===0?'🥇':pos===1?'🥈':pos===2?'🥉':pos+1}</td><td>${p.name}${p.isUser?' <strong class="you" style="color:#8af0b3"> (VOCÊ)</strong>':''}${p.index===winnerIndex?' 🏆 +3':''}</td><td>${p.score}</td></tr>`).join('')}</tbody></table><div class="points-actions"><button id="playNextRound">🎲 SORTEAR E INICIAR PRÓXIMO MINIGAME →</button><button id="resetTournament" class="secondary">↻ Zerar campeonato</button></div></div>`;
 }
 function wireScoreboardActions(){

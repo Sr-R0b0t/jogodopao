@@ -8,8 +8,8 @@ function makeSelfLabelSprite(){
   const c=document.createElement('canvas');c.width=256;c.height=96;
   const g=c.getContext&&c.getContext('2d');if(!g)return null;
   g.font='900 54px system-ui,sans-serif';g.textAlign='center';g.textBaseline='middle';
-  g.lineWidth=10;g.lineJoin='round';g.strokeStyle='#153221';g.strokeText('',128,50);
-  g.fillStyle='#62ff9a';g.fillText('',128,50);
+  g.lineWidth=10;g.lineJoin='round';g.strokeStyle='#153221';g.strokeText('VOCÊ',128,50);
+  g.fillStyle='#62ff9a';g.fillText('VOCÊ',128,50);
   const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;
   const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,depthTest:false,transparent:true}));
   sp.scale.set(1.5,.56,1);sp.renderOrder=10;return sp;
@@ -27,12 +27,13 @@ const selfMarkers=players.map(p=>{
   const m=new THREE.Mesh(o.geometry,selfOutlineMat);
   m.scale.setScalar(1.14);m.userData.isOutline=true;m.visible=false;o.add(m);return m;
  });
+ const so=p.root.userData.spriteOutline;if(so)outlines.push(so); // sprites têm contorno pronto
  // Seta que balança acima da cabeça.
  const arrow=new THREE.Group();arrow.userData.isSelfMark=true;arrow.visible=false;
  const cone=new THREE.Mesh(new THREE.ConeGeometry(.24,.45,16),selfArrowMat);cone.rotation.x=Math.PI;arrow.add(cone);
  const label=makeSelfLabelSprite();if(label){label.position.y=.62;arrow.add(label)}
- arrow.position.y=2.35;p.root.add(arrow);
- return {outlines,arrow,setVisible(v){outlines.forEach(m=>m.visible=v);arrow.visible=v}};
+ const baseY=p.root.userData.markY||2.35;arrow.position.y=baseY;p.root.add(arrow);
+ return {outlines,arrow,baseY,setVisible(v){outlines.forEach(m=>m.visible=v);arrow.visible=v}};
 });
 let selfMarkerFor=-1;
 function updateSelfMarker(t){
@@ -41,5 +42,5 @@ function updateSelfMarker(t){
   selfMarkerFor=humanIndex;
  }
  const m=selfMarkers[humanIndex];
- if(m)m.arrow.position.y=2.35+Math.sin(t*4)*.12;
+ if(m)m.arrow.position.y=m.baseY+Math.sin(t*4)*.12;
 }

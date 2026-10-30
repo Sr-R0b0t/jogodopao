@@ -6,7 +6,7 @@ const net={role:'offline',ws:null,slot:0,code:'',names:Array(specs.length).fill(
 const NET_TICK_MS=50;
 /* Se o jogo estiver hospedado num site estático (Netlify, GitHub Pages...), coloque aqui o endereço
    do servidor online (ex.: 'jogo-do-pao.onrender.com'). Deixe vazio se o servidor serve o próprio jogo. */
-const DEFAULT_SERVER='jogodopao.onrender.com';
+const DEFAULT_SERVER='';
 const r2=v=>Math.round(v*100)/100,clamp1=v=>Math.max(-1,Math.min(1,Number(v)||0));
 function isHumanSlot(i){return i===humanIndex||net.humans.has(i)}
 
@@ -60,7 +60,9 @@ document.getElementById('netStart').addEventListener('click',()=>{
  if(net.role!=='host')return;
  net.humans=new Set(net.names.map((n,i)=>n&&i!==net.slot?i:-1).filter(i=>i>=0));
  humanIndex=net.slot;tournamentCharacterLocked=true;setPlayerNames();
- netSendRaw({t:'lock'});netBroadcast({k:'begin'});
+ const act=pickActive(Number(document.getElementById('netPlayerCount').value)||MAX_PLAYERS,net.names.map((n,i)=>n?i:-1).filter(i=>i>=0));
+ setActivePlayers(act);
+ netSendRaw({t:'lock'});netBroadcast({k:'begin',act});
  reset();showFlowScreen('screenMinigames');
 });
 // Nome salvo no aparelho
@@ -78,6 +80,7 @@ function netOnMessage(m){
    document.getElementById('netName').disabled=true;net.prevNames=null;
    document.getElementById('netCodeShow').textContent=m.code;
    document.getElementById('netStart').style.display=m.host?'':'none';
+   document.getElementById('netCountBox').style.display=m.host?'':'none';
    document.getElementById('netWait').style.display=m.host?'none':'';
    netSetStatus('');break;
   case 'lobby':netOnLobby(m);break;
@@ -193,7 +196,7 @@ function netClientMsg(d){
  if(!d)return;
  switch(d.k){
   case 'begin':
-   humanIndex=net.slot;tournamentCharacterLocked=true;document.body.classList.add('net-client');setPlayerNames();
+   humanIndex=net.slot;tournamentCharacterLocked=true;document.body.classList.add('net-client');setPlayerNames();if(d.act)setActivePlayers(d.act);
    reset();showFlowScreen('screenMinigames');
    document.getElementById('status').textContent='Aguardando o anfitrião iniciar a partida…';break;
   case 'start':

@@ -42,7 +42,9 @@ const characterProfiles=[
  {name:'Sapo',emoji:'🐸',description:'Saltitante e imprevisível na batalha pela vitória.'},
  {name:'Panda',emoji:'🐼',description:'Calmo por fora, competitivo quando a partida começa.'},
  {name:'Macaco',emoji:'🐵',description:'Cheio de energia e pronto para bagunçar a arena.'},
- {name:'Bebê Dragão',emoji:'🐲',description:'Pequeno, valente e cheio de fogo. Um bebê dragão pronto para a briga.'}
+ {name:'Dragão',emoji:'🐲',description:'Pequeno, valente e cheio de fogo. Um bebê dragão pronto para a briga.'},
+ {name:'Fabola',emoji:'🧔',description:'Estiloso, de bigode e cavanhaque. Chega na arena com muita presença.'},
+ {name:'Princesa Luana',emoji:'👸',description:'Elegante e cheia de charme, a princesa de vestido vermelho brilha na arena.'}
 ];
 function updateFeaturedCharacterPreview(index){
  const featured=document.getElementById('previewAvatar');
