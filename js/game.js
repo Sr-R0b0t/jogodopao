@@ -121,6 +121,7 @@ function animate(now){
 
  updateBallMode(now,dt,t);
  updateTouchControls(dt);
+ players.forEach((p,i)=>{if(p.glb)animateGlbPlayer(p,i,dt)});
  updateSelfMarker(t);
  if(net.role==='client')netClientFrame(dt,now);else netHostFrame(now);
  breadRoot.rotation.y=Math.sin(t*.9)*.08;

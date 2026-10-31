@@ -12,7 +12,7 @@ function renderPreviewImages(){
  sc.add(new THREE.HemisphereLight(0xffefff,0x514064,2.3));
  const light=new THREE.DirectionalLight(0xffffff,2.7);light.position.set(-3,5,5);sc.add(light);
  players.forEach((pl,i)=>{
-  const model=pl.root.clone(true);model.traverse(o=>{if(o.userData&&(o.userData.isOutline||o.userData.isSelfMark))o.visible=false});model.position.set(0,-0.9,0);
+  const model=(typeof SkeletonUtils!=='undefined'?SkeletonUtils.clone(pl.root):pl.root.clone(true));model.traverse(o=>{if(o.userData&&(o.userData.isOutline||o.userData.isSelfMark))o.visible=false});model.position.set(0,-0.9,0);
   model.rotation.set(0,0,0);sc.add(model);
   [[false,112,112,.34],[true,224,236,.78]].forEach(([featured,W,H,scale])=>{
    model.scale.setScalar(scale);
@@ -26,8 +26,8 @@ function renderPreviewImages(){
 }
 function ensurePreviews(){
  if(previewsReady)return;previewsReady=true;
- renderPreviewImages();initializeCharacterPreviews();updateFeaturedCharacterPreview(humanIndex);
- netRenderGrid();
+ const run=()=>{renderPreviewImages();initializeCharacterPreviews();updateFeaturedCharacterPreview(humanIndex);netRenderGrid()};
+ if(typeof glbReady!=='undefined'&&glbReady.length)Promise.all(glbReady).then(run);else run(); // espera os modelos .glb
 }
 function setPreviewImage(container,i,featured){
  const img=new Image();img.alt='';img.decoding='async';img.src=previewCache[i+(featured?'f':'s')]||'';
