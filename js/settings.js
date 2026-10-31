@@ -5,7 +5,7 @@
  music.checked=musicEnabled;sfx.checked=audioEnabled;
  document.getElementById('settingsBtn').addEventListener('click',()=>{
   music.checked=musicEnabled;sfx.checked=audioEnabled;
-  leave.style.display=(typeof net!=='undefined'&&net.role!=='offline')?'':'none';
+  leave.style.display=document.getElementById('screenMinigames').style.display!=='none'?'':'none';
   modal.classList.add('show');
  });
  const close=()=>modal.classList.remove('show');
@@ -20,5 +20,8 @@
   audioEnabled=sfx.checked;saveSettings();
   if(audioEnabled){ensureAudio();tone(660,.08,'triangle',.08)}
  });
- leave.addEventListener('click',()=>{close();netLeave();reset();showFlowScreen('screenHome')});
+ leave.addEventListener('click',()=>{
+  close();netLeave();tournamentScores.fill(0);roundsPlayed=0;tournamentCharacterLocked=false;resetMinigameBag();
+  document.getElementById('scoreOverlay').classList.remove('show');reset();showFlowScreen('screenHome');
+ });
 })();

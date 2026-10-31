@@ -6,7 +6,7 @@ const net={role:'offline',ws:null,slot:0,code:'',names:Array(specs.length).fill(
 const NET_TICK_MS=50;
 /* Se o jogo estiver hospedado num site estático (Netlify, GitHub Pages...), coloque aqui o endereço
    do servidor online (ex.: 'jogo-do-pao.onrender.com'). Deixe vazio se o servidor serve o próprio jogo. */
-const DEFAULT_SERVER='';
+const DEFAULT_SERVER='jogodopao.onrender.com';
 const r2=v=>Math.round(v*100)/100,clamp1=v=>Math.max(-1,Math.min(1,Number(v)||0));
 function isHumanSlot(i){return i===humanIndex||net.humans.has(i)}
 
@@ -63,7 +63,7 @@ document.getElementById('netStart').addEventListener('click',()=>{
  const act=pickActive(Number(document.getElementById('netPlayerCount').value)||MAX_PLAYERS,net.names.map((n,i)=>n?i:-1).filter(i=>i>=0));
  setActivePlayers(act);
  netSendRaw({t:'lock'});netBroadcast({k:'begin',act});
- reset();showFlowScreen('screenMinigames');
+ resetMinigameBag();startRound(); // sorteia o primeiro minigame
 });
 // Nome salvo no aparelho
 try{document.getElementById('netName').value=localStorage.getItem('jogoDoPao.name')||''}catch(e){}
@@ -159,7 +159,6 @@ function netHostInput(slot,d){
  if(d.k==='tap'){
   if(!running)return;
   if(gameMode==='bread'){const p=players[slot];if(p.count<100){p.count++;updateHud();if(p.count>=100)finish(p)}}
-  else if(gameMode==='ball'){if(balls[slot].alive)ballPush(slot)}
   else if(gameMode==='bowling'&&bowlingOrder[bowlingTurn]===slot)remoteBowlThrow(slot,d.aim,d.pow);
  }else if(d.k==='mv')net.mv[slot]={x:clamp1(d.x),y:clamp1(d.y)};
  else if(d.k==='aim')remoteBowlAim(slot,d.v);
@@ -202,6 +201,7 @@ function netClientMsg(d){
   case 'start':
    document.getElementById('scoreOverlay').classList.remove('show');
    document.getElementById('gameMode').value=d.mode;reset();running=true;ended=false;net.bwKey='';net.prevTurn=-1;netClientUI();break;
+  case 'banner':showRoundBanner(d.title,d.sub);document.getElementById('roundLabel').textContent=d.label;break;
   case 'ovhide':document.getElementById('scoreOverlay').classList.remove('show');break;
   case 'overlay':netShowOverlay(d);break;
   case 'snap':netApplySnap(d);break;

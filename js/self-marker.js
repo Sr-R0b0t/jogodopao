@@ -8,8 +8,8 @@ function makeSelfLabelSprite(){
   const c=document.createElement('canvas');c.width=256;c.height=96;
   const g=c.getContext&&c.getContext('2d');if(!g)return null;
   g.font='900 54px system-ui,sans-serif';g.textAlign='center';g.textBaseline='middle';
-  g.lineWidth=10;g.lineJoin='round';g.strokeStyle='#153221';g.strokeText('VOCÊ',128,50);
-  g.fillStyle='#62ff9a';g.fillText('VOCÊ',128,50);
+  g.lineWidth=10;g.lineJoin='round';g.strokeStyle='#153221';g.strokeText('',128,50);
+  g.fillStyle='#62ff9a';g.fillText('',128,50);
   const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;
   const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,depthTest:false,transparent:true}));
   sp.scale.set(1.5,.56,1);sp.renderOrder=10;return sp;

@@ -11,12 +11,7 @@ document.getElementById('goCharacters').addEventListener('click',()=>showFlowScr
 document.getElementById('backHome').addEventListener('click',()=>showFlowScreen('screenHome'));
 document.getElementById('goMinigames').addEventListener('click',()=>{
  if(!tournamentCharacterLocked)setActivePlayers(pickActive(Number(document.getElementById('playerCount').value)||MAX_PLAYERS,[humanIndex]));
- reset();showFlowScreen('screenMinigames');
-});
-document.getElementById('backCharacters').addEventListener('click',()=>{
- if(running){running=false;clearBots()}
- reset();
- showFlowScreen('screenCharacters');
+ resetMinigameBag();startRound(); // vai direto para um minigame sorteado
 });
 document.getElementById('goOnline').addEventListener('click',()=>showFlowScreen('screenOnline'));
 document.getElementById('backHomeOnline').addEventListener('click',()=>{netLeave();showFlowScreen('screenHome')});

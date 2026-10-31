@@ -14,9 +14,10 @@ function applyMode(){
  gameMode=document.getElementById('gameMode').value;
  const ballMode=gameMode==='ball',bowlingMode=gameMode==='bowling';
  document.getElementById('tap').disabled=!running;
+ document.getElementById('tap').style.display=ballMode?'none':'';
  document.getElementById('tap').textContent=ballMode?'🎯 EMPURRÃO!':bowlingMode?'🎳 JOGAR BOLA!':'👆 CLICAR!';
- document.querySelector('main > p').textContent=ballMode?'Fique em cima da sua bola e derrube todos os rivais da arena! Último personagem em pé vence. Use WASD ou as setas para se mover.':bowlingMode?'Cada personagem tem um lançamento pela ladeira. Derrube o máximo de pinos; quem derrubar mais vence!':'Chegue a 100 cliques! Quem terminar primeiro joga creme no pão. Quem terminar por último... vai ter que dar a mordida final! 😂';
- document.getElementById('gameNote').textContent=ballMode?'Controles: WASD ou setas para mover; botão EMPURRÃO para dar uma arrancada. Bots tentam empurrar você para fora da arena.':bowlingMode?'Boliche: use as setas (ou os botões) para se posicionar, escolha a força e lance. Acertar nos cantos também derruba pinos.':'Corrida: chegue a 100 cliques. É necessária conexão à internet para carregar a biblioteca 3D.';
+ document.querySelector('main > p').textContent=ballMode?'Fique em cima da sua bola e derrube todos os rivais da arena! Último personagem em pé vence. Pegue velocidade e bata nos rivais!':bowlingMode?'Cada personagem tem um lançamento pela ladeira. Derrube o máximo de pinos; quem derrubar mais vence!':'Chegue a 100 cliques! Quem terminar primeiro joga creme no pão. Quem terminar por último... vai ter que dar a mordida final! 😂';
+ document.getElementById('gameNote').textContent=ballMode?'Controles: WASD, setas ou o analógico. Quanto mais distância você pega, mais rápido fica — e mais forte é a batida!':bowlingMode?'Boliche: use as setas (ou os botões) para se posicionar, escolha a força e lance. Acertar nos cantos também derruba pinos.':'Corrida: chegue a 100 cliques. É necessária conexão à internet para carregar a biblioteca 3D.';
  breadRoot.visible=!ballMode&&!bowlingMode;arenaRing.visible=ballMode;bowlingRoot.visible=bowlingMode;balls.forEach((b,i)=>b.mesh.visible=ballMode&&isActive(i));
  if(bowlingMode){updateBowlingHud();applyBowlingVisibility()}
  else{document.getElementById('bowlingTopScore').classList.remove('show');document.getElementById('bowlingHud').classList.remove('show');document.getElementById('bowlingControls').classList.remove('show');players.forEach(p=>{p.root.visible=p.active!==false});refreshTags()}
@@ -54,16 +55,16 @@ function start(){
 /* Botão principal (CLICAR / EMPURRÃO / LANÇAR) */
 document.getElementById('tap').addEventListener('click',()=>{
  if(!running)return;
+ if(gameMode==='ball')return; // Batalha das Bolas: só direção (sem botão de empurrão)
  if(net.role==='client'){sfxClick();netSendInput({k:'tap',aim:r2(bowlingAimValue),pow:bowlingPowerValue});return}
  if(gameMode==='bowling'){throwBowlingBall(humanIndex);return}
- if(gameMode==='ball'){ballPush(humanIndex);sfxClick();return}
  if(players[humanIndex].count>=100)return;
  players[humanIndex].count++;sfxClick();updateHud();
  if(players[humanIndex].count>=100)finish(players[humanIndex]);
 });
 document.getElementById('start').addEventListener('click',start);
-document.getElementById('reset').addEventListener('click',reset);
-document.addEventListener('keydown',e=>{if((e.code==='Space'||e.code==='Enter')&&running){e.preventDefault();document.getElementById('tap').click()}});
+document.getElementById('reset').addEventListener('click',()=>{clearTimeout(roundTimer);reset();setTimeout(()=>{if(!running)start()},400)}); // reinicia o mesmo minigame
+document.addEventListener('keydown',e=>{if((e.code==='Space'||e.code==='Enter')&&running&&gameMode!=='ball'){e.preventDefault();document.getElementById('tap').click()}});
 
 /* Loop de animação */
 function animate(now){

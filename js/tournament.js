@@ -20,25 +20,13 @@ function wireScoreboardActions(){
   document.getElementById('result').classList.remove('show');
   document.getElementById('result').innerHTML='';
   netBroadcast({k:'ovhide'});
-  const modes=['bread','ball','bowling'];const nextMode=modes[Math.floor(Math.random()*modes.length)];
-  document.getElementById('gameMode').value=nextMode;
-  gameMode=nextMode;
-  applyMode();
-  reset();
-  showFlowScreen('screenMinigames');
-  document.getElementById('gameMode').disabled=true;
-  document.getElementById('characterChoice').disabled=tournamentCharacterLocked;
-  document.getElementById('status').textContent='🎲 Próximo minigame sorteado: '+(nextMode==='bread'?'Corrida do Pão':nextMode==='ball'?'Batalha das Bolas':'Boliche na Ladeira')+'!';
-  document.getElementById('start').disabled=false;
-  setTimeout(()=>{if(!running&&!ended&&!document.getElementById('scoreOverlay').classList.contains('show'))start()},900);
+  startRound(); // sorteia o próximo minigame (sem repetir até todos terem sido jogados)
  });
  const clear=document.getElementById('resetTournament');
  if(clear)clear.addEventListener('click',()=>{
   netBroadcast({k:'ovhide'});
-  tournamentScores.fill(0);roundsPlayed=0;tournamentCharacterLocked=false;document.getElementById('scoreOverlay').classList.remove('show');document.getElementById('characterChoice').disabled=false;reset();applyMode();
+  tournamentScores.fill(0);roundsPlayed=0;document.getElementById('scoreOverlay').classList.remove('show');
   document.getElementById('result').classList.remove('show');document.getElementById('result').innerHTML='';
-  document.getElementById('gameMode').disabled=false;document.getElementById('characterChoice').disabled=false;document.getElementById('start').disabled=false;
-  showFlowScreen('screenMinigames');
-  document.getElementById('status').textContent='Campeonato zerado. Escolha o minigame para começar!';
+  resetMinigameBag();startRound();
  });
 }

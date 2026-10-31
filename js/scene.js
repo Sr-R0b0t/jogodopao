@@ -30,7 +30,9 @@ for(let i=0;i<24;i++){const a=i/24*Math.PI*2;const dot=new THREE.Mesh(new THREE.
 function applyCameraPose(){
  const aspect=host.clientWidth>0&&host.clientHeight>0?host.clientWidth/host.clientHeight:1.76; // tela escondida = proporção padrão
  if(typeof gameMode!=='undefined'&&gameMode==='bowling'){camera.position.set(0,10.7,15.5);camera.lookAt(0,.6,0);return}
- const s=Math.max(1,1.45/aspect),tz=3.1,by=13.5,bz=20;
+ const tz=3.1,by=13.5,bz=20,baseDist=Math.hypot(by,bz-tz);
+ // distância mínima para a arena caber na largura (hFOV = vFOV*aspect), com 8% de folga
+ const need=ARENA_EDGE*1.08/(Math.tan(21*Math.PI/180)*aspect),s=Math.max(1,need/baseDist);
  camera.position.set(0,by*s,tz+(bz-tz)*s);
  camera.lookAt(0,0,tz);
 }

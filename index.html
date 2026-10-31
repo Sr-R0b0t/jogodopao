@@ -17,7 +17,7 @@
     <h2 id="settingsTitle">⚙️ Configurações</h2>
     <label class="setting-row"><span>🎵 Música</span><input type="checkbox" id="optMusic" checked></label>
     <label class="setting-row"><span>🔊 Efeitos sonoros</span><input type="checkbox" id="optSfx" checked></label>
-    <button id="leaveRoom" class="secondary-btn" style="display:none">🚪 Sair da sala online</button>
+    <button id="leaveRoom" class="secondary-btn" style="display:none">🏠 Voltar ao menu (encerra a partida)</button>
     <button id="closeSettings" class="primary-flow-button">FECHAR</button>
   </div>
 </div>
@@ -103,7 +103,7 @@
 </section>
 
 <section id="screenMinigames" class="flow-screen" style="display:none">
-  <div class="flow-top"><button class="back-flow-button" id="backCharacters">← Personagens</button><span>ETAPA 2 DE 2 • MINIGAME</span></div>
+  <div class="flow-top" style="justify-content:center"><span id="roundLabel">🎲 MINIGAME</span></div>
   <div id="scene">
     <div class="hud">
       <div class="tag" id="tag0">ASTRONAUTA<b>0 / 100</b></div>
@@ -115,6 +115,7 @@
       <div class="tag" id="tag6">FABOLA<b>0 / 100</b></div>
       <div class="tag" id="tag7">LUANA<b>0 / 100</b></div>
     </div>
+    <div id="roundBanner" aria-live="polite"></div>
     <div id="bowlingTopScore" aria-live="polite"></div>
     <div id="bowlingArrowHint"><div class="arrows"><span>⬅</span><span>⬆</span><span>➡</span></div><small>USE AS SETAS PARA SE MOVIMENTAR</small></div>
 
@@ -139,7 +140,7 @@
     <p>Mova o personagem com as setas ou botões, escolha a força e lance. A direção é definida pela posição diante dos pinos.</p>
   </div>
 
-  <div class="controls" style="margin-bottom:10px">
+  <div class="controls" style="display:none">
     <label for="gameMode" style="align-self:center;font-weight:900">🎮 MINIGAME</label>
     <select id="gameMode" style="border:2px solid #a78bca;border-radius:12px;padding:10px 14px;background:#2a1b43;color:#fff;font-weight:900;font-size:.95rem">
       <option value="bread">🍞 Corrida do Pão</option>

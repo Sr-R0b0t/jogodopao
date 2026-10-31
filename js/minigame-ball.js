@@ -47,8 +47,8 @@ function updateBallMode(now,dt,t){
     const ownR=Math.hypot(p.root.position.x,p.root.position.z);
     let steerX=dx/d,steerZ=dz/d;
     if(ownR>4.7*ARENA_SCALE){const inwardX=-p.root.position.x/(ownR||1),inwardZ=-p.root.position.z/(ownR||1),blend=Math.min(0.9,(ownR-4.7*ARENA_SCALE)/(1.5*ARENA_SCALE));steerX=steerX*(1-blend)+inwardX*blend;steerZ=steerZ*(1-blend)+inwardZ*blend;const sl=Math.hypot(steerX,steerZ)||1;steerX/=sl;steerZ/=sl}
-    b.vx+=steerX*3.0*aggression*dt;b.vz+=steerZ*3.0*aggression*dt;p.root.rotation.y=Math.atan2(steerX,steerZ);
-    if(best<1.9){b.vx+=steerX*0.8*dt;b.vz+=steerZ*0.8*dt}
+    b.vx+=steerX*6.0*aggression*dt;b.vz+=steerZ*6.0*aggression*dt;p.root.rotation.y=Math.atan2(steerX,steerZ);
+    if(best<1.9){b.vx+=steerX*1.6*dt;b.vz+=steerZ*1.6*dt}
    }
   }
   // Movimento e queda dos eliminados.
@@ -56,7 +56,7 @@ function updateBallMode(now,dt,t){
    const p=players[i],b=balls[i];
    if(b.falling){const elapsed=(now-b.fallAt)/1000;b.mesh.position.x+=b.fallVx*dt;b.mesh.position.z+=b.fallVz*dt;b.mesh.position.y-=7.5*dt;b.mesh.rotation.x+=7*dt;b.mesh.rotation.z+=5*dt;p.root.position.x=b.mesh.position.x;p.root.position.z=b.mesh.position.z;p.root.position.y-=7.5*dt;p.root.rotation.x+=5*dt;p.rig.rotation.z+=5*dt;if(elapsed>.85){b.falling=false;b.mesh.visible=false;p.root.visible=false;updateHud()}continue}
    if(!b.alive)continue;
-   b.vx*=Math.pow(.975,dt*60);b.vz*=Math.pow(.975,dt*60);const speed=Math.hypot(b.vx,b.vz),maxSpeed=4.0;if(speed>maxSpeed){b.vx=b.vx/speed*maxSpeed;b.vz=b.vz/speed*maxSpeed}
+   b.vx*=Math.pow(.975,dt*60);b.vz*=Math.pow(.975,dt*60);const speed=Math.hypot(b.vx,b.vz);b.stun=Math.max(0,(b.stun||0)-dt);const maxSpeed=b.stun>0?9.5:6.3; // após uma batida o limite sobe um instanteif(speed>maxSpeed){b.vx=b.vx/speed*maxSpeed;b.vz=b.vz/speed*maxSpeed}
    b.mesh.position.x+=b.vx*dt;b.mesh.position.z+=b.vz*dt;p.root.position.x=b.mesh.position.x;p.root.position.z=b.mesh.position.z;p.root.position.y=1.15+Math.min(.08,speed*.008);b.mesh.position.y=.72-Math.min(.08,speed*.02);
    p.rig.rotation.z=Math.max(-.10,Math.min(.10,-b.vx*.018));p.rig.rotation.x=Math.max(-.10,Math.min(.10,b.vz*.018));p.rig.position.y=Math.abs(Math.sin(t*8+i))*Math.min(.06,speed*.01);
    const radius=Math.hypot(p.root.position.x,p.root.position.z);
@@ -67,11 +67,20 @@ function updateBallMode(now,dt,t){
    if(!balls[i].alive||!balls[j].alive)continue;
    const a=players[i].root.position,b=players[j].root.position,dx=b.x-a.x,dz=b.z-a.z,d=Math.hypot(dx,dz);
    if(d>0&&d<1.55){
-    const nx=dx/d,nz=dz/d,relative=(balls[i].vx-balls[j].vx)*nx+(balls[i].vz-balls[j].vz)*nz;
-    const imp=1.35+Math.min(1.0,Math.abs(relative)*.16);
-    balls[i].vx-=nx*imp;balls[i].vz-=nz*imp;balls[j].vx+=nx*imp;balls[j].vz+=nz*imp;
+    const nx=dx/d,nz=dz/d,bi=balls[i],bj=balls[j];
+    // velocidade de cada bola na direção da batida: closing > 0 = estão se aproximando
+    const vi=bi.vx*nx+bi.vz*nz,vj=bj.vx*nx+bj.vz*nz,closing=vi-vj;
+    if(closing>0){
+     // IMPACTO: cresce com a velocidade de aproximação (quem pega distância bate mais forte)
+     const imp=Math.min(8,1.2+closing*.55+closing*closing*.06);
+     // quem vinha mais rápido é empurrado menos; quem estava parado/lento voa mais
+     const si=Math.hypot(bi.vx,bi.vz),sj=Math.hypot(bj.vx,bj.vz),fastI=si/(si+sj+.01);
+     const wi=1.25-.7*fastI,wj=1.25-.7*(1-fastI);
+     bi.vx-=nx*imp*wi;bi.vz-=nz*imp*wi;bj.vx+=nx*imp*wj;bj.vz+=nz*imp*wj;
+     bi.stun=bj.stun=.5;
+     if(closing>5){sfxCream()}else if(i===humanIndex||j===humanIndex)sfxClick(); // batida forte soa mais alto
+    }
     const overlap=(1.55-d)*.35;a.x-=nx*overlap;a.z-=nz*overlap;b.x+=nx*overlap;b.z+=nz*overlap;
-    if(i===humanIndex||j===humanIndex)sfxClick();
    }
   }
   // Fim da batalha.
