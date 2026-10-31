@@ -3,6 +3,9 @@
    (Antes eram 6 contextos WebGL desenhando a cada frame — pesado e instável no celular.) */
 const characterPreviewRenderers=[]; // mantido vazio por compatibilidade
 const previewCache={};
+/* Na seleção de personagem, Fabola e Luana aparecem com as imagens PNG (os modelos 3D animados ficam só no jogo). */
+const PREVIEW_PNG={luana:'img/luana.png',fabola:'img/fabola.png'};
+function previewUrl(i,featured){return PREVIEW_PNG[specs[i].type]||previewCache[i+(featured?'f':'s')]||''}
 let previewsReady=false;
 function renderPreviewImages(){
  const renderer3=new THREE.WebGLRenderer({alpha:true,antialias:true});
@@ -12,6 +15,7 @@ function renderPreviewImages(){
  sc.add(new THREE.HemisphereLight(0xffefff,0x514064,2.3));
  const light=new THREE.DirectionalLight(0xffffff,2.7);light.position.set(-3,5,5);sc.add(light);
  players.forEach((pl,i)=>{
+  if(PREVIEW_PNG[pl.type])return; // usa o PNG
   const model=(typeof SkeletonUtils!=='undefined'?SkeletonUtils.clone(pl.root):pl.root.clone(true));model.traverse(o=>{if(o.userData&&(o.userData.isOutline||o.userData.isSelfMark))o.visible=false});model.position.set(0,-0.9,0);
   model.rotation.set(0,0,0);sc.add(model);
   [[false,112,112,.34],[true,224,236,.78]].forEach(([featured,W,H,scale])=>{
@@ -27,10 +31,10 @@ function renderPreviewImages(){
 function ensurePreviews(){
  if(previewsReady)return;previewsReady=true;
  const run=()=>{renderPreviewImages();initializeCharacterPreviews();updateFeaturedCharacterPreview(humanIndex);netRenderGrid()};
- if(typeof glbReady!=='undefined'&&glbReady.length)Promise.all(glbReady).then(run);else run(); // espera os modelos .glb
+ run();
 }
 function setPreviewImage(container,i,featured){
- const img=new Image();img.alt='';img.decoding='async';img.src=previewCache[i+(featured?'f':'s')]||'';
+ const img=new Image();img.alt='';img.decoding='async';img.src=previewUrl(i,featured);
  container.replaceChildren(img);
 }
 function initializeCharacterPreviews(){

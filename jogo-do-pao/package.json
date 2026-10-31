@@ -1,0 +1,9 @@
+{
+  "name": "jogo-do-pao",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Jogo do Pão 3D com multijogador online",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "ws": "^8.18.0" },
+  "engines": { "node": ">=18" }
+}

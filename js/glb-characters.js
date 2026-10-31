@@ -1,10 +1,13 @@
-/* Personagens com modelo 3D animado (.glb, rig Mixamo). Hoje: Fabola.
+/* Personagens com modelo 3D animado (.glb, rig Mixamo). Hoje: Fabola e Luana.
    O modelo simples de esferas (characters.js) continua como reserva: ele só é escondido quando o .glb
    termina de carregar. Se o arquivo faltar ou falhar, o jogo segue normalmente com o modelo simples. */
 const glbReady=[]; // promessas de carregamento (as miniaturas esperam por elas)
 const GLB_CHARACTERS={
  fabola:{url:'models/fabola.glb',height:2.3,modelHeight:1.7,
-  clips:{idle:'Idle_02',walk:'Walking',run:'Running',dance:'FunnyDancing_01',jump:'Jump_Over_Obstacle_2'},
+  clips:{idle:'Idle_9',walk:'Walking',run:'Running',dance:'FunnyDancing_01',jump:'Jump_Over_Obstacle_2'},
+  once:['jump'],markY:2.8},
+ luana:{url:'models/luana.glb',height:2.3,modelHeight:1.7,
+  clips:{idle:'Idle_9',walk:'Walking',run:'Running',dance:'Bubble_Dance',jump:'Jump_Over_Obstacle_2'},
   once:['jump'],markY:2.8}
 };
 const glbOutlineMat=new THREE.MeshBasicMaterial({color:0x62ff9a,side:THREE.BackSide,toneMapped:false});

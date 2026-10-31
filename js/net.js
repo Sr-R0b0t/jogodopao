@@ -105,7 +105,7 @@ function netRenderGrid(){
   b.className='character-card'+(mine?' selected':'')+(taken?' taken':'');
   b.disabled=!!taken;
   const av=document.createElement('span');av.className='character-avatar character-preview-slot';
-  const url=typeof previewCache!=='undefined'?previewCache[i+'s']:null;
+  const url=typeof previewUrl==='function'?previewUrl(i,false):null;
   if(url){const im=new Image();im.alt='';im.src=url;av.append(im)}else av.textContent='🙂';
   const nm=document.createElement('span');nm.className='character-name';nm.textContent=specs[i].name;
   const rl=document.createElement('span');rl.className='character-role';
