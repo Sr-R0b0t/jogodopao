@@ -29,20 +29,19 @@ function stopLastPlayerTimer(){
  if(lastPlayerInterval){clearInterval(lastPlayerInterval);lastPlayerInterval=null}
  const el=document.getElementById('lastPlayerTimer');if(el)el.classList.remove('show');
 }
-/* Overlay de resultado (usado também pela Batalha das Bolas) */
-function showScoreScreen(winnerIndex,modeLabel,headline,lead){
+/* Ordem de chegada: quem terminou (do mais rápido ao mais lento); quem não terminou empata no fim. */
+function breadRanking(){
+ const act=activeIndices(),fin=act.filter(i=>players[i].count>=100).sort((a,b)=>players[a].throwAt-players[b].throwAt),rest=act.filter(i=>players[i].count<100);
+ const ranking=fin.map(i=>[i]);if(rest.length)ranking.push(rest);
+ const detail={};fin.forEach((i,k)=>detail[i]=(k+1)+'º a terminar');rest.forEach(i=>detail[i]='não terminou');
+ return {ranking,detail};
+}
+/* Resultado (Corrida do Pão e Batalha das Bolas): ranking = grupos em ordem de colocação. */
+function showScoreScreen(ranking,modeLabel,headline,lead,detail){
  stopLastPlayerTimer();
  const result=document.getElementById('result');
  result.classList.remove('show');result.innerHTML='';
- // O placar só aparece SCORE_DELAY_MS depois do fim da partida.
- scheduleScoreOverlay(()=>{
-  document.getElementById('scoreOverlayTitle').textContent=headline;
-  document.getElementById('scoreOverlayLead').textContent=lead;
-  document.getElementById('scoreOverlayContent').innerHTML=buildScoreboard(winnerIndex,modeLabel);
-  document.getElementById('scoreOverlay').classList.add('show');
-  wireScoreboardActions();
-  netSendOverlay();
- });
+ showRoundResults(pointsForRanking(ranking),detail||{},modeLabel,headline,lead); // o placar só aparece SCORE_DELAY_MS depois
 }
 function finishAll(){
  if(ended||!activePlayers().every(p=>p.count>=100))return;
@@ -54,7 +53,7 @@ function finishAll(){
  loser.biteAt=performance.now();loser.biting=true;celebrateStart=performance.now();
  document.getElementById('start').disabled=true;document.getElementById('tap').disabled=true;
  document.getElementById('characterChoice').disabled=true;document.getElementById('gameMode').disabled=true;
- showScoreScreen(winnerIndex,'Corrida do Pão','🏆 Fim da rodada!',`🏁 ${loser.name} ficou por último e vai comer o pão!`);
+ {const r=breadRanking();showScoreScreen(r.ranking,'Corrida do Pão','🏆 Fim da rodada!',`🏁 ${loser.name} ficou por último e vai comer o pão!`,r.detail);}
 }
 function beginLastPlayerTimer(){
  if(gameMode!=='bread'||ended||lastPlayerTimerId||!running)return;
@@ -76,7 +75,7 @@ function beginLastPlayerTimer(){
   document.getElementById('start').disabled=true;document.getElementById('tap').disabled=true;
   document.getElementById('characterChoice').disabled=true;document.getElementById('gameMode').disabled=true;
   const winnerIndex=players.reduce((best,p,i)=>p.count>=100&&(best<0||p.throwAt<players[best].throwAt)?i:best,-1);
-  showScoreScreen(winnerIndex,'Corrida do Pão','⏱️ Tempo esgotado!',`${last.name} não concluiu os 100 cliques em 30 segundos.`);
+  {const r=breadRanking();showScoreScreen(r.ranking,'Corrida do Pão','⏱️ Tempo esgotado!',`${last.name} não concluiu os 100 cliques em 30 segundos.`,r.detail);}
  },30000);
 }
 function finish(p){if(p.finished)return;p.count=100;throwCream(p);addCream();updateHud();if(activePlayers().every(x=>x.count>=100))finishAll();else beginLastPlayerTimer()}

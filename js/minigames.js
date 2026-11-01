@@ -4,7 +4,8 @@
 const MINIGAMES=[
  {id:'bread',label:'Corrida do Pão'},
  {id:'ball',label:'Batalha das Bolas'},
- {id:'bowling',label:'Boliche na Ladeira'}
+ {id:'bowling',label:'Boliche na Ladeira'},
+ {id:'soccer',label:'Pênaltis (Futebol)'}
 ];
 let minigameBag=[],lastMinigame=null,roundNumber=0,roundTimer=null;
 // o seletor de minigame fica escondido (só o jogo usa), mas segue a lista acima
@@ -42,5 +43,5 @@ function startRound(){
  document.getElementById('status').textContent='🎲 Minigame sorteado: '+info.label+'!';
  showRoundBanner('🎲 '+info.label,'Rodada '+roundNumber);
  netBroadcast({k:'banner',title:'🎲 '+info.label,sub:'Rodada '+roundNumber,label});
- roundTimer=setTimeout(()=>{if(!running&&!ended&&!document.getElementById('scoreOverlay').classList.contains('show'))start()},5400);
+ roundTimer=setTimeout(()=>{if(!running&&!ended&&!document.getElementById('scoreOverlay').classList.contains('show'))start()},2400);
 }

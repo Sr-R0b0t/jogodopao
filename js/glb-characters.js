@@ -4,11 +4,11 @@
 const glbReady=[]; // promessas de carregamento (as miniaturas esperam por elas)
 const GLB_CHARACTERS={
  fabola:{url:'models/fabola.glb',height:2.3,modelHeight:1.7,
-  clips:{idle:'Idle_9',walk:'Walking',run:'Running',dance:'FunnyDancing_01',jump:'Jump_Over_Obstacle_2'},
-  once:['jump'],markY:2.8},
+  clips:{idle:'Idle_9',walk:'Walking',run:'Running',dance:'FunnyDancing_01',jump:'Jump_Over_Obstacle_2',kick:'Kick_a_Soccer_Ball',hop:'Hop_with_Arms_Raised'},
+  once:['jump','kick'],markY:2.8},
  luana:{url:'models/luana.glb',height:2.3,modelHeight:1.7,
-  clips:{idle:'Idle_9',walk:'Walking',run:'Running',dance:'Bubble_Dance',jump:'Jump_Over_Obstacle_2'},
-  once:['jump'],markY:2.8}
+  clips:{idle:'Idle_9',walk:'Walking',run:'Running',dance:'Bubble_Dance',jump:'Jump_Over_Obstacle_2',kick:'Kick_a_Soccer_Ball',hop:'Hop_with_Arms_Raised'},
+  once:['jump','kick'],markY:2.8}
 };
 const glbOutlineMat=new THREE.MeshBasicMaterial({color:0x62ff9a,side:THREE.BackSide,toneMapped:false});
 glbOutlineMat.onBeforeCompile=sh=>{ // engorda o contorno ao longo das normais (funciona com o esqueleto)
@@ -69,7 +69,13 @@ function animateGlbPlayer(p,i,dt){
  const pos=p.root.position;
  g.speed=dt>0?Math.hypot(pos.x-g.lastX,pos.z-g.lastZ)/dt:0;g.lastX=pos.x;g.lastZ=pos.z;
  let state='idle';
- if(p.finished)state='dance';                                                   // terminou a corrida do pão
+ if(gameMode==='soccer'){                                                        // pênaltis
+  if(typeof soccer!=='undefined'&&soccer){
+   if(i===soccer.k)state=soccer.ph==='kick'?'kick':'idle';
+   else if(i===soccer.g)state=(soccer.ph==='pick'||soccer.ph==='intro')?'hop':soccer.ph==='kick'?'jump':(soccer.res==='save'?'hop':'idle');
+  }
+ }
+ else if(p.finished)state='dance';                                                   // terminou a corrida do pão
  else if(gameMode==='bread'&&running)state='run';                               // clicando = correndo
  else if(gameMode==='ball'&&running&&balls[i].alive&&g.speed>.6)state='walk';  // equilibrando na bola
  else if(gameMode==='ball'&&ended&&balls[i].alive)state='dance';                // venceu a batalha

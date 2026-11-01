@@ -6,7 +6,7 @@ const net={role:'offline',ws:null,slot:0,code:'',names:Array(specs.length).fill(
 const NET_TICK_MS=50;
 /* Se o jogo estiver hospedado num site estático (Netlify, GitHub Pages...), coloque aqui o endereço
    do servidor online (ex.: 'jogo-do-pao.onrender.com'). Deixe vazio se o servidor serve o próprio jogo. */
-const DEFAULT_SERVER='jogodopao.onrender.com';
+const DEFAULT_SERVER='';
 const r2=v=>Math.round(v*100)/100,clamp1=v=>Math.max(-1,Math.min(1,Number(v)||0));
 function isHumanSlot(i){return i===humanIndex||net.humans.has(i)}
 
@@ -160,7 +160,8 @@ function netHostInput(slot,d){
   if(!running)return;
   if(gameMode==='bread'){const p=players[slot];if(p.count<100){p.count++;updateHud();if(p.count>=100)finish(p)}}
   else if(gameMode==='bowling'&&bowlingOrder[bowlingTurn]===slot)remoteBowlThrow(slot,d.aim,d.pow);
- }else if(d.k==='mv')net.mv[slot]={x:clamp1(d.x),y:clamp1(d.y)};
+ }else if(d.k==='sc')soccerSetChoice(slot,d.dir);
+ else if(d.k==='mv')net.mv[slot]={x:clamp1(d.x),y:clamp1(d.y)};
  else if(d.k==='aim')remoteBowlAim(slot,d.v);
 }
 function netHostLeft(slot){
@@ -171,9 +172,10 @@ function netHostLeft(slot){
 }
 function netSnapshot(){
  const S={k:'snap',m:gameMode,r:running?1:0,st:document.getElementById('status').textContent,
-  p:players.map(p=>[r2(p.root.position.x),r2(p.root.position.y),r2(p.root.position.z),r2(p.root.rotation.y),r2(p.root.rotation.x),p.root.visible?1:0,p.count,p.finished?1:0]),
+  p:players.map(p=>[r2(p.root.position.x),r2(p.root.position.y),r2(p.root.position.z),r2(p.root.rotation.y),r2(p.root.rotation.x),p.root.visible?1:0,p.count,p.finished?1:0,r2(p.root.rotation.z)]),
   bi:players.findIndex(p=>p.biting)};
  const lt=document.getElementById('lastPlayerTimer');S.lt=lt.classList.contains('show')?lt.innerHTML:'';
+ if(gameMode==='soccer'&&soccer)S.sc={ph:soccer.ph,g:soccer.g,k:soccer.k,sh:soccer.sh,tot:soccer.tot,goals:soccer.goals,saves:soccer.saves,need:soccer.need,left:soccer.left,res:soccer.res,ball:[r2(soccerBall.position.x),r2(soccerBall.position.y),r2(soccerBall.position.z)]};
  if(gameMode==='ball')S.b=balls.map(b=>[r2(b.mesh.position.x),r2(b.mesh.position.y),r2(b.mesh.position.z),b.alive?1:0,b.falling?1:0,b.mesh.visible?1:0]);
  if(gameMode==='bowling')S.bw={o:bowlingOrder,t:bowlingTurn,s:bowlingScores,f:bowlingBallState?1:0,
   ball:[r2(bowlingBall.position.x),r2(bowlingBall.position.y),r2(bowlingBall.position.z)],
@@ -234,6 +236,7 @@ function netApplySnap(S){
   if(a[7]&&!p.finished){throwCream(p);addCream()}
  });
  if(S.bi>=0&&!players[S.bi].biting){const p=players[S.bi];p.biting=true;p.biteAt=performance.now()}
+ if(S.sc){soccer=S.sc;applySoccerVisibility()}else if(gameMode!=='soccer')soccer=null;
  if(S.b)balls.forEach((b,i)=>{b.alive=!!S.b[i][3];b.falling=!!S.b[i][4];b.mesh.visible=!!S.b[i][5]});
  if(S.bw){
   bowlingOrder=S.bw.o;bowlingScores=S.bw.s;bowlingTurn=S.bw.t;bowlingBallState=S.bw.f?{}:null;
@@ -262,9 +265,10 @@ function netClientFrame(dt,now){
   const a=S.p[i],sm=net.sm[i];
   sm[0]+=(a[0]-sm[0])*k;sm[1]+=(a[1]-sm[1])*k;sm[2]+=(a[2]-sm[2])*k;
   if(gameMode==='bowling'&&i===humanIndex&&myTurn)return; // sua posição é local
-  p.root.position.set(sm[0],sm[1],sm[2]);p.root.rotation.y=a[3];p.root.rotation.x=a[4];
+  p.root.position.set(sm[0],sm[1],sm[2]);p.root.rotation.y=a[3];p.root.rotation.x=a[4];p.root.rotation.z=a[8]||0;
  });
  if(S.b&&net.smb)balls.forEach((b,i)=>{const t=S.b[i],sm=net.smb[i];sm[0]+=(t[0]-sm[0])*k;sm[1]+=(t[1]-sm[1])*k;sm[2]+=(t[2]-sm[2])*k;b.mesh.position.set(sm[0],sm[1],sm[2])});
+ if(S.sc){const b=S.sc.ball;soccerBall.position.x+=(b[0]-soccerBall.position.x)*k;soccerBall.position.y+=(b[1]-soccerBall.position.y)*k;soccerBall.position.z+=(b[2]-soccerBall.position.z)*k}
  if(S.bw){
   S.bw.pins.forEach((a,i)=>{const m=bowlingPins[i].mesh;m.position.set(a[0],a[1],a[2]);m.rotation.set(a[3],0,a[4])});
   if(!(myTurn)){bowlingBall.position.x+=(S.bw.ball[0]-bowlingBall.position.x)*k;bowlingBall.position.y=S.bw.ball[1];bowlingBall.position.z=S.bw.ball[2]}

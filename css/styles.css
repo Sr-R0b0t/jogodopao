@@ -199,3 +199,15 @@ body.net-client #start,body.net-client #reset,body.net-client #gameMode,body.net
 @keyframes bannerPop{0%{opacity:0;transform:scale(.8)}12%{opacity:1;transform:scale(1.04)}20%{transform:scale(1)}85%{opacity:1}100%{opacity:0}}
 /* Batalha das Bolas: sem botão de empurrão (só direção) */
 #touchControls[data-mode="ball"] .touch-action{display:none}
+
+.points-table .gain{color:#8af0b3;font-weight:1000;margin-left:4px}
+.points-table .pt-detail{display:block;font-size:.7rem;font-weight:700;color:#cdbce7;margin-top:2px}
+
+/* Pênaltis: botões de escolha */
+#soccerPick{display:none;position:absolute;z-index:42;left:0;right:0;bottom:8px;text-align:center;padding:0 8px}
+#soccerPick.show{display:block}
+#soccerPickTitle{display:inline-block;margin-bottom:8px;padding:6px 14px;border-radius:12px;background:#10091dcc;border:1px solid #c5a1ec;color:#ffdf79;font-weight:1000;font-size:.95rem}
+.sp-btns{display:flex;gap:10px;justify-content:center}
+.sp-btns button{flex:1;max-width:150px;padding:12px 6px;border-radius:16px;background:linear-gradient(#ffe69a,#ffb92f);color:#40250c;box-shadow:0 5px #b96f24;font-size:1.6rem;line-height:1.1}
+.sp-btns small{display:block;font-size:.65rem;letter-spacing:.08em}
+#touchControls[data-mode="soccer"] .joy,#touchControls[data-mode="soccer"] .touch-action,#touchControls[data-mode="soccer"] .tpower{display:none}

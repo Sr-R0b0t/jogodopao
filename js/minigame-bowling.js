@@ -206,13 +206,13 @@ function resolveBowlingThrow(now){
  if(bowlingTurn>=bowlingOrder.length){
   running=false;ended=true;clearBots();updateBowlingMoveControls();
   document.getElementById('status').textContent=msg;
-  const max=Math.max(...bowlingScores);
-  const winners=max>0?bowlingScores.map((v,i)=>v===max?i:-1).filter(i=>i>=0):[]; // ninguém derrubou = ninguém pontua
-  // placar e pontos só entram depois do atraso (cancelado se a partida for reiniciada)
-  scheduleScoreOverlay(()=>{
-   winners.forEach(i=>tournamentScores[i]+=3);roundsPlayed++;
-   players.forEach(p=>p.root.visible=false);showBowlingScoreScreen(winners,max);netSendOverlay();
-  });
+  // colocação pelos pinos derrubados (empatados dividem a mesma colocação)
+  const act=activeIndices().sort((x,y)=>bowlingScores[y]-bowlingScores[x]),ranking=[];
+  act.forEach(i=>{const g=ranking[ranking.length-1];if(g&&bowlingScores[g[0]]===bowlingScores[i])g.push(i);else ranking.push([i])});
+  const detail={};act.forEach(i=>detail[i]='🎳 '+bowlingScores[i]+' pino'+(bowlingScores[i]===1?'':'s'));
+  const best=ranking[0]||[];
+  setTimeout(()=>players.forEach(p=>p.root.visible=false),SCORE_DELAY_MS-200);
+  showRoundResults(pointsForRanking(ranking),detail,'Boliche na Ladeira','🎳 Fim do boliche!','Mais pinos: '+best.map(i=>players[i].name).join(', ')+' ('+(bowlingScores[best[0]]||0)+'/10).');
  }else{
   updateBowlingMoveControls();
   let countdown=3;
@@ -226,14 +226,6 @@ function resolveBowlingThrow(now){
 }
 
 /* ---------- Placar do boliche ---------- */
-function showBowlingScoreScreen(winners,max){
- const order=players.map((p,i)=>({name:p.name,index:i,score:tournamentScores[i],pins:bowlingScores[i]})).filter(o=>isActive(o.index)).sort((a,b)=>b.pins-a.pins||b.score-a.score);
- document.getElementById('scoreOverlayTitle').textContent='🎳 Fim do boliche!';
- document.getElementById('scoreOverlayLead').textContent=winners.length?('Mais pinos: '+winners.map(i=>players[i].name).join(', ')+' ('+max+'/10). Cada vencedor ganha 3 pontos.'):'Ninguém derrubou pinos desta vez. Ninguém pontua!';
- document.getElementById('scoreOverlayContent').innerHTML=`<div class="points-panel"><h3>🏆 Placar do campeonato</h3><div class="points-subtitle">Boliche na Ladeira • Rodada ${roundsPlayed} • Vitória vale 3 pontos</div><table class="points-table"><thead><tr><th>#</th><th>Personagem</th><th>Pinos</th><th>Pontos</th></tr></thead><tbody>${order.map((p,pos)=>`<tr data-slot="${p.index}" class="${pos===0?'current-leader':''}"><td>${pos===0?'🥇':pos===1?'🥈':pos===2?'🥉':pos+1}</td><td>${p.name}${p.index===humanIndex?' <strong class="you" style="color:#8af0b3">(VOCÊ)</strong>':''}${winners.includes(p.index)?' 🏆 +3':''}</td><td>${p.pins}/10</td><td>${p.score}</td></tr>`).join('')}</tbody></table><div class="points-actions"><button id="playNextRound">🎲 SORTEAR E INICIAR PRÓXIMO MINIGAME →</button><button id="resetTournament" class="secondary">↻ Zerar campeonato</button></div></div>`;
- document.getElementById('scoreOverlay').classList.add('show');
- wireScoreboardActions();
-}
 console.info('[boliche] módulo v2 carregado (trajetória reta + colisão por pino)');
 
 /* ---- Jogadores online (o anfitrião aplica os comandos dos convidados) ---- */
