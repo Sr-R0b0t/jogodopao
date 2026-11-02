@@ -30,7 +30,7 @@ for(let i=0;i<24;i++){const a=i/24*Math.PI*2;const dot=new THREE.Mesh(new THREE.
 function applyCameraPose(){
  const aspect=host.clientWidth>0&&host.clientHeight>0?host.clientWidth/host.clientHeight:1.76; // tela escondida = proporção padrão
  if(typeof gameMode!=='undefined'&&gameMode==='soccer'){ // atrás do batedor, olhando para o gol
-  const tgt=[0,1.1,-3.5],base=[0,2.9,7.4],s=Math.max(1,7.4/(9.2*aspect));
+  const tgt=[0,1.0,-3.3],base=[0,3.4,8.4],s=Math.max(1,7/(9.4*aspect));
   camera.position.set(0,tgt[1]+(base[1]-tgt[1])*s,tgt[2]+(base[2]-tgt[2])*s);camera.lookAt(...tgt);return;
  }
  if(typeof gameMode!=='undefined'&&gameMode==='bowling'){camera.position.set(0,10.7,15.5);camera.lookAt(0,.6,0);return}

@@ -193,7 +193,7 @@ body.net-client #start,body.net-client #reset,body.net-client #gameMode,body.net
 /* Sorteio de minigames */
 #start{display:none}
 #roundBanner{position:absolute;inset:0;z-index:45;display:none;flex-direction:column;align-items:center;justify-content:center;gap:6px;pointer-events:none;background:#10091d99;text-shadow:0 4px 18px #000}
-#roundBanner.show{display:flex;animation:bannerPop 2.3s ease forwards}
+#roundBanner.show{display:flex}
 #roundBanner small{font-size:.8rem;font-weight:900;letter-spacing:.22em;color:#dbc8ff;text-transform:uppercase}
 #roundBanner b{font-size:clamp(1.6rem,6vw,3rem);color:#ffdf79;font-weight:1000;text-align:center;padding:0 12px}
 @keyframes bannerPop{0%{opacity:0;transform:scale(.8)}12%{opacity:1;transform:scale(1.04)}20%{transform:scale(1)}85%{opacity:1}100%{opacity:0}}
@@ -211,3 +211,10 @@ body.net-client #start,body.net-client #reset,body.net-client #gameMode,body.net
 .sp-btns button{flex:1;max-width:150px;padding:12px 6px;border-radius:16px;background:linear-gradient(#ffe69a,#ffb92f);color:#40250c;box-shadow:0 5px #b96f24;font-size:1.6rem;line-height:1.1}
 .sp-btns small{display:block;font-size:.65rem;letter-spacing:.08em}
 #touchControls[data-mode="soccer"] .joy,#touchControls[data-mode="soccer"] .touch-action,#touchControls[data-mode="soccer"] .tpower{display:none}
+
+/* Celular: os painéis de pontos de baixo sobem para não ficarem atrás do analógico/botão */
+body.touch-ui .tag[data-pos="3"],body.touch-ui .tag[data-pos="4"],body.touch-ui .tag[data-pos="5"]{bottom:150px}
+body.touch-ui .touch-action{width:86px;height:86px}
+
+#roundBanner .cd{font-size:clamp(4rem,20vw,8rem);line-height:1;font-weight:1000;color:#fff;text-shadow:0 6px 0 #bb6a31,0 12px 30px #000;animation:cdPop .9s ease both}
+@keyframes cdPop{0%{transform:scale(1.7);opacity:0}25%{transform:scale(1);opacity:1}100%{transform:scale(.92);opacity:.9}}

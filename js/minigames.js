@@ -20,18 +20,42 @@ function drawMinigame(){
  }
  lastMinigame=minigameBag.shift();return lastMinigame;
 }
-function resetMinigameBag(){minigameBag=[];lastMinigame=null;roundNumber=0;clearTimeout(roundTimer)}
+function resetMinigameBag(){minigameBag=[];lastMinigame=null;roundNumber=0;cancelCountdown()}
 
-function showRoundBanner(title,sub){
+/* Aviso grande no meio da tela (nome do minigame + contagem). Fica até hideRoundBanner(). */
+const COUNTDOWN_SECONDS=5;
+let cdTimer=null;
+function showRoundBanner(title,sub,count){
  const el=document.getElementById('roundBanner');if(!el)return;
- el.innerHTML='<small>'+sub+'</small><b>'+title+'</b>';
- el.classList.remove('show');void el.offsetWidth;el.classList.add('show');
- setTimeout(()=>el.classList.remove('show'),2300);
+ el.innerHTML='<small>'+sub+'</small><b>'+title+'</b>'+(count!==undefined?'<span class="cd">'+count+'</span>':'');
+ el.classList.add('show');
 }
-/* Sorteia o próximo minigame, mostra o aviso e começa sozinho (só o anfitrião/offline sorteia). */
+function hideRoundBanner(){const el=document.getElementById('roundBanner');if(el)el.classList.remove('show')}
+function cdBeep(n){ // bip a cada segundo; som mais alto no "VAI!"
+ if(n>0)tone(n<=2?700:520,.12,'square',.07);
+ else{tone(784,.2,'triangle',.12);tone(1046,.35,'triangle',.11,.14)}
+}
+function cancelCountdown(){clearInterval(cdTimer);cdTimer=null;clearTimeout(roundTimer);hideRoundBanner()}
+/* 5…4…3…2…1…VAI! e então começa a partida (o anfitrião manda a contagem para todos). */
+function runCountdown(sec,title,sub,label){
+ cancelCountdown();
+ let n=sec;
+ const tick=()=>{
+  showRoundBanner(title,sub,n>0?String(n):'VAI!');cdBeep(n);
+  netBroadcast({k:'cd',title,sub,n,label});
+  if(n<=0){
+   clearInterval(cdTimer);cdTimer=null;setTimeout(hideRoundBanner,700);
+   if(!running&&!ended&&!document.getElementById('scoreOverlay').classList.contains('show'))start();
+   return;
+  }
+  n--;
+ };
+ tick();cdTimer=setInterval(tick,1000);
+}
+/* Sorteia o próximo minigame, mostra o aviso e a contagem e começa sozinho (só o anfitrião/offline sorteia). */
 function startRound(){
  if(net.role==='client')return;
- clearTimeout(roundTimer);
+ cancelCountdown();
  const id=drawMinigame(),info=MINIGAMES.find(m=>m.id===id);
  roundNumber++;
  document.getElementById('gameMode').value=id;gameMode=id;
@@ -40,8 +64,6 @@ function startRound(){
  document.getElementById('gameMode').disabled=true;
  const label='🎲 RODADA '+roundNumber+' • '+info.label.toUpperCase();
  document.getElementById('roundLabel').textContent=label;
- document.getElementById('status').textContent='🎲 Minigame sorteado: '+info.label+'!';
- showRoundBanner('🎲 '+info.label,'Rodada '+roundNumber);
- netBroadcast({k:'banner',title:'🎲 '+info.label,sub:'Rodada '+roundNumber,label});
- roundTimer=setTimeout(()=>{if(!running&&!ended&&!document.getElementById('scoreOverlay').classList.contains('show'))start()},2400);
+ document.getElementById('status').textContent='🎲 Minigame sorteado: '+info.label+'! A partida começa em instantes…';
+ runCountdown(COUNTDOWN_SECONDS,'🎲 '+info.label,'Rodada '+roundNumber,label);
 }

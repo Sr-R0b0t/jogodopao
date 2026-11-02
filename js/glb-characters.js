@@ -8,6 +8,9 @@ const GLB_CHARACTERS={
   once:['jump','kick'],markY:2.8},
  luana:{url:'models/luana.glb',height:2.3,modelHeight:1.7,
   clips:{idle:'Idle_9',walk:'Walking',run:'Running',dance:'Bubble_Dance',jump:'Jump_Over_Obstacle_2',kick:'Kick_a_Soccer_Ball',hop:'Hop_with_Arms_Raised'},
+  once:['jump','kick'],markY:2.8},
+ rafa:{url:'models/rafa.glb',height:2.3,modelHeight:1.7,
+  clips:{idle:'Idle_9',walk:'Walking',run:'Running',dance:'victory',jump:'Jump_Over_Obstacle_2',kick:'Kick_a_Soccer_Ball',hop:'Hop_with_Arms_Raised'},
   once:['jump','kick'],markY:2.8}
 };
 const glbOutlineMat=new THREE.MeshBasicMaterial({color:0x62ff9a,side:THREE.BackSide,toneMapped:false});

@@ -72,6 +72,9 @@ function beginLastPlayerTimer(){
   stopLastPlayerTimer();
   if(ended||last.count>=100)return;
   ended=true;running=false;clearBots();
+  last.biteAt=performance.now();last.biting=true;celebrateStart=performance.now(); // quem não terminou dá a mordida final
+  document.getElementById('status').textContent='⏱️ '+last.name+' não terminou a tempo e vai dar a mordida final! 😬';
+  if(audioEnabled)setTimeout(()=>sfxBite(),650);
   document.getElementById('start').disabled=true;document.getElementById('tap').disabled=true;
   document.getElementById('characterChoice').disabled=true;document.getElementById('gameMode').disabled=true;
   const winnerIndex=players.reduce((best,p,i)=>p.count>=100&&(best<0||p.throwAt<players[best].throwAt)?i:best,-1);

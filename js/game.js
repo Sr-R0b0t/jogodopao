@@ -36,7 +36,7 @@ function reset(){
  running=false;ended=false;cancelScoreOverlay();stopLastPlayerTimer();clearBots();
  projectiles.forEach(o=>scene.remove(o.mesh));projectiles.length=0;
  balls.forEach((b,i)=>{b.vx=0;b.vz=0;b.alive=isActive(i);b.stun=0;b.falling=false;b.fallAt=0;b.fallVx=0;b.fallVz=0;b.mesh.rotation.set(0,0,0);b.mesh.position.set(Math.cos(players[i].angle)*4.2*ARENA_SCALE,.72,Math.sin(players[i].angle)*3.6*ARENA_SCALE);b.mesh.visible=gameMode==='ball'&&isActive(i)});
- players.forEach(p=>{p.count=0;p.finished=false;p.biting=false;p.throwAt=0;p.root.position.set(Math.cos(p.angle)*(gameMode==='ball'?4.2*ARENA_SCALE:5.2),gameMode==='ball'?.72:0,Math.sin(p.angle)*(gameMode==='ball'?3.6*ARENA_SCALE:4.5));p.root.rotation.set(0,Math.atan2(-p.root.position.x,-p.root.position.z),0);p.root.visible=p.active!==false;p.rig.position.set(0,0,0);p.rig.rotation.set(0,0,0);p.rig.scale.set(1,1,1);p.legs.forEach(l=>l.rotation.set(0,0,0));p.arms.forEach(a=>a.rotation.set(0,0,0))});
+ players.forEach(p=>{p.count=0;p.finished=false;p.biting=false;p.throwAt=0;p.root.position.set(Math.cos(p.angle)*(gameMode==='ball'?4.2*ARENA_SCALE:5.2),gameMode==='ball'?.72:0,Math.sin(p.angle)*(gameMode==='ball'?3.6*ARENA_SCALE:4.5));p.root.rotation.set(0,Math.atan2(-p.root.position.x,-p.root.position.z),0);p.root.visible=p.active!==false;p.root.scale.set(1,1,1);p.rig.position.set(0,0,0);p.rig.rotation.set(0,0,0);p.rig.scale.set(1,1,1);p.legs.forEach(l=>l.rotation.set(0,0,0));p.arms.forEach(a=>a.rotation.set(0,0,0))});
  [...breadRoot.children].slice(5).forEach(c=>breadRoot.remove(c)); // remove cremes
  breadRoot.scale.set(1,1,1);breadRoot.rotation.set(0,0,0);
  document.getElementById('status').textContent=gameMode==='ball'?'Prepare-se! Derrube os rivais da arena!':'Prepare-se para a batalha pelo pão!';
@@ -70,7 +70,10 @@ document.getElementById('tap').addEventListener('click',()=>{
  if(players[humanIndex].count>=100)finish(players[humanIndex]);
 });
 document.getElementById('start').addEventListener('click',start);
-document.getElementById('reset').addEventListener('click',()=>{clearTimeout(roundTimer);reset();setTimeout(()=>{if(!running)start()},400)}); // reinicia o mesmo minigame
+document.getElementById('reset').addEventListener('click',()=>{ // reinicia o mesmo minigame, com contagem curta
+ cancelCountdown();reset();
+ const info=MINIGAMES.find(m=>m.id===gameMode);runCountdown(3,'↻ '+(info?info.label:''),document.getElementById('roundLabel').textContent);
+});
 document.addEventListener('keydown',e=>{if((e.code==='Space'||e.code==='Enter')&&running&&gameMode!=='ball'&&gameMode!=='soccer'){e.preventDefault();document.getElementById('tap').click()}});
 
 /* Loop de animação */

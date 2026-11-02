@@ -9,7 +9,7 @@ const SOCCER={
  loseEach:1,          // quem perdeu ganha (participação)
  goalieBase:4,goalieEachSave:2  // goleiro venceu (defesas > gols): ganha 4 + 2 por defesa, sozinho
 };
-const GOAL_Z=-4.5,BALL_Z=1.6,GOALIE_Z=-4.0,KICKER_POS=[-.4,2.9],DIR_X=[-2.0,0,2.0]; // DIR_X[dir+1]
+const GOAL_Z=-4.5,BALL_Z=1.6,GOALIE_Z=-4.0,KICKER_POS=[-1.5,2.4],KICKER_SCALE=.78,GOALIE_SCALE=.85,DIR_X=[-2.0,0,2.0]; // DIR_X[dir+1]
 const DIR_NAME={'-1':'esquerda','0':'meio','1':'direita'};
 
 /* ---------- Cenário ---------- */
@@ -23,7 +23,7 @@ const postMat=mat('#f5f5f5',.35,.2);
 for(const x of [-3,3]){const p=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,2.4,16),postMat);p.position.set(x,1.2,GOAL_Z);p.castShadow=true;soccerRoot.add(p)}
 const bar=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,6.18,16),postMat);bar.rotation.z=Math.PI/2;bar.position.set(0,2.4,GOAL_Z);bar.castShadow=true;soccerRoot.add(bar);
 const net3=new THREE.Mesh(new THREE.BoxGeometry(6,2.4,1.2,18,7,4),new THREE.MeshBasicMaterial({color:0xffffff,wireframe:true,transparent:true,opacity:.35}));net3.position.set(0,1.2,GOAL_Z-.6);soccerRoot.add(net3);
-const soccerBall=new THREE.Mesh(new THREE.IcosahedronGeometry(.3,1),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.5,flatShading:true}));
+const soccerBall=new THREE.Mesh(new THREE.IcosahedronGeometry(.36,1),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.5,flatShading:true}));
 soccerBall.castShadow=true;soccerBall.position.set(0,.3,BALL_Z);soccerRoot.add(soccerBall);
 
 /* ---------- Estado ---------- */
@@ -35,8 +35,9 @@ function applySoccerVisibility(){
  players.forEach((p,i)=>{p.root.visible=!!soccer&&(i===soccer.k||i===soccer.g)});
 }
 function soccerPlace(){
- const s=soccer,g=players[s.g];g.root.position.set(0,0,GOALIE_Z);g.root.rotation.set(0,0,0);
- if(s.k>=0){const k=players[s.k];k.root.position.set(KICKER_POS[0],0,KICKER_POS[1]);k.root.rotation.set(0,Math.PI,0)}
+ const s=soccer,g=players[s.g];g.root.position.set(0,0,GOALIE_Z);g.root.rotation.set(0,0,0);g.root.scale.setScalar(GOALIE_SCALE);
+ // o batedor fica ao lado da bola (não na frente da câmera), virado para ela
+ if(s.k>=0){const k=players[s.k];k.root.position.set(KICKER_POS[0],0,KICKER_POS[1]);k.root.rotation.set(0,Math.atan2(0-KICKER_POS[0],BALL_Z-KICKER_POS[1]),0);k.root.scale.setScalar(KICKER_SCALE)}
  soccerBall.position.set(0,.3,BALL_Z);soccerBall.rotation.set(0,0,0);
 }
 const setStatus=t=>{document.getElementById('status').textContent=t};

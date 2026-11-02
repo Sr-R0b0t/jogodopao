@@ -76,16 +76,33 @@ function buildLuana(rig,arms,legs,mark,root,red){
   const strap=new THREE.Mesh(new THREE.TorusGeometry(.14,.025,8,18),mat('#c11d25'));strap.rotation.x=Math.PI/2;strap.position.set(s*.04,-.17,.05);strap.userData.noOutline=true;legs[(s+1)/2].add(strap);
  }
 }
+/* ---------- Rafa Dino (modelo simples de reserva; o .glb substitui quando carrega) ---------- */
+function buildRafa(rig,arms,legs,mark,root){
+ root.userData.markY=2.85;
+ const skin='#b8703b',skinD='#9a5a2e',hair='#2a1c14';
+ const E=(c,p,sc,r)=>{const m=sphere(rig,c,p,sc);if(r)m.rotation.set(r[0]||0,r[1]||0,r[2]||0);return m};
+ E(skin,[0,1.7,0],[.66,.6,.58]);E(hair,[0,2.0,-.08],[.66,.36,.56]);                          // cabeça + cabelo curto
+ E(hair,[0,1.3,.3],[.5,.3,.36]);for(const s of [-1,1])E(hair,[s*.45,1.45,.18],[.2,.26,.3]);    // barba
+ for(const s of [-1,1]){
+  mark(E(skin,[s*.68,1.64,-.02],[.11,.17,.13]));
+  mark(E('#150e12',[s*.25,1.7,.52],[.12,.16,.09]));mark(E('#ffffff',[s*.25+.05,1.76,.59],[.045,.055,.028]));
+  mark(E(hair,[s*.25,1.93,.5],[.18,.04,.05],[0,0,-s*.1]));
+  const bi=sphere(arms[(s+1)/2],skin,[s*.12,-.1,.05],[.21,.23,.21]);bi.userData.noOutline=true;     // braços fortes
+  mark(sphere(legs[(s+1)/2],'#1a1a1c',[s*.02,-.08,.03],[.21,.21,.21]));                           // short
+  sphere(legs[(s+1)/2],'#f1ece2',[s*.04,-.34,.16],[.2,.04,.27]);                                  // sola do tênis
+ }
+ mark(E('#1a1a1c',[0,.52,0],[.5,.26,.36]));mark(E(skinD,[0,1.52,.58],[.07,.05,.05]));
+}
 function makeCharacter(type,color,accent){
  const root=new THREE.Group(),rig=new THREE.Group();root.add(rig);
  const mark=m=>{m.userData.noOutline=true;return m};
- const human=type==='fabola'||type==='luana';   // têm modelos próprios (buildFabola/buildLuana)
+ const human=type==='fabola'||type==='luana'||type==='rafa';   // têm modelos próprios (buildFabola/buildLuana)
  const put=(c,p,sc)=>sphere(rig,c,p,sc);
- const skin=type==='fabola'?'#f3b890':type==='luana'?'#f7cba4':'#ffe9cf';
+ const skin=type==='fabola'?'#f3b890':type==='luana'?'#f7cba4':type==='rafa'?'#b8703b':'#ffe9cf';
  const headColor=['monkey','dragon','fox','frog'].includes(type)?color:type==='panda'?'#fbf8f2':type==='astronaut'?'#efe9df':skin;
  const handCol=type==='panda'||type==='frog'?color:type==='fox'?'#5a301c':accent;
- const footCol=type==='fabola'?'#1d1816':type==='luana'?'#d2232a':handCol;
- const armCol=type==='luana'?skin:color,legCol=type==='luana'?skin:color;
+ const footCol=(type==='fabola'||type==='rafa')?'#1d1816':type==='luana'?'#d2232a':handCol;
+ const armCol=(type==='luana'||type==='rafa')?skin:color,legCol=(type==='luana'||type==='rafa')?skin:color;
  // olhos grandes, pretos e brilhantes (usados por vários personagens)
  const bigEyes=(y,z,sx=.19,k=1)=>{for(const s of [-1,1]){
   mark(put('#1a1018',[s*sx,y,z],[.095*k,.125*k,.07]));
@@ -208,6 +225,7 @@ function makeCharacter(type,color,accent){
  }
  if(type==='fabola')buildFabola(rig,arms,legs,mark,root);
  if(type==='luana')buildLuana(rig,arms,legs,mark,root,color);
+ if(type==='rafa')buildRafa(rig,arms,legs,mark,root);
  return {root,rig,arms,legs,body:null,phase:Math.random()*6,finished:false,throwAt:0,type};
 }
 const specs=[
@@ -218,6 +236,7 @@ const specs=[
  {name:'MACACO',type:'monkey',color:'#a8683f',accent:'#ffe0ad',angle:-Math.PI/2+Math.PI*8/8},
  {name:'DRAGÃO',type:'dragon',color:'#58b043',accent:'#f6e2b0',angle:-Math.PI/2+Math.PI*10/8},
  {name:'FABOLA',type:'fabola',color:'#2a2220',accent:'#f2c29b',angle:-Math.PI/2+Math.PI*12/8},
- {name:'LUANA',type:'luana',color:'#d6212a',accent:'#f5cba2',angle:-Math.PI/2+Math.PI*14/8}
+ {name:'LUANA',type:'luana',color:'#d6212a',accent:'#f5cba2',angle:-Math.PI/2+Math.PI*14/8},
+ {name:'RAFA',type:'rafa',color:'#222024',accent:'#b8703b',angle:-Math.PI/2+Math.PI*16/8}
 ];
-const players=specs.map((s,i)=>{const c=makeCharacter(s.type,s.color,s.accent);c.name=s.name;c.count=0;c.delay=[0,195,235,270,220,250,210,240][i];c.angle=s.angle;c.root.position.set(Math.cos(s.angle)*5.2,0,Math.sin(s.angle)*4.5);c.root.rotation.y=Math.atan2(-c.root.position.x,-c.root.position.z);scene.add(c.root);return c});
+const players=specs.map((s,i)=>{const c=makeCharacter(s.type,s.color,s.accent);c.name=s.name;c.count=0;c.delay=[0,195,235,270,220,250,210,240,225][i];c.angle=s.angle;c.root.position.set(Math.cos(s.angle)*5.2,0,Math.sin(s.angle)*4.5);c.root.rotation.y=Math.atan2(-c.root.position.x,-c.root.position.z);scene.add(c.root);return c});

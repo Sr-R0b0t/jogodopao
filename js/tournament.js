@@ -1,5 +1,5 @@
 /* Placar do campeonato (vitória = 3 pontos) e botões do overlay de resultado. */
-const tournamentScores=[0,0,0,0,0,0,0,0];
+const tournamentScores=new Array(16).fill(0); // sobra espaço para novos personagens
 let roundsPlayed=0;
 let tournamentCharacterLocked=false;
 /* Atraso entre o fim da partida e a exibição do placar (ms). */

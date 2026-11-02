@@ -45,7 +45,8 @@ let bowlingAimValue=0,bowlingPowerValue=70; // posição lateral do jogador e fo
 function setupBowling(){
  if(bowlingNextTurnTimer){clearInterval(bowlingNextTurnTimer);bowlingNextTurnTimer=null}
  bowlingScores=players.map(()=>0);bowlingTurn=0;bowlingOrder=activeIndices().sort(()=>Math.random()-.5);bowlingBallState=null;
- resetBowlingPins();bowlingBall.position.set(0,.55,3.7);bowlingBall.visible=true;bowlingRoot.visible=true;
+ resetBowlingPins();bowlingBall.visible=true;bowlingRoot.visible=true;
+ if(bowlingOrder.length)placeBowler(bowlingOrder[0]); // antes do início já fica na pista (não nas posições do círculo)
  bowlingAimValue=0;bowlingPowerValue=70;document.getElementById('bowlingPower').value='70';
  updateBowlingControlValues();updateBowlingHud();applyBowlingVisibility();updateBowlingMoveControls();
 }
@@ -117,20 +118,21 @@ document.getElementById('bowlingCenter').addEventListener('click',()=>moveBowler
 document.getElementById('bowlingRight').addEventListener('click',()=>moveBowlerAim(1));
 
 /* ---------- Turnos ---------- */
+/* Coloca o lançador na cabeceira da pista, de frente para os pinos (humano no centro; bots variam). */
+function placeBowler(idx){
+ const p=players[idx];
+ p.root.position.set(isHumanSlot(idx)?0:(Math.random()-.5)*1.8,0,BOWLING.startZ+.05);
+ p.root.rotation.set(0,Math.PI,0);p.rig.rotation.set(0,0,0);p.rig.position.y=0;
+ p.arms.forEach((a,j)=>{a.rotation.x=-.78;a.rotation.z=(j===0?-.24:.24)});
+ p.legs.forEach(leg=>{leg.rotation.x=0});
+ bowlingBall.position.set(p.root.position.x+BOWLING.ballOffset,1.02,BOWLING.startZ);
+}
 function startBowlingTurn(){
  if(!running||gameMode!=='bowling'||bowlingTurn>=bowlingOrder.length)return;
  const idx=bowlingOrder[bowlingTurn];
  resetBowlingPins();
- // CORREÇÃO: o humano sempre começa no centro (antes herdava a posição antiga e a mira
- // ficava dessincronizada). Bots começam em posições variadas para acertar também as laterais.
  bowlingAimValue=0;bowlingPowerValue=70;document.getElementById('bowlingPower').value='70';
- players.forEach((p,i)=>{
-  if(i!==idx)return;
-  p.root.position.set(isHumanSlot(i)?0:(Math.random()-.5)*1.8,0,BOWLING.startZ+.05);
-  p.root.rotation.set(0,Math.PI,0);p.rig.rotation.set(0,0,0);p.rig.position.y=0;
-  p.arms.forEach((a,j)=>{a.rotation.x=-.78;a.rotation.z=(j===0?-.24:.24)});
-  p.legs.forEach(leg=>{leg.rotation.x=0});
- });
+ placeBowler(idx);
  bowlingBall.position.set(players[idx].root.position.x+BOWLING.ballOffset,1.02,BOWLING.startZ);bowlingBall.rotation.set(0,0,0);bowlingBall.visible=true;
  updateBowlingControlValues();updateBowlingHud();applyBowlingVisibility();
  if(idx===humanIndex)showBowlingArrowHint();else{const h=document.getElementById('bowlingArrowHint');if(h){h.classList.remove('show');h.style.display='none'}}
