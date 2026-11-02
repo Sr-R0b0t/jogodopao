@@ -18,7 +18,7 @@
  });
  sfx.addEventListener('change',()=>{
   audioEnabled=sfx.checked;saveSettings();
-  if(audioEnabled){ensureAudio();tone(660,.08,'triangle',.08)}
+  if(audioEnabled){ensureAudio();tone(660,.08,'triangle',.08);Object.keys(SAMPLE_URLS).forEach(loadSample)}
  });
  leave.addEventListener('click',()=>{
   close();netLeave();tournamentScores.fill(0);roundsPlayed=0;tournamentCharacterLocked=false;resetMinigameBag();

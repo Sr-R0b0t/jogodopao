@@ -113,7 +113,7 @@ function animate(now){
    p.rig.scale.set(1+Math.sin(t*3)*.015,1-Math.max(0,Math.sin(t*3))*.018,1);
    p.arms.forEach((a,j)=>{a.rotation.x=-.55+Math.sin(t*5+j)*.07;a.rotation.z=j===0?-.45:.45});
    if(elapsed>.45&&elapsed<2.3){
-    if(audioEnabled&&Math.floor(elapsed*4)!==Math.floor((elapsed-dt)*4))sfxBite();
+    if(audioEnabled&&Math.floor(elapsed*4)!==Math.floor((elapsed-dt)*4))sfxChew();
     const chew=Math.sin(t*13)*.035;
     breadRoot.scale.set(1-Math.max(0,elapsed-.5)*.09,1+chew,1-Math.max(0,elapsed-.5)*.07);
     breadRoot.rotation.z=Math.sin(t*12)*.025;
@@ -133,7 +133,7 @@ function animate(now){
  updateBallMode(now,dt,t);
  updateTouchControls(dt);
  if(net.role!=='client')updateSoccerMode(now,dt);
- soccerUiUpdate();
+ soccerUiUpdate();soccerAudioCue();
  players.forEach((p,i)=>{if(p.glb)animateGlbPlayer(p,i,dt)});
  updateSelfMarker(t);
  if(net.role==='client')netClientFrame(dt,now);else netHostFrame(now);

@@ -19,12 +19,27 @@ const lineMat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opaci
 function pitchLine(x,z,w,d){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),lineMat);m.rotation.x=-Math.PI/2;m.position.set(x,.045,z);soccerRoot.add(m)}
 pitchLine(0,GOAL_Z,10,.08);pitchLine(0,.2,10,.08);pitchLine(-5,(GOAL_Z+.2)/2,.08,Math.abs(GOAL_Z-.2));pitchLine(5,(GOAL_Z+.2)/2,.08,Math.abs(GOAL_Z-.2));
 const spot=new THREE.Mesh(new THREE.CircleGeometry(.13,16),lineMat);spot.rotation.x=-Math.PI/2;spot.position.set(0,.05,BALL_Z);soccerRoot.add(spot);
+const goalFallback=new THREE.Group();soccerRoot.add(goalFallback);   // gol simples de reserva (some quando gol.glb carrega)
 const postMat=mat('#f5f5f5',.35,.2);
-for(const x of [-3,3]){const p=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,2.4,16),postMat);p.position.set(x,1.2,GOAL_Z);p.castShadow=true;soccerRoot.add(p)}
-const bar=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,6.18,16),postMat);bar.rotation.z=Math.PI/2;bar.position.set(0,2.4,GOAL_Z);bar.castShadow=true;soccerRoot.add(bar);
-const net3=new THREE.Mesh(new THREE.BoxGeometry(6,2.4,1.2,18,7,4),new THREE.MeshBasicMaterial({color:0xffffff,wireframe:true,transparent:true,opacity:.35}));net3.position.set(0,1.2,GOAL_Z-.6);soccerRoot.add(net3);
-const soccerBall=new THREE.Mesh(new THREE.IcosahedronGeometry(.36,1),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.5,flatShading:true}));
-soccerBall.castShadow=true;soccerBall.position.set(0,.3,BALL_Z);soccerRoot.add(soccerBall);
+for(const x of [-3,3]){const p=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,2.4,16),postMat);p.position.set(x,1.2,GOAL_Z);p.castShadow=true;goalFallback.add(p)}
+const bar=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,6.18,16),postMat);bar.rotation.z=Math.PI/2;bar.position.set(0,2.4,GOAL_Z);bar.castShadow=true;goalFallback.add(bar);
+const net3=new THREE.Mesh(new THREE.BoxGeometry(6,2.4,1.2,18,7,4),new THREE.MeshBasicMaterial({color:0xffffff,wireframe:true,transparent:true,opacity:.35}));net3.position.set(0,1.2,GOAL_Z-.6);goalFallback.add(net3);
+const soccerBall=new THREE.Group();soccerBall.position.set(0,.3,BALL_Z);soccerRoot.add(soccerBall);
+const ballFallback=new THREE.Mesh(new THREE.IcosahedronGeometry(.36,1),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.5,flatShading:true}));ballFallback.castShadow=true;soccerBall.add(ballFallback);
+
+/* Modelos 3D (.glb) da bola e do gol; se não carregarem, ficam os modelos simples acima. */
+function loadSoccerModel(url,onModel){
+ if(typeof GLTFLoader==='undefined')return;
+ new GLTFLoader().load(url,g=>{try{onModel(g.scene)}catch(e){console.warn('erro no modelo',url,e)}},undefined,e=>console.warn('modelo não carregou:',url,e));
+}
+function restyle(model,roughness,doubleSide){
+ model.traverse(o=>{if(o.isMesh){o.material=new THREE.MeshStandardMaterial({map:o.material.map,roughness,metalness:0,side:doubleSide?THREE.DoubleSide:THREE.FrontSide});o.castShadow=true}});
+}
+loadSoccerModel('models/bola.glb',m=>{m.scale.setScalar(.38);restyle(m,.5,false);soccerBall.add(m);ballFallback.visible=false});   // raio do modelo ~0,95
+loadSoccerModel('models/gol.glb',m=>{
+ // o modelo mede ~1,9 x 1,07 x 1,54 (abertura para +z); esticamos para um gol de ~5,9 x 2,25 x 2,3
+ m.scale.set(3.1,2.1,1.5);m.position.set(0,1.125,GOAL_Z-1.157);restyle(m,.8,true);soccerRoot.add(m);goalFallback.visible=false;
+});
 
 /* ---------- Estado ---------- */
 let soccer=null,soccerSentShot=-1; // convidados guardam aqui uma cópia do estado enviado pelo anfitrião
@@ -67,8 +82,8 @@ function soccerSetChoice(slot,dir){
 function soccerResult(now){
  const s=soccer;s.ph='result';s.t0=now;
  const kn=players[s.k].name,gn=players[s.g].name,how=kn+' chutou na '+DIR_NAME[s.kickDir]+' e '+gn+' foi para '+DIR_NAME[s.diveDir]+'.';
- if(s.res==='save'){s.saves++;setStatus('🧤 DEFENDEU! '+how);if(audioEnabled)sfxCream()}
- else{s.goals++;s.goalsBy[s.k]=(s.goalsBy[s.k]||0)+1;setStatus('⚽ GOOOL! '+how);if(audioEnabled)sfxFinish()}
+ if(s.res==='save'){s.saves++;setStatus('🧤 DEFENDEU! '+how)}
+ else{s.goals++;s.goalsBy[s.k]=(s.goalsBy[s.k]||0)+1;setStatus('⚽ GOOOL! '+how)}
 }
 function finishSoccer(){
  const s=soccer;s.ph='done';ended=true;running=false;clearBots();
@@ -138,3 +153,14 @@ window.addEventListener('keydown',e=>{
  const m={ArrowLeft:-1,KeyA:-1,ArrowUp:0,KeyW:0,ArrowDown:0,KeyS:0,ArrowRight:1,KeyD:1}[e.code];
  if(m===undefined)return;e.preventDefault();soccerChoose(m);
 });
+
+/* ---- Sons do jogo (tocam para todos: anfitrião e convidados) ----
+   apito = hora de escolher/chutar • chute = no instante em que a bola sai • gol/defesa = no resultado */
+let soccerCueKey='';
+function soccerAudioCue(){
+ if(gameMode!=='soccer'||!soccer){soccerCueKey='';return}
+ const key=soccer.sh+':'+soccer.ph;if(key===soccerCueKey)return;soccerCueKey=key;
+ if(soccer.ph==='pick')sfxWhistle();
+ else if(soccer.ph==='kick')setTimeout(sfxKick,SOCCER.kickMs*SOCCER.launch);
+ else if(soccer.ph==='result'){if(soccer.res==='save')sfxCream();else sfxFinish()}
+}

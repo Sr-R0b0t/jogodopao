@@ -34,7 +34,27 @@ function noisePop(duration=.22,volume=.11,lowpass=1800){
 function sfxClick(){tone(620,.045,'square',.035,0,390)}
 function sfxCream(){noisePop(.25,.18,1500);tone(220,.28,'sawtooth',.08,0,90);tone(520,.12,'sine',.06,.04,250)}
 function sfxFinish(){[523,659,784].forEach((f,i)=>tone(f,.18,'triangle',.11,i*.09))}
-function sfxBite(){noisePop(.12,.12,950);tone(170,.16,'triangle',.08,0,115);setTimeout(()=>{if(audioEnabled){noisePop(.08,.08,1300);tone(230,.11,'sine',.06)}},180)}
+/* ---- Sons gravados (pasta audio/). Carregam depois do 1º toque; se faltarem, usa os sons sintetizados. ---- */
+const SAMPLE_URLS={whistle:'audio/apito.mp3',kick:'audio/chute.mp3',bite:'audio/mordida.mp3'};
+const sampleBuffers={},sampleLoading={};
+function loadSample(name){
+ if(sampleBuffers[name]||sampleLoading[name])return;
+ ensureAudio();
+ sampleLoading[name]=fetch(SAMPLE_URLS[name]).then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer()})
+  .then(b=>new Promise((ok,err)=>audioCtx.decodeAudioData(b,ok,err)))
+  .then(buf=>{sampleBuffers[name]=buf}).catch(e=>console.warn('som não carregou:',name,e));
+}
+function playSample(name,volume=1){
+ if(!audioEnabled)return true;               // efeitos desligados: não toca nada
+ ensureAudio();const buf=sampleBuffers[name];
+ if(!buf){loadSample(name);return false}      // ainda não carregou: quem chamou usa o som sintetizado
+ const src=audioCtx.createBufferSource(),gain=audioCtx.createGain();
+ src.buffer=buf;gain.gain.value=volume;src.connect(gain);gain.connect(masterGain);src.start();return true;
+}
+function sfxBite(){if(playSample('bite',1))return;sfxChew()}   // mordida final (som gravado)
+function sfxWhistle(){if(!playSample('whistle',1)){tone(1800,.25,'sine',.12);tone(2000,.25,'sine',.1,.28)}}
+function sfxKick(){if(!playSample('kick',1)){noisePop(.12,.2,900);tone(120,.15,'sine',.15,0,60)}}
+function sfxChew(){if(sampleBuffers.bite)return;noisePop(.12,.12,950);tone(170,.16,'triangle',.08,0,115);setTimeout(()=>{if(audioEnabled){noisePop(.08,.08,1300);tone(230,.11,'sine',.06)}},180)}
 const melody=[392,494,587,494,440,523,659,523,349,440,523,440,392,494,587,494];
 function startMusic(){
  if(!musicEnabled||musicTimer)return;
@@ -50,6 +70,7 @@ function stopMusic(){if(musicTimer){clearInterval(musicTimer);musicTimer=null}}
 
 /* Navegadores só liberam som após o 1º toque/tecla: ligamos a música nesse momento. */
 function unlockAudioOnce(){
+ Object.keys(SAMPLE_URLS).forEach(n=>setTimeout(()=>loadSample(n),0));
  document.removeEventListener('pointerdown',unlockAudioOnce);document.removeEventListener('keydown',unlockAudioOnce);
  ensureAudio();if(musicEnabled)startMusic();
 }
