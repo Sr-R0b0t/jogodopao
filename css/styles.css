@@ -218,3 +218,9 @@ body.touch-ui .touch-action{width:86px;height:86px}
 
 #roundBanner .cd{font-size:clamp(4rem,20vw,8rem);line-height:1;font-weight:1000;color:#fff;text-shadow:0 6px 0 #bb6a31,0 12px 30px #000;animation:cdPop .9s ease both}
 @keyframes cdPop{0%{transform:scale(1.7);opacity:0}25%{transform:scale(1);opacity:1}100%{transform:scale(.92);opacity:.9}}
+
+/* Placares dos jogadores: faixa no TOPO da arena (igual ao boliche) */
+.hud{display:flex;justify-content:center;align-items:flex-start;gap:5px;padding:8px;flex-wrap:nowrap}
+.tag{position:static!important;transform:none!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;flex:1 1 0;min-width:0!important;max-width:118px;text-align:center;padding:5px 4px;font-size:clamp(.5rem,1.5vw,.72rem);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tag b{font-size:clamp(.58rem,1.8vw,.8rem);overflow:hidden;text-overflow:ellipsis}
+.tag.me{outline:2px solid #62ff9a;background:#2c5d47e6}

@@ -29,7 +29,7 @@ const joystick={x:0,y:0,active:false}; // x,y de -1 a 1 (lido pelo modo Bolas e 
 
  /* --- Botão de ação: dispara o mesmo botão principal (CLICAR / EMPURRÃO / LANÇAR) --- */
  const action=document.getElementById('touchAction'),tap=document.getElementById('tap');
- action.addEventListener('pointerdown',e=>{e.preventDefault();if(!action.disabled)tap.click()});
+ action.addEventListener('pointerdown',e=>{e.preventDefault();if(!action.disabled)pressTap()});
 
  /* --- Força do lançamento (boliche) --- */
  const power=document.getElementById('touchPower');

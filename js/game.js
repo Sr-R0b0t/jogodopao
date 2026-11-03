@@ -7,7 +7,7 @@ let running=false,ended=false,botTimers=[],lastTime=performance.now(),celebrateS
 function clearBots(){botTimers.forEach(clearTimeout);botTimers=[]}
 
 function updateHud(){
- players.forEach((p,i)=>{const b=balls[i];document.querySelector(`#tag${i} b`).textContent=gameMode==='ball'?(b.alive?'NA ARENA':(b.falling?'CAINDO!':'FORA!')):`${p.count} / 100`});
+ players.forEach((p,i)=>{const b=balls[i];document.getElementById('tag'+i).classList.toggle('me',i===humanIndex);document.querySelector(`#tag${i} b`).textContent=gameMode==='ball'?(b.alive?'NA ARENA':(b.falling?'CAINDO!':'FORA!')):`${p.count} / 100`});
  document.getElementById('tap').textContent=gameMode==='ball'?'🎯 EMPURRÃO!':gameMode==='bowling'?'🎳 LANÇAR BOLA!':'👆 CLICAR!';
 }
 function applyMode(){
@@ -60,7 +60,12 @@ function start(){
 }
 
 /* Botão principal (CLICAR / EMPURRÃO / LANÇAR) */
-document.getElementById('tap').addEventListener('click',()=>{
+/* Cada clique/toque conta UMA vez. Segurar Enter/Espaço não vale: ignoramos o auto-repeat do teclado
+   (e.repeat) e os "cliques" que o próprio navegador gera no botão focado (detail===0). */
+let tapAllowed=false;
+function pressTap(){tapAllowed=true;try{document.getElementById('tap').click()}finally{tapAllowed=false}}
+document.getElementById('tap').addEventListener('click',e=>{
+ if(e&&e.detail===0&&!tapAllowed)return;
  if(!running)return;
  if(gameMode==='ball')return; // Batalha das Bolas: só direção (sem botão de empurrão)
  if(net.role==='client'){sfxClick();netSendInput({k:'tap',aim:r2(bowlingAimValue),pow:bowlingPowerValue});return}
@@ -74,7 +79,13 @@ document.getElementById('reset').addEventListener('click',()=>{ // reinicia o me
  cancelCountdown();reset();
  const info=MINIGAMES.find(m=>m.id===gameMode);runCountdown(3,'↻ '+(info?info.label:''),document.getElementById('roundLabel').textContent);
 });
-document.addEventListener('keydown',e=>{if((e.code==='Space'||e.code==='Enter')&&running&&gameMode!=='ball'&&gameMode!=='soccer'){e.preventDefault();document.getElementById('tap').click()}});
+document.addEventListener('keydown',e=>{
+ if((e.code==='Space'||e.code==='Enter')&&running&&gameMode!=='ball'&&gameMode!=='soccer'){
+  e.preventDefault();
+  if(e.repeat)return;            // tecla segurada = não conta de novo
+  pressTap();
+ }
+});
 
 /* Loop de animação */
 function animate(now){
