@@ -10,6 +10,15 @@ function gpRead(g){
  const b=i=>!!(g.buttons[i]&&g.buttons[i].pressed);
  let x=g.axes[0]||0,y=g.axes[1]||0;
  if(Math.hypot(x,y)<GP_DZ){x=0;y=0}
+ // PS4 lido fora do padrão (ex.: Firefox no Windows): X=botão 1, O=botão 2, direcional = eixo "hat" 9
+ if(g.mapping!=='standard'&&/054c|playstation|dualshock|wireless controller/i.test(g.id||'')){
+  const h=g.axes[9];
+  if(h!==undefined&&h<1.1){
+   const k=Math.round((h+1)*3.5); // 0=cima,1=cima-dir,2=dir,3=baixo-dir,4=baixo,5=baixo-esq,6=esq,7=cima-esq
+   if([7,0,1].includes(k))y=-1;if([3,4,5].includes(k))y=1;if([1,2,3].includes(k))x=1;if([5,6,7].includes(k))x=-1;
+  }
+  return {x,y,a:b(1),b:b(2),start:b(9),sel:b(8),lb:b(4),rb:b(5)};
+ }
  if(b(14))x=-1;else if(b(15))x=1;
  if(b(12))y=-1;else if(b(13))y=1;
  return {x,y,a:b(0),b:b(1),start:b(9),sel:b(8),lb:b(4),rb:b(5)};
@@ -138,3 +147,18 @@ function gpMenu(s,E,now){
  });
  if(best){best.focus();best.scrollIntoView({block:'nearest'})}
 }
+
+/* Aviso na tela: mostra se o navegador reconheceu o controle (ajuda a descobrir por que não funciona). */
+(function gpBadge(){
+ const el=document.createElement('div');
+ el.style.cssText='position:fixed;left:10px;bottom:10px;z-index:9999;max-width:min(360px,80vw);padding:7px 11px;border-radius:12px;background:#000b;color:#fff;font:800 12px system-ui,sans-serif;display:none;pointer-events:none';
+ document.body.appendChild(el);
+ let hideT=null;
+ const flash=(t,ms)=>{el.textContent=t;el.style.display='block';clearTimeout(hideT);if(ms)hideT=setTimeout(()=>el.style.display='none',ms)};
+ window.addEventListener('gamepadconnected',e=>flash('🎮 Controle conectado: '+(e.gamepad.id||'').slice(0,38)+(e.gamepad.mapping==='standard'?'':' (mapeamento não padrão)'),6000));
+ window.addEventListener('gamepaddisconnected',()=>flash('🎮 Controle desconectado',3500));
+ if(!window.isSecureContext)flash('⚠️ Controles só funcionam em páginas https ou localhost (esta página é http comum).',0);
+ else if(!navigator.getGamepads)flash('⚠️ Este navegador não suporta controles.',0);
+ // dica se existir controle mas ainda não foi reconhecido (precisa apertar um botão com a janela em foco)
+ setTimeout(()=>{if(window.isSecureContext&&!gpState.used&&![...(navigator.getGamepads?navigator.getGamepads():[])].some(g=>g&&g.connected))flash('🎮 Se o controle está ligado: clique na página e aperte um botão dele.',7000)},12000);
+})();
