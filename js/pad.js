@@ -26,7 +26,7 @@ const send=o=>{if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))};
 const relayWs=d=>send({t:'relay',d});
 /* Conexão direta com a TV (WebRTC): bem menos atraso que passar pelo servidor. Cai para o servidor se não conectar. */
 let pc=null,dc=null,p2p=false,iceQ=[],rdSet=false;
-let lastDcPong=0;
+let lastDcPong=0,rtcOff=qs.get('p2p')==='0';
 function relay(d){
  if(d.k==='ctl')return relayWs(d); // comandos de menu (iniciar, avançar) sempre pelo servidor: chegam com certeza
  if(p2p&&dc&&dc.readyState==='open'){try{dc.send(JSON.stringify(d));return}catch(e){}}
@@ -34,7 +34,7 @@ function relay(d){
 }
 function closeRtc(){p2p=false;try{dc&&dc.close()}catch(e){}try{pc&&pc.close()}catch(e){}pc=dc=null;iceQ=[];rdSet=false}
 function startRtc(){
- closeRtc();if(!window.RTCPeerConnection)return;
+ closeRtc();if(rtcOff||!window.RTCPeerConnection)return;
  try{
   const me0=pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
   dc=pc.createDataChannel('ev',{ordered:true});
@@ -221,6 +221,9 @@ setInterval(()=>{
  if(p2p&&dc&&dc.readyState==='open')try{dc.send(JSON.stringify({k:'png',ts:performance.now()}))}catch(e){}
  else send({t:'ping',ts:performance.now()});
 },2000);
+$('ping').addEventListener('click',()=>{ // toque no número: alterna entre conexão direta e servidor (para comparar)
+ rtcOff=!rtcOff;if(rtcOff){closeRtc();$('ping').textContent='servidor'}else if(joined)startRtc();toast(rtcOff?'Usando só o servidor':'Tentando conexão direta…');
+});
 window.padDebug=()=>({ui,me,vip,names,joined,p2p});
 if(code&&$('name').value)$('go').focus();
 })();
