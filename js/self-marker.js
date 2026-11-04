@@ -4,7 +4,7 @@ const SELF_COLOR=0x62ff9a;
 const selfOutlineMat=new THREE.MeshBasicMaterial({color:SELF_COLOR,side:THREE.BackSide,toneMapped:false});
 const selfArrowMat=new THREE.MeshBasicMaterial({color:SELF_COLOR,toneMapped:false});
 function makeSelfLabelSprite(text,color,stroke){
- text=text||'';color=color||'#62ff9a';stroke=stroke||'#153221';
+ text=text||'VOCÊ';color=color||'#62ff9a';stroke=stroke||'#153221';
  try{
   const c=document.createElement('canvas');c.width=256;c.height=96;
   const g=c.getContext&&c.getContext('2d');if(!g)return null;

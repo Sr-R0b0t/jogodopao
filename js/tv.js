@@ -168,3 +168,12 @@ function tvPadLeave(pi){
  const cur=tvPads[pi];if(cur===undefined||tournamentCharacterLocked)return;
  delete tvPads[pi];netSendRaw({t:'unlocal',slot:cur});
 }
+
+/* Controles Bluetooth/USB: o pareamento é feito no Bluetooth do aparelho que está na TV; o jogo detecta quando você aperta um botão. */
+function tvUpdateGp(){
+ const el=document.getElementById('tvGp');if(!el)return;
+ const l=[...(navigator.getGamepads?navigator.getGamepads():[])].filter(g=>g&&g.connected);
+ el.textContent=l.length?'🎮 '+l.length+' controle'+(l.length>1?'s':'')+' conectado'+(l.length>1?'s':'')+': aperte A (X no PlayStation) para entrar.':'🎮 Para jogar com controle: pareie no Bluetooth do aparelho (ou ligue por cabo USB) e aperte um botão.';
+}
+window.addEventListener('gamepadconnected',tvUpdateGp);window.addEventListener('gamepaddisconnected',tvUpdateGp);
+setInterval(tvUpdateGp,1500);
