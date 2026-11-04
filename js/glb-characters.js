@@ -11,6 +11,15 @@ const GLB_CHARACTERS={
   once:['jump','kick'],markY:2.8},
  rafa:{url:'models/rafa.glb',height:2.3,modelHeight:1.7,
   clips:{idle:'Idle_9',walk:'Walking',run:'Running',dance:'victory',jump:'Jump_Over_Obstacle_2',kick:'Kick_a_Soccer_Ball',hop:'Hop_with_Arms_Raised'},
+  once:['jump','kick'],markY:2.8},
+ lorena:{url:'models/lorena.glb',height:2.3,modelHeight:1.7,
+  clips:{idle:'Idle_9',walk:'Walking',run:'Running',dance:'Not_Your_Mom',jump:'Jump_Over_Obstacle_2',kick:'Kick_a_Soccer_Ball',hop:'Jump_with_Arms_Open'},
+  once:['jump','kick'],markY:2.8},
+ ricardo:{url:'models/ricardo.glb',height:2.3,modelHeight:1.7,
+  clips:{idle:'Idle_9',walk:'Walking',run:'Running',dance:'Joyful_Dance_with_Hand_Sway',jump:'Jump_Over_Obstacle_2',kick:'Kick_a_Soccer_Ball',hop:'Jump_with_Arms_Open'},
+  once:['jump','kick'],markY:2.8},
+ kika:{url:'models/kika.glb',height:2.3,modelHeight:1.7,
+  clips:{idle:'Idle_9',walk:'Walking',run:'Running',dance:'jazz_danc',jump:'Jump_Over_Obstacle_2',kick:'Kick_a_Soccer_Ball',hop:'Jump_with_Arms_Open'},
   once:['jump','kick'],markY:2.8}
 };
 const glbOutlineMat=new THREE.MeshBasicMaterial({color:0x62ff9a,side:THREE.BackSide,toneMapped:false});
@@ -80,7 +89,7 @@ function animateGlbPlayer(p,i,dt){
  }
  else if(p.finished)state='dance';                                                   // terminou a corrida do pão
  else if(gameMode==='bread'&&running)state='run';                               // clicando = correndo
- else if(gameMode==='ball'&&running&&balls[i].alive&&g.speed>.6)state='walk';  // equilibrando na bola
+ else if((gameMode==='ball'&&running&&balls[i].alive||isShipMode()&&running&&p.count>0)&&g.speed>.6)state='walk';  // equilibrando na bola
  else if(gameMode==='ball'&&ended&&balls[i].alive)state='dance';                // venceu a batalha
  else if(gameMode==='bowling'&&bowlingBallState&&bowlingOrder[bowlingTurn]===i)state='jump'; // lançou a bola
  setGlbState(p,state);

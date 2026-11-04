@@ -22,7 +22,7 @@ const server=http.createServer((req,res)=>{
 /* ---------- Salas ---------- */
 const wss=new WebSocketServer({server,maxPayload:64*1024});
 const rooms=new Map(); // código -> {code,host,slots:[{ws,name}|null ×5],started}
-const SLOTS=9,MAX_HUMANS=8, // SLOTS = nº de personagens; no máximo 8 pessoas por sala
+const SLOTS=12,MAX_HUMANS=8, // SLOTS = nº de personagens; no máximo 8 pessoas por sala
 CODE_CHARS='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 function newCode(){let c;do{c=Array.from({length:5},()=>CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)]).join('')}while(rooms.has(c));return c}
 const send=(ws,o)=>{if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))};

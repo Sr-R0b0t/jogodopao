@@ -4,7 +4,7 @@
 const characterPreviewRenderers=[]; // mantido vazio por compatibilidade
 const previewCache={};
 /* Na seleção de personagem, Fabola e Luana aparecem com as imagens PNG (os modelos 3D animados ficam só no jogo). */
-const PREVIEW_PNG={luana:'img/luana.png',fabola:'img/fabola.png',rafa:'img/rafa.png'};
+const PREVIEW_PNG={luana:'img/luana.png',fabola:'img/fabola.png',rafa:'img/rafa.png',lorena:'img/lorena.png',ricardo:'img/ricardo.png',kika:'img/kika.png'};
 function previewUrl(i,featured){return PREVIEW_PNG[specs[i].type]||previewCache[i+(featured?'f':'s')]||''}
 let previewsReady=false;
 function renderPreviewImages(){
@@ -49,7 +49,10 @@ const characterProfiles=[
  {name:'Dragão',emoji:'🐲',description:'Pequeno, valente e cheio de fogo. Um bebê dragão pronto para a briga.'},
  {name:'Fabola',emoji:'🧔',description:'Estiloso, de bigode e cavanhaque. Chega na arena com muita presença.'},
  {name:'Princesa Luana',emoji:'👸',description:'Elegante e cheia de charme, a princesa de vestido vermelho brilha na arena.'},
- {name:'Rafa Dino',emoji:'💪',description:'Forte e de bom coração. Chega na arena para impor respeito.'}
+ {name:'Rafa Dino',emoji:'💪',description:'Forte e de bom coração. Chega na arena para impor respeito.'},
+ {name:'Lorena',emoji:'😁',description:'Sorridente e cheia de energia, de jaqueta rosa e muito estilo.'},
+ {name:'Ricardo',emoji:'🧔',description:'De barba e camisa preta, calmo por fora e competitivo na arena.'},
+ {name:'Kika',emoji:'👩‍🍳',description:'A confeiteira de chapéu de chef: doce, loira e muito determinada.'}
 ];
 function updateFeaturedCharacterPreview(index){
  const featured=document.getElementById('previewAvatar');

@@ -229,14 +229,17 @@ function makeCharacter(type,color,accent){
  return {root,rig,arms,legs,body:null,phase:Math.random()*6,finished:false,throwAt:0,type};
 }
 const specs=[
- {name:'ASTRONAUTA',type:'astronaut',color:'#efe9df',accent:'#f1ece2',angle:-Math.PI/2},
- {name:'RAPOSA',type:'fox',color:'#f4721f',accent:'#ffe6bf',angle:-Math.PI/2+Math.PI*2/8},
- {name:'SAPO',type:'frog',color:'#55bd3f',accent:'#f7e2b0',angle:-Math.PI/2+Math.PI*4/8},
- {name:'PANDA',type:'panda',color:'#26222c',accent:'#fbf8f2',angle:-Math.PI/2+Math.PI*6/8},
- {name:'MACACO',type:'monkey',color:'#a8683f',accent:'#ffe0ad',angle:-Math.PI/2+Math.PI*8/8},
- {name:'DRAGÃO',type:'dragon',color:'#58b043',accent:'#f6e2b0',angle:-Math.PI/2+Math.PI*10/8},
- {name:'FABOLA',type:'fabola',color:'#2a2220',accent:'#f2c29b',angle:-Math.PI/2+Math.PI*12/8},
- {name:'LUANA',type:'luana',color:'#d6212a',accent:'#f5cba2',angle:-Math.PI/2+Math.PI*14/8},
- {name:'RAFA',type:'rafa',color:'#222024',accent:'#b8703b',angle:-Math.PI/2+Math.PI*16/8}
+ {name:'ASTRONAUTA',team:'#ffffff',type:'astronaut',color:'#efe9df',accent:'#f1ece2',angle:-Math.PI/2},
+ {name:'RAPOSA',team:'#ff8a1f',type:'fox',color:'#f4721f',accent:'#ffe6bf',angle:-Math.PI/2+Math.PI*2/8},
+ {name:'SAPO',team:'#7dff3a',type:'frog',color:'#55bd3f',accent:'#f7e2b0',angle:-Math.PI/2+Math.PI*4/8},
+ {name:'PANDA',team:'#a24dff',type:'panda',color:'#26222c',accent:'#fbf8f2',angle:-Math.PI/2+Math.PI*6/8},
+ {name:'MACACO',team:'#c47a3a',type:'monkey',color:'#a8683f',accent:'#ffe0ad',angle:-Math.PI/2+Math.PI*8/8},
+ {name:'DRAGÃO',team:'#14e0a0',type:'dragon',color:'#58b043',accent:'#f6e2b0',angle:-Math.PI/2+Math.PI*10/8},
+ {name:'FABOLA',team:'#19e6ff',type:'fabola',color:'#2a2220',accent:'#f2c29b',angle:-Math.PI/2+Math.PI*12/8},
+ {name:'LUANA',team:'#ff2f3f',type:'luana',color:'#d6212a',accent:'#f5cba2',angle:-Math.PI/2+Math.PI*14/8},
+ {name:'RAFA',team:'#4a3dff',type:'rafa',color:'#222024',accent:'#b8703b',angle:-Math.PI/2+Math.PI*16/8},
+ {name:'LORENA',team:'#ff8fc8',type:'lorena',color:'#e0508f',accent:'#f5d3b8',angle:-Math.PI/2},
+ {name:'RICARDO',team:'#2e86ff',type:'ricardo',color:'#2f6fb0',accent:'#e0a574',angle:-Math.PI/2},
+ {name:'KIKA',team:'#ffd21f',type:'kika',color:'#f2c14e',accent:'#f8dcc8',angle:-Math.PI/2}
 ];
-const players=specs.map((s,i)=>{const c=makeCharacter(s.type,s.color,s.accent);c.name=s.name;c.count=0;c.delay=[0,195,235,270,220,250,210,240,225][i];c.angle=s.angle;c.root.position.set(Math.cos(s.angle)*5.2,0,Math.sin(s.angle)*4.5);c.root.rotation.y=Math.atan2(-c.root.position.x,-c.root.position.z);scene.add(c.root);return c});
+const players=specs.map((s,i)=>{const c=makeCharacter(s.type,s.color,s.accent);c.name=s.name;c.count=0;c.delay=[0,195,235,270,220,250,210,240,225,205,230,215][i];c.angle=s.angle;c.root.position.set(Math.cos(s.angle)*5.2,0,Math.sin(s.angle)*4.5);c.root.rotation.y=Math.atan2(-c.root.position.x,-c.root.position.z);scene.add(c.root);return c});

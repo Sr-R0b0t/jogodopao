@@ -5,7 +5,9 @@ const MINIGAMES=[
  {id:'bread',label:'Corrida do Pão'},
  {id:'ball',label:'Batalha das Bolas'},
  {id:'bowling',label:'Boliche na Ladeira'},
- {id:'soccer',label:'Pênaltis (Futebol)'}
+ {id:'soccer',label:'Pênaltis (Futebol)'},
+ {id:'ship',label:'Arena das Naves',min:2,max:4},   // só com 2 a 4 jogadores
+ {id:'turbo',label:'Arena Turbo',min:2,max:4}
 ];
 let minigameBag=[],lastMinigame=null,roundNumber=0,roundTimer=null;
 // o seletor de minigame fica escondido (só o jogo usa), mas segue a lista acima
@@ -13,9 +15,13 @@ let minigameBag=[],lastMinigame=null,roundNumber=0,roundTimer=null;
 
 /* "Saco" de sorteio: embaralha todos, tira um por rodada; quando esvazia, embaralha de novo
    (evitando abrir o novo ciclo com o mesmo jogo que acabou de ser jogado). */
+/* Minigames que podem ser sorteados com a quantidade atual de jogadores (min/max opcionais). */
+function eligibleMinigames(){const n=activeIndices().length;return MINIGAMES.filter(m=>(!m.min||n>=m.min)&&(!m.max||n<=m.max))}
 function drawMinigame(){
+ const ok=new Set(eligibleMinigames().map(m=>m.id));
+ minigameBag=minigameBag.filter(id=>ok.has(id));
  if(!minigameBag.length){
-  minigameBag=MINIGAMES.map(m=>m.id).sort(()=>Math.random()-.5);
+  minigameBag=[...ok].sort(()=>Math.random()-.5);
   if(minigameBag.length>1&&minigameBag[0]===lastMinigame)minigameBag.push(minigameBag.shift());
  }
  lastMinigame=minigameBag.shift();return lastMinigame;

@@ -23,12 +23,17 @@ const floorMat=mat('#49336b');
 const floor=new THREE.Mesh(new THREE.CylinderGeometry(7.5*ARENA_SCALE,7.5*ARENA_SCALE,.35,96),floorMat);floor.position.y=-.3;floor.receiveShadow=true;scene.add(floor);
 const rimMesh=new THREE.Mesh(new THREE.TorusGeometry(7.15*ARENA_SCALE,.13,12,100),mat('#d0a5ff',.35));rimMesh.rotation.x=Math.PI/2;rimMesh.position.y=-.08;scene.add(rimMesh);
 const inner=new THREE.Mesh(new THREE.CylinderGeometry(4.8*ARENA_SCALE,4.8*ARENA_SCALE,.06,80),mat('#654487'));inner.position.y=-.08;inner.receiveShadow=true;scene.add(inner);
-for(let i=0;i<24;i++){const a=i/24*Math.PI*2;const dot=new THREE.Mesh(new THREE.SphereGeometry(.07,12,8),mat(i%2?'#ffda70':'#a6f5c8'));dot.position.set(Math.cos(a)*6.7*ARENA_SCALE,.02,Math.sin(a)*6.7*ARENA_SCALE);scene.add(dot)}
+const arenaDots=[];
+for(let i=0;i<24;i++){const a=i/24*Math.PI*2;const dot=new THREE.Mesh(new THREE.SphereGeometry(.07,12,8),mat(i%2?'#ffda70':'#a6f5c8'));dot.position.set(Math.cos(a)*6.7*ARENA_SCALE,.02,Math.sin(a)*6.7*ARENA_SCALE);scene.add(dot);arenaDots.push(dot)}
 
 /* Câmera: enquadra a arena inteira (inclusive a parte de baixo). Em telas estreitas (celular em pé)
    afasta mais para caber a largura. O boliche usa a câmera original, focada na pista. */
 function applyCameraPose(){
  const aspect=host.clientWidth>0&&host.clientHeight>0?host.clientWidth/host.clientHeight:1.76; // tela escondida = proporção padrão
+ if(typeof gameMode!=='undefined'&&isShipMode()){ // visão de cima, de frente para a arena quadrada
+  const z=(typeof isTurbo==='function'&&isTurbo())?1.07:1,tgt=[0,0,.8*z],base=[0,15*z,12.8*z],s=Math.max(1,13*z/(15.4*aspect));
+  camera.position.set(0,tgt[1]+(base[1]-tgt[1])*s,tgt[2]+(base[2]-tgt[2])*s);camera.lookAt(...tgt);return;
+ }
  if(typeof gameMode!=='undefined'&&gameMode==='soccer'){ // atrás do batedor, olhando para o gol
   const tgt=[0,1.0,-3.3],base=[0,3.4,8.4],s=Math.max(1,7/(9.4*aspect));
   camera.position.set(0,tgt[1]+(base[1]-tgt[1])*s,tgt[2]+(base[2]-tgt[2])*s);camera.lookAt(...tgt);return;
