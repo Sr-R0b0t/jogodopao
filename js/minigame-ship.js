@@ -172,13 +172,22 @@ const padMaskNow=()=>{if(!ship)return 0;const t=performance.now();let m=0;ship.p
 
 /* ---------- Estado ---------- */
 let ship=null,shipSideOf={},shipClient=null,shipSeenGoals=0;
+let shipTeams=null;   // null = todos contra todos; senão [[a,b],[c,d]] (2 contra 2)
+const TEAM_COLORS=['#2bff5a','#ff8a1f'],TEAM_EMOJI=['🟢','🟠'];
+const shipTeamOf=i=>shipTeams?shipTeams.findIndex(g=>g.includes(i)):-1;
+const shipSameTeam=(a,b)=>shipTeams&&shipTeamOf(a)===shipTeamOf(b)&&shipTeamOf(a)>=0;
+function applyShipTeams(teams){
+ shipTeams=teams;if(!teams)return;
+ teams.forEach((g,k)=>g.forEach(i=>{const sd=shipSideOf[i];if(sd===undefined)return;const c=new THREE.Color(TEAM_COLORS[k]);const r=shipGroups[i].userData.ring.material;r.color.copy(c);r.emissive.copy(c);goalStrips[sd].userData.u.uCol.value.copy(c);goalBase[sd]=c.clone()}));
+}
+function shipTeamsAlive(){return shipTeams?shipTeams.filter(g=>g.some(i=>players[i].count>0)).length:aliveShips().length}
 let shipSeenImp=0,shipSeenSpawns=0,shipSeenPads=0;const blastSeen=[];const turboPodT=[0,0,0,0];
 const goalFlash=[0,0,0,0],goalBase=[null,null,null,null];
 function flashGoal(side){goalFlash[side]=performance.now()}
 const shipVel={};
 function setupShip(){
  ensureArena();
- ship=null;shipClient=null;shipSeenGoals=0;shipSeenImp=0;shipSeenSpawns=0;shipSeenPads=0;turboPodT.fill(0);blastSeen.length=0;blastT.fill(0);
+ ship=null;shipTeams=null;shipClient=null;shipSeenGoals=0;shipSeenImp=0;shipSeenSpawns=0;shipSeenPads=0;turboPodT.fill(0);blastSeen.length=0;blastT.fill(0);
  const act=activeIndices().sort((a,b)=>a-b),order=SIDE_ORDER[Math.min(4,Math.max(2,act.length))];
  shipSideOf={};act.forEach((i,k)=>{shipSideOf[i]=order[k]});
  players.forEach((p,i)=>{
@@ -196,6 +205,18 @@ function startShip(){
  const now=performance.now();
  ship={balls:[],elim:[],t0:now,nextSpawn:now+SHIP.spawnDelayMs,goals:0,imp:0,padT:[0,0,0,0],podT:[0,0,0,0],spawns:0,lastPod:0,cd:players.map(()=>0),bl:players.map(()=>0),botT:{}};
  document.getElementById('status').textContent='🚀 Defenda o seu gol! Cada gol sofrido tira 1 vida ('+SHIP.lives+'). O último na arena vence.';
+ // às vezes (50%) com 4 jogadores: sorteia duplas 2 contra 2, com gols da mesma cor
+ const act=activeIndices();
+ if(act.length===4&&Math.random()<.5){
+  const sh=act.slice().sort(()=>Math.random()-.5),teams=[[sh[0],sh[1]],[sh[2],sh[3]]];
+  applyShipTeams(teams);
+  ship.nextSpawn=now+SHIP.spawnDelayMs+DRAW_MS;
+  const nm=g=>g.map(i=>players[i].name);
+  const o={sub:'Sorteio de duplas',title:'2 contra 2!',pool:act.map(i=>players[i].name),pairs:true,
+   final:teams.map((g,k)=>({label:TEAM_EMOJI[k]+' Dupla '+(k+1),names:nm(g),color:TEAM_COLORS[k]}))};
+  runDrawAnim(o);netBroadcast({k:'draw',o,teams});
+  document.getElementById('status').textContent='🤝 Duplas! '+nm(teams[0]).join(' + ')+'  x  '+nm(teams[1]).join(' + ')+'. A dupla que ficar viva vence!';
+ }
 }
 const aliveShips=()=>activeIndices().filter(i=>players[i].count>0);
 
@@ -236,13 +257,18 @@ function shipGoal(owner,b,now){
  if(p.count<=0){
   ship.elim.push(owner);p.root.visible=false;
   document.getElementById('status').textContent='💥 '+p.name+' foi eliminado! O gol dele virou barreira.';
-  if(aliveShips().length<=1)finishShip();
+  if(shipTeamsAlive()<=1)finishShip();
  }
 }
 function finishShip(){const byTime=false;
  ended=true;running=false;clearBots();
  const alive=aliveShips(),act=activeIndices();let ranking=[],detail={};
- if(!byTime&&alive.length===1){
+ if(shipTeams&&shipTeamsAlive()===1){
+  const wt=shipTeams.findIndex(g=>g.some(i=>players[i].count>0));
+  ranking=[shipTeams[wt],shipTeams[1-wt]];
+  shipTeams[wt].forEach(i=>detail[i]='🏆 dupla vencedora • '+players[i].count+' vida'+(players[i].count===1?'':'s'));
+  shipTeams[1-wt].forEach(i=>detail[i]='dupla eliminada');
+ }else if(!byTime&&alive.length===1){
   ranking=[[alive[0]]].concat(ship.elim.slice().reverse().map(i=>[i]));
   ranking.forEach((g,k)=>detail[g[0]]=k===0?'último na arena • '+players[g[0]].count+' vida'+(players[g[0]].count===1?'':'s'):(k+1)+'º • eliminado');
  }else{                                                         // tempo esgotado: vence quem tem mais vidas
@@ -264,7 +290,7 @@ function shipBotVector(i,now){
   const bx=best.x+best.vx*.18,bz=best.z+best.vz*.18,dBot=Math.hypot(bx-px,bz-pz);
   const inward=((bx-s.gx)*s.nx+(bz-s.gz)*s.nz)>1.2;
   if(dBot<4&&inward){                                            // ataque: acerta a bola em direção a um gol inimigo
-   if(!ship.botT[i]||now>ship.botT[i].until){const foes=aliveShips().filter(o=>o!==i);const f=foes[Math.floor(Math.random()*foes.length)];ship.botT[i]={f,until:now+2500}}
+   if(!ship.botT[i]||now>ship.botT[i].until){const foes=aliveShips().filter(o=>o!==i&&!shipSameTeam(i,o));const f=foes[Math.floor(Math.random()*foes.length)];ship.botT[i]={f,until:now+2500}}
    const f=ship.botT[i].f,fs=SIDES[shipSideOf[f]],dx=fs.gx-bx,dz=fs.gz-bz,l=Math.hypot(dx,dz)||1,off=SHIP.shipR+SHIP.ballR-.2;
    tx=bx-dx/l*off;tz=bz-dz/l*off;
   }else{                                                         // defesa: fica entre o gol e a bola

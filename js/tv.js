@@ -104,7 +104,7 @@ function tvOnLobby(){
  net.names.forEach((nm,i)=>{if(nm)tvColor(i)});
  tvUiSent={}; // reenvia o painel para todos (inclusive quem reconectou)
  const n=net.names.filter(Boolean).length;
- document.getElementById('tvHint').textContent=n?'👆 Quem entrou primeiro (👑) inicia a partida pelo celular — ou aperte START no controle. 🎮 No controle: ▲▼ muda a quantidade de jogadores.':'📱 Escaneie o QR code com a câmera do celular. 🎮 Tem controle? Aperte A para entrar.';
+ document.getElementById('tvHint').textContent=n?'👆 Quem entrou primeiro (👑) inicia a partida pelo celular — ou aperte START no controle. 🎮 No controle: direcional escolhe, A confirma.':'📱 Escaneie o QR code com a câmera do celular. 🎮 Tem controle? Aperte A para entrar.';
 }
 
 /* Ação principal da vez (iniciar / próxima rodada / pódio…). Quem tem permissão: celular VIP, START do controle, Enter. */
@@ -164,6 +164,14 @@ function tvPadCycle(pi,dir){
  const s=tvPadFreeSlot(cur,dir);if(s<0)return;
  tvPads[pi]=s;netSendRaw({t:'local',slot:s,from:cur,name:net.names[cur]||'Controle'});
 }
+function tvPadPick(pi,i){
+ if(tournamentCharacterLocked||i<0||net.names[i])return;
+ const cur=tvPads[pi];if(cur===i)return;
+ if(cur===undefined){
+  if(net.names.filter(Boolean).length>=8)return;
+  tvPads[pi]=i;netSendRaw({t:'local',slot:i,name:'Controle '+Object.keys(tvPads).length});
+ }else{tvPads[pi]=i;netSendRaw({t:'local',slot:i,from:cur,name:net.names[cur]||'Controle'})}
+}
 function tvPadLeave(pi){
  const cur=tvPads[pi];if(cur===undefined||tournamentCharacterLocked)return;
  delete tvPads[pi];netSendRaw({t:'unlocal',slot:cur});
@@ -173,7 +181,7 @@ function tvPadLeave(pi){
 function tvUpdateGp(){
  const el=document.getElementById('tvGp');if(!el)return;
  const l=[...(navigator.getGamepads?navigator.getGamepads():[])].filter(g=>g&&g.connected);
- el.textContent=l.length?'🎮 '+l.length+' controle'+(l.length>1?'s':'')+' conectado'+(l.length>1?'s':'')+': aperte A (X no PlayStation) para entrar • △ abre o menu com seleção amarela • SELECT = configurações.':'🎮 Para jogar com controle: pareie no Bluetooth do aparelho (ou ligue por cabo USB) e aperte um botão.';
+ el.textContent=l.length?'🎮 '+l.length+' controle'+(l.length>1?'s':'')+' conectado'+(l.length>1?'s':'')+': use o direcional (seleção amarela) e aperte A (X no PlayStation) no personagem • B tira a seleção • SELECT = configurações.':'🎮 Para jogar com controle: pareie no Bluetooth do aparelho (ou ligue por cabo USB) e aperte um botão.';
 }
 window.addEventListener('gamepadconnected',tvUpdateGp);window.addEventListener('gamepaddisconnected',tvUpdateGp);
 setInterval(tvUpdateGp,1500);

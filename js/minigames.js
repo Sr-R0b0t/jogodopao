@@ -79,3 +79,41 @@ function startRound(){
 
 /* Home: número de minigames sempre igual ao da lista */
 {const el=document.getElementById('homeMgCount');if(el)el.textContent='🎮 '+MINIGAMES.length+' minigames'}
+
+/* ---- Animação de sorteio (goleiro / duplas): nomes girando, desacelerando e revelando o resultado ---- */
+const DRAW_MS=4200;
+let drawTimers=[];
+function stopDrawAnim(){drawTimers.forEach(clearTimeout);drawTimers=[];const el=document.getElementById('drawBox');if(el)el.classList.remove('show')}
+function runDrawAnim(o){
+ stopDrawAnim();
+ let el=document.getElementById('drawBox');
+ if(!el){el=document.createElement('div');el.id='drawBox';const ref=document.getElementById('roundBanner');(ref&&ref.parentElement||document.body).appendChild(el)}
+ el.replaceChildren();
+ const mk=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;el.appendChild(e);return e};
+ mk('small','',o.sub);mk('b','',o.title);
+ const spin=mk('div','dr-spin','…'),fin=mk('div','dr-final');
+ el.classList.add('show');
+ const pool=o.pool.slice(),pick=()=>{
+  if(o.pairs){const s=pool.slice().sort(()=>Math.random()-.5);return s[0]+'  +  '+s[1]}
+  return pool[Math.floor(Math.random()*pool.length)];
+ };
+ let t=0,k=0;const SPIN=2700;
+ const step=()=>{
+  spin.textContent=pick();spin.classList.toggle('alt',(k++)%2===0);
+  try{if(audioEnabled)tone(520+(k%5)*60,.05,'square',.035)}catch(e){}
+  const dt=70+Math.pow(t/SPIN,2.2)*330;t+=dt;
+  if(t<SPIN)drawTimers.push(setTimeout(step,dt));else reveal();
+ };
+ const reveal=()=>{
+  spin.style.display='none';
+  o.final.forEach(g=>{
+   const c=document.createElement('div');c.className='dr-card';c.style.borderColor=g.color;
+   const l=document.createElement('span');l.textContent=g.label;l.style.color=g.color;
+   const n=document.createElement('strong');n.textContent=g.names.join('  +  ');
+   c.append(l,n);fin.append(c);
+  });
+  try{if(audioEnabled){tone(784,.18,'triangle',.1);tone(1046,.3,'triangle',.1,.16)}}catch(e){}
+  drawTimers.push(setTimeout(()=>el.classList.remove('show'),Math.max(900,DRAW_MS-SPIN-100)));
+ };
+ step();
+}

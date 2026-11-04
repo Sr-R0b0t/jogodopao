@@ -63,6 +63,7 @@ function startSoccer(){
  for(let r=0;r<per;r++)kickers.forEach(k=>queue.push(k));
  soccer={ph:'intro',g:goalie,k:-1,sh:0,tot:queue.length,goals:0,saves:0,need:[],left:0,queue,kickers,choice:{},botAt:{},t0:performance.now(),res:'',kickDir:0,diveDir:0,goalsBy:{}};
  soccerPlace();applySoccerVisibility();
+ {const o={sub:'Sorteio do goleiro',title:'Quem vai ser o goleiro?',pool:act.map(i=>players[i].name),final:[{label:'🧤 GOLEIRO',names:[players[goalie].name],color:'#ffd166'}]};runDrawAnim(o);netBroadcast({k:'draw',o})}
  setStatus('🧤 '+players[goalie].name+' é o GOLEIRO! Os outros vão chutar, um de cada vez.');
 }
 function soccerNextShot(now){
@@ -102,7 +103,7 @@ function finishSoccer(){
 function updateSoccerMode(now,dt){
  if(gameMode!=='soccer'||!running||!soccer)return;
  const s=soccer;
- if(s.ph==='intro'){if(now-s.t0>SOCCER.introMs)soccerNextShot(now)}
+ if(s.ph==='intro'){if(now-s.t0>SOCCER.introMs+DRAW_MS)soccerNextShot(now)}
  else if(s.ph==='pick'){
   const els=now-s.t0;
   for(const slot of [s.k,s.g]){

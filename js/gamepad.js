@@ -62,25 +62,15 @@ function gpHandle(pi,s,E,now,dt,pv){
   const ov=document.getElementById('scoreOverlay').classList.contains('show');
   const lobbyOn=document.getElementById('screenOnline').style.display!=='none'&&!document.getElementById('netLobby').hidden;
   if(lobbyOn&&!podiumActive&&!ov){
-   if(E('start')){gpState.tvNav=false;tvPrimaryAction(true);return}
-   if(E('yb')){ // △/Y liga e desliga o modo menu (seleção amarela) no lobby da TV
-    gpState.tvNav=!gpState.tvNav;
-    if(gpState.tvNav){const it=gpFocusables(gpMenuRoot());(it.find(e=>e.classList.contains('primary-flow-button'))||it[0])?.focus()}
-    else if(document.activeElement)document.activeElement.blur();
-    return;
+   if(E('start')){tvPrimaryAction(true);return}
+   const root=gpMenuRoot(),cur=document.activeElement,foc=!!cur&&cur!==root&&root.contains(cur);
+   if(foc&&E('a')&&cur.classList.contains('character-card')){ // A em cima de um personagem: este controle escolhe ele
+    tvPadPick(pi,[...cur.parentElement.children].indexOf(cur));return;
    }
-   if(gpState.tvNav){
-    if(E('b')){gpState.tvNav=false;if(document.activeElement)document.activeElement.blur();return}
-    gpMenu(s,E,now);return;
-   }
-   if(tvPads[pi]===undefined){if(E('a'))tvPadJoin(pi)}
-   else{
-    if(E('b'))tvPadLeave(pi);
-    const dx=s.x<-.5?-1:s.x>.5?1:0,pdx=pv.x<-.5?-1:pv.x>.5?1:0;
-    if(dx&&dx!==pdx)tvPadCycle(pi,dx);
-    const dy=s.y<-.5?-1:s.y>.5?1:0,pdy=pv.y<-.5?-1:pv.y>.5?1:0;
-    if(dy&&dy!==pdy)tvSetCount(Number(document.getElementById('netPlayerCount').value)-dy);
-   }
+   if(!foc&&E('a')&&tvPads[pi]===undefined){tvPadJoin(pi);return}
+   if(!foc&&E('b')&&tvPads[pi]!==undefined){tvPadLeave(pi);return}
+   if(foc&&E('b')){cur.blur();return}     // B só tira a seleção (não sai da sala sem querer)
+   gpMenu(s,E,now);                         // direcional: seleção amarela, igual aos outros modos
    return;
   }
   if(ov||podiumActive){

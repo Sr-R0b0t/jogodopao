@@ -294,3 +294,14 @@ body:not(.gp-nav) .pad-hint{display:none}
 .osk-row{display:grid;grid-template-columns:2fr 2fr 1fr 2fr;gap:6px;margin-bottom:8px}
 .osk-row .primary-flow-button{color:#38210b;padding:11px 0}
 .osk-card small{opacity:.75}
+#drawBox{position:absolute;inset:0;z-index:46;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;pointer-events:none;background:#10091df2;text-shadow:0 4px 18px #000;text-align:center;padding:12px}
+#drawBox.show{display:flex}
+#drawBox small{font-size:.8rem;font-weight:900;letter-spacing:.22em;color:#dbc8ff;text-transform:uppercase}
+#drawBox b{font-size:clamp(1.4rem,4vw,2.6rem);color:#ffd166}
+#drawBox .dr-spin{font-size:clamp(1.6rem,5vw,3.4rem);font-weight:900;color:#fff;padding:14px 26px;border-radius:20px;background:#2a1a4a;border:3px solid #a78bca;min-width:min(86%,520px)}
+#drawBox .dr-spin.alt{color:#ffe38a}
+#drawBox .dr-final{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+#drawBox .dr-card{display:flex;flex-direction:column;gap:6px;padding:14px 22px;border:4px solid;border-radius:20px;background:#241540;animation:drPop .45s ease-out}
+#drawBox .dr-card span{font-weight:900;letter-spacing:.08em;font-size:clamp(.9rem,2vw,1.3rem)}
+#drawBox .dr-card strong{font-size:clamp(1.3rem,3.6vw,2.4rem);color:#fff}
+@keyframes drPop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}

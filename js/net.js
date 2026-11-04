@@ -6,7 +6,7 @@ const net={role:'offline',ws:null,slot:0,code:'',names:Array(specs.length).fill(
 const NET_TICK_MS=50;
 /* Se o jogo estiver hospedado num site estático (Netlify, GitHub Pages...), coloque aqui o endereço
    do servidor online (ex.: 'jogo-do-pao.onrender.com'). Deixe vazio se o servidor serve o próprio jogo. */
-const DEFAULT_SERVER='jogodopao.onrender.com';
+const DEFAULT_SERVER='jogo-do-pao.onrender.com';
 const r2=v=>Math.round(v*100)/100,clamp1=v=>Math.max(-1,Math.min(1,Number(v)||0));
 function isHumanSlot(i){return i===humanIndex||net.humans.has(i)}
 
@@ -215,6 +215,7 @@ function netClientMsg(d){
    document.getElementById('scoreOverlay').classList.remove('show');
    document.getElementById('gameMode').value=d.mode;reset();running=true;ended=false;net.bwKey='';net.prevTurn=-1;netClientUI();break;
   case 'cd':showRoundBanner(d.title,d.sub,d.n>0?String(d.n):'VAI!',d.desc);if(d.label)document.getElementById('roundLabel').textContent=d.label;cdBeep(d.n);if(d.n<=0)setTimeout(hideRoundBanner,700);break;
+  case 'draw':runDrawAnim(d.o);if(d.teams)applyShipTeams(d.teams);break;
   case 'podium':showPodium(d.order,d.scores,true);break;
   case 'podiumhide':hidePodium();break;
   case 'pins':{const c=d.n;setTimeout(()=>{if(audioEnabled)sfxPins(c)},d.delay||0);break}
