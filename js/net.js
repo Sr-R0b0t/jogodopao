@@ -6,7 +6,7 @@ const net={role:'offline',ws:null,slot:0,code:'',names:Array(specs.length).fill(
 const NET_TICK_MS=50;
 /* Se o jogo estiver hospedado num site estático (Netlify, GitHub Pages...), coloque aqui o endereço
    do servidor online (ex.: 'jogo-do-pao.onrender.com'). Deixe vazio se o servidor serve o próprio jogo. */
-const DEFAULT_SERVER='jogodopao.onrender.com';
+const DEFAULT_SERVER='';
 const r2=v=>Math.round(v*100)/100,clamp1=v=>Math.max(-1,Math.min(1,Number(v)||0));
 function isHumanSlot(i){return i===humanIndex||net.humans.has(i)}
 
@@ -160,6 +160,7 @@ function netHostInput(slot,d){
   if(!running)return;
   if(gameMode==='bread'){const p=players[slot];if(p.count<100){p.count++;updateHud();if(p.count>=100)finish(p)}}
   else if(gameMode==='bowling'&&bowlingOrder[bowlingTurn]===slot)remoteBowlThrow(slot,d.aim,d.pow);
+  else if(isTurbo()&&ship)shipBlast(slot,performance.now());
  }else if(d.k==='sc')soccerSetChoice(slot,d.dir);
  else if(d.k==='mv')net.mv[slot]={x:clamp1(d.x),y:clamp1(d.y)};
  else if(d.k==='aim')remoteBowlAim(slot,d.v);
@@ -176,7 +177,7 @@ function netSnapshot(){
   bi:players.findIndex(p=>p.biting)};
  const lt=document.getElementById('lastPlayerTimer');S.lt=lt.classList.contains('show')?lt.innerHTML:'';
  if(gameMode==='soccer'&&soccer)S.sc={ph:soccer.ph,g:soccer.g,k:soccer.k,sh:soccer.sh,tot:soccer.tot,goals:soccer.goals,saves:soccer.saves,need:soccer.need,left:soccer.left,res:soccer.res,ball:[r2(soccerBall.position.x),r2(soccerBall.position.y),r2(soccerBall.position.z)]};
- if(isShipMode()&&ship)S.ar={b:ship.balls.map(b=>[r2(b.x),r2(b.z),Math.min(1,(performance.now()-b.born)/400)]),goals:ship.goals,ls:ship.lastSide,imp:ship.imp,pm:padMaskNow(),sp:ship.spawns,pc:ship.lastPod};
+ if(isShipMode()&&ship)S.ar={b:ship.balls.map(b=>[r2(b.x),r2(b.z),Math.min(1,(performance.now()-b.born)/400)]),goals:ship.goals,ls:ship.lastSide,imp:ship.imp,pm:padMaskNow(),sp:ship.spawns,pc:ship.lastPod,bc:ship.bl,cd:ship.cd.map(c=>Math.max(0,Math.round(c-performance.now())))};
  if(gameMode==='ball')S.b=balls.map(b=>[r2(b.mesh.position.x),r2(b.mesh.position.y),r2(b.mesh.position.z),b.alive?1:0,b.falling?1:0,b.mesh.visible?1:0]);
  if(gameMode==='bowling')S.bw={o:bowlingOrder,t:bowlingTurn,s:bowlingScores,f:bowlingBallState?1:0,
   ball:[r2(bowlingBall.position.x),r2(bowlingBall.position.y),r2(bowlingBall.position.z)],

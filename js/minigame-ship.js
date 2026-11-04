@@ -3,7 +3,7 @@
    Só entra no sorteio com 2, 3 ou 4 jogadores (ver MINIGAMES em minigames.js). */
 function isShipMode(){return gameMode==='ship'||gameMode==='turbo'}   // 'turbo' = variante com naves em trilhos, pads de velocidade e bolas saindo dos cantos
 function isTurbo(){return gameMode==='turbo'}
-const TURBO={arena:7.2,goalMargin:3.3,accel:38,maxV:11.5,goalHalf:3.8,rail:1.4,railLim:3.6,bump:[5.3,1.2],spawn:3.1,padR:.95,padBoost:1.5,padMax:18,maxBalls:3,startSpeed:8.2,hit:1.1,addEvery:8,botV:5.4,botAcc:18,lead:.18};
+const TURBO={arena:7.2,goalMargin:3.3,accel:38,maxV:11.5,goalHalf:3.8,rail:1.4,railLim:3.6,bump:[5.3,1.2],spawn:3.1,blastCd:4000,blastR:3.6,blastPush:8,padR:.95,padBoost:1.5,padMax:18,maxBalls:3,startSpeed:8.2,hit:1.1,addEvery:8,botV:5.4,botAcc:18,lead:.18};
 const PAD_POS=[[-2.9,-2.2],[2.9,-2.2],[-2.9,2.2],[2.9,2.2]],PAD_BASE=[[-2.9,-2.2],[2.9,-2.2],[-2.9,2.2],[2.9,2.2]];
 const SHIP={
  lives:15,half:6,goalHalf:1.9,shipR:.95,ballR:.45,
@@ -158,17 +158,27 @@ const turboPods=[[-1,-1],[1,-1],[-1,1],[1,1]].map(([sx,sz])=>{
  const core=new THREE.Mesh(new THREE.SphereGeometry(.5,16,12),new THREE.MeshBasicMaterial({color:'#9fe6ff',transparent:true,opacity:0,toneMapped:false}));core.position.y=1.5;g.add(core);
  turboRoot.add(g);return {g,ring,core};
 });
+/* Rajada de ar (botão ESPECIAL): arco que se expande à frente da nave */
+const blastFx=players.map((p,i)=>{
+ const g=new THREE.Group(),span=Math.PI*1.15;
+ const mk=(r0,r1)=>{const m=new THREE.Mesh(new THREE.RingGeometry(r0,r1,40,1,-span/2,span),new THREE.MeshBasicMaterial({color:'#bff3ff',transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,toneMapped:false}));m.rotation.x=-Math.PI/2;g.add(m);return m};
+ g.userData.rings=[mk(.94,1.0),mk(.62,.67)];g.visible=false;turboRoot.add(g);return g;
+});
+const blastT=players.map(()=>0);
+function startBlastFx(i){blastT[i]=performance.now();const s=SIDES[shipSideOf[i]];if(!s)return;blastFx[i].rotation.y=Math.atan2(-s.nz,s.nx)}
+function sfxWhoosh(vol=1){if(!audioEnabled)return;try{noisePop(.38,.2*vol,2600);tone(340,.3,'sine',.05*vol,0,110)}catch(e){}}
+let turboBtnLabel='💨 ESPECIAL';
 const padMaskNow=()=>{if(!ship)return 0;const t=performance.now();let m=0;ship.padT.forEach((v,k)=>{if(v&&t-v<700)m|=1<<k});return m};
 
 /* ---------- Estado ---------- */
 let ship=null,shipSideOf={},shipClient=null,shipSeenGoals=0;
-let shipSeenImp=0,shipSeenSpawns=0,shipSeenPads=0;const turboPodT=[0,0,0,0];
+let shipSeenImp=0,shipSeenSpawns=0,shipSeenPads=0;const blastSeen=[];const turboPodT=[0,0,0,0];
 const goalFlash=[0,0,0,0],goalBase=[null,null,null,null];
 function flashGoal(side){goalFlash[side]=performance.now()}
 const shipVel={};
 function setupShip(){
  ensureArena();
- ship=null;shipClient=null;shipSeenGoals=0;shipSeenImp=0;shipSeenSpawns=0;shipSeenPads=0;turboPodT.fill(0);
+ ship=null;shipClient=null;shipSeenGoals=0;shipSeenImp=0;shipSeenSpawns=0;shipSeenPads=0;turboPodT.fill(0);blastSeen.length=0;blastT.fill(0);
  const act=activeIndices().sort((a,b)=>a-b),order=SIDE_ORDER[Math.min(4,Math.max(2,act.length))];
  shipSideOf={};act.forEach((i,k)=>{shipSideOf[i]=order[k]});
  players.forEach((p,i)=>{
@@ -184,11 +194,31 @@ function setupShip(){
 }
 function startShip(){
  const now=performance.now();
- ship={balls:[],elim:[],t0:now,nextSpawn:now+SHIP.spawnDelayMs,goals:0,imp:0,padT:[0,0,0,0],podT:[0,0,0,0],spawns:0,lastPod:0,botT:{}};
+ ship={balls:[],elim:[],t0:now,nextSpawn:now+SHIP.spawnDelayMs,goals:0,imp:0,padT:[0,0,0,0],podT:[0,0,0,0],spawns:0,lastPod:0,cd:players.map(()=>0),bl:players.map(()=>0),botT:{}};
  document.getElementById('status').textContent='🚀 Defenda o seu gol! Cada gol sofrido tira 1 vida ('+SHIP.lives+'). O último na arena vence.';
 }
 const aliveShips=()=>activeIndices().filter(i=>players[i].count>0);
 
+/* ESPECIAL: rajada que empurra as bolas próximas para longe da nave. Recarga de 4 s. Retorna true se disparou. */
+function shipBlast(i,now){
+ if(!ship||!running||!isTurbo()||players[i].count<=0||now<ship.cd[i])return false;
+ ship.cd[i]=now+TURBO.blastCd;ship.bl[i]++;
+ const p=players[i].root.position;
+ for(const b of ship.balls){
+  const dx=b.x-p.x,dz=b.z-p.z,d=Math.hypot(dx,dz);
+  if(d>0&&d<TURBO.blastR){
+   const k=1-d/TURBO.blastR,cur=Math.hypot(b.vx,b.vz),sp=Math.min(TURBO.padMax,Math.max(cur,TURBO.startSpeed)+TURBO.blastPush*(.55+.45*k));
+   b.vx=dx/d*sp;b.vz=dz/d*sp;
+  }
+ }
+ startBlastFx(i);sfxWhoosh(i===humanIndex?1:.55);
+ return true;
+}
+function shipBlastPress(){                      // chamado pelo botão/tecla do jogador local
+ if(!running||!isTurbo())return;
+ if(net.role==='client'){netSendInput({k:'tap'});return}
+ shipBlast(humanIndex,performance.now());
+}
 function shipSpawnBall(now){
  if(isTurbo()){                                                  // sai de uma cápsula num canto, rumo ao meio
   const c=Math.floor(Math.random()*4),sx=c&1?1:-1,sz=c&2?1:-1,a=Math.atan2(-sz,-sx)+(Math.random()-.5)*1.1;
@@ -277,6 +307,9 @@ function updateShipMode(now,dt){
    let nl=lat+v.l*dt;if(Math.abs(nl)>TURBO.railLim){nl=Math.sign(nl)*TURBO.railLim;v.l=0}
    p.root.position.x=sd.gx+sd.nx*TURBO.rail+sd.ax*nl;p.root.position.z=sd.gz+sd.nz*TURBO.rail+sd.az*nl;
    v.x=sd.ax*v.l;v.z=sd.az*v.l;p.root.rotation.y=Math.atan2(sd.nx,sd.nz);
+   if(!human&&now>=ship.cd[i]&&Math.random()<dt*2.2){            // bot dá a rajada quando a bola está perto e indo para o gol
+    for(const b of ship.balls){const dx=b.x-p.root.position.x,dz=b.z-p.root.position.z;if(Math.hypot(dx,dz)<TURBO.blastR*.85&&(b.vx*sd.nx+b.vz*sd.nz)<0){shipBlast(i,now);break}}
+   }
    continue;
   }
   v.x+=inp.x*acc*dt;v.z+=inp.y*acc*dt;
@@ -365,6 +398,13 @@ function shipVisualUpdate(dt){
   if(!client&&ship)ship.podT.forEach((v,k)=>{turboPodT[k]=v});
   if(client&&(mask&~shipSeenPads)&&audioEnabled)tone(480,.14,'sawtooth',.045,0,1100);
   if(client)shipSeenPads=mask;
+  if(client&&shipClient.bc){shipClient.bc.forEach((n,i)=>{if(n!==(blastSeen[i]||0)){if((blastSeen[i]||0)!==undefined&&n>(blastSeen[i]||0)){startBlastFx(i);sfxWhoosh(i===humanIndex?1:.55)}blastSeen[i]=n}})}
+  blastFx.forEach((g,i)=>{const f=(nowT-blastT[i])/450;const on3=blastT[i]>0&&f>=0&&f<1&&shipSideOf[i]!==undefined;g.visible=on3;if(!on3)return;
+   const p=players[i].root.position;g.position.set(p.x,.55,p.z);
+   g.userData.rings.forEach((r,k)=>{const ff=Math.max(0,f-k*.12);r.material.opacity=Math.max(0,1-ff)*.9;r.scale.setScalar(1+ff*(TURBO.blastR-.6)/1.0)})});
+  {const left=client?(shipClient.cd?(shipClient.cd[humanIndex]||0)/1000:0):(ship?Math.max(0,(ship.cd[humanIndex]-nowT)/1000):0),tapEl=document.getElementById('tap');
+   turboBtnLabel=left>0.05?'⏳ '+left.toFixed(1)+'s':'💨 ESPECIAL';
+   if(tapEl){tapEl.textContent=left>0.05?turboBtnLabel:'💨 ESPECIAL (ESPAÇO)';tapEl.style.opacity=left>0.05?.55:1}}
   turboPads.forEach((p,k)=>{const on2=(mask>>k)&1,tgt=on2?1:0;p.glow.material.opacity+=(tgt-p.glow.material.opacity)*Math.min(1,dt*14);p.ring.material.opacity=p.glow.material.opacity*.9;p.ring.scale.setScalar(1+(1-p.glow.material.opacity)*.25)});
   turboPods.forEach((p,k)=>{const f=turboPodT[k]?Math.max(0,1-(nowT-turboPodT[k])/700):0;p.core.material.opacity=f;p.core.scale.setScalar(.6+f*.8);p.ring.material.emissiveIntensity=1.6+f*3});
  }

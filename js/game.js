@@ -14,7 +14,7 @@ function applyMode(){
  gameMode=document.getElementById('gameMode').value;
  const ballMode=gameMode==='ball',bowlingMode=gameMode==='bowling',soccerMode=gameMode==='soccer',shipMode=isShipMode();
  document.getElementById('tap').disabled=!running;
- document.getElementById('tap').style.display=ballMode||soccerMode||shipMode?'none':'';
+ document.getElementById('tap').style.display=ballMode||soccerMode||(shipMode&&!isTurbo())?'none':'';
  document.getElementById('tap').textContent=ballMode?'🎯 EMPURRÃO!':bowlingMode?'🎳 JOGAR BOLA!':'👆 CLICAR!';
  document.querySelector('main > p').textContent=ballMode?'Fique em cima da sua bola e derrube todos os rivais da arena! Último personagem em pé vence. Pegue velocidade e bata nos rivais!':bowlingMode?'Cada personagem tem um lançamento pela ladeira. Derrube o máximo de pinos; quem derrubar mais vence!':'Chegue a 100 cliques! Quem terminar primeiro joga creme no pão. Quem terminar por último... vai ter que dar a mordida final! 😂';
  document.getElementById('gameNote').textContent=ballMode?'Controles: WASD, setas ou o analógico. Quanto mais distância você pega, mais rápido fica — e mais forte é a batida!':bowlingMode?'Boliche: use as setas (ou os botões) para se posicionar, escolha a força e lance. Acertar nos cantos também derruba pinos.':'Corrida: chegue a 100 cliques. É necessária conexão à internet para carregar a biblioteca 3D.';
@@ -75,6 +75,7 @@ function pressTap(){tapAllowed=true;try{document.getElementById('tap').click()}f
 document.getElementById('tap').addEventListener('click',e=>{
  if(e&&e.detail===0&&!tapAllowed)return;
  if(!running)return;
+ if(isTurbo()){shipBlastPress();return}
  if(gameMode==='ball')return; // Batalha das Bolas: só direção (sem botão de empurrão)
  if(net.role==='client'){sfxClick();netSendInput({k:'tap',aim:r2(bowlingAimValue),pow:bowlingPowerValue});return}
  if(gameMode==='bowling'){throwBowlingBall(humanIndex);return}
@@ -88,6 +89,7 @@ document.getElementById('reset').addEventListener('click',()=>{ // reinicia o me
  const info=MINIGAMES.find(m=>m.id===gameMode);runCountdown(3,'↻ '+(info?info.label:''),document.getElementById('roundLabel').textContent);
 });
 document.addEventListener('keydown',e=>{
+ if((e.code==='Space'||e.code==='Enter')&&running&&isTurbo()){e.preventDefault();if(!e.repeat)shipBlastPress();return}
  if((e.code==='Space'||e.code==='Enter')&&running&&gameMode!=='ball'&&gameMode!=='soccer'&&!isShipMode()){
   e.preventDefault();
   if(e.repeat)return;            // tecla segurada = não conta de novo
