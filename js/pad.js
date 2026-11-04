@@ -54,6 +54,7 @@ function onMsg(m){
    render();break;
   case 'lobby':names=m.names;vip=m.vip;renderGrid();render();break;
   case 'slot':me=m.slot;renderGrid();break;
+  case 'pong':{const ms=Math.round(performance.now()-m.ts);const e=$('ping');e.textContent=ms+' ms';e.style.color=ms<80?'#6dffa3':ms<160?'#ffd36d':'#ff8a8a';break}
   case 'pickfail':toast('Esse personagem acabou de ser escolhido.');break;
   case 'c':if(m.d&&m.d.k==='ui'){ui=m.d;if(ui.cd!==undefined)cdEnd=performance.now()+ui.cd;render()}break;
   case 'closed':closedByTv=true;joined=false;show('vEnd');$('vipBar').classList.remove('show');break;
@@ -83,6 +84,10 @@ function showPanel(id){panels.forEach(p=>$(p).style.display=p===id?'flex':'none'
 function render(){
  if(!joined)return;
  const scr=ui?ui.scr:'lobby';
+ const col=ui&&ui.col?ui.col:'';
+ document.body.style.boxShadow=col?'inset 0 0 0 7px '+col:'';
+ $('who').style.color=col||'';
+ const cnt=$('cntRow');cnt.style.display=(ui&&ui.vip&&scr==='lobby'&&!ui.go)?'flex':'none';if(ui&&ui.cnt)$('cntVal').textContent=ui.cnt;
  const vipOn=ui&&ui.prim;
  $('vipBtn').textContent=vipOn?ui.prim:'';
  $('vipBar').classList.toggle('show',!!vipOn&&scr!=='game');
@@ -96,7 +101,7 @@ function render(){
  if(scr==='podium'){$('infoIcon').textContent='🥇';$('infoTxt').textContent='Pódio na TV!';$('infoSub').textContent=vipOn?'':'Parabéns a todos!';show('vInfo');return}
  // jogo
  show('vGame');
- const who=CH[me]?CH[me][0]:'';$('who').textContent='Você é '+who;
+ const who=CH[me]?CH[me][0]:'';$('who').textContent='Você é '+who+(col?' ●':'');
  const mode=ui.mode;
  if(!ui.run){showPanel('padWait');$('waitTxt').textContent='Prepare-se…';stopStick();return}
  if(mode==='bread'){showPanel('padBread');stopStick()}
@@ -114,15 +119,22 @@ function render(){
  }else{showPanel('padWait');$('waitTxt').textContent='Olhe para a TV…'}
  if(mode!=='turbo'&&mode!=='ball'&&mode!=='ship')stopStick();
 }
+function setCnt(d){const n=Math.max(2,Math.min(8,Number($('cntVal').textContent)+d));$('cntVal').textContent=n;buzz(10);relay({k:'ctl',a:'cnt',n})}
+$('cntMinus').addEventListener('click',()=>setCnt(-1));
+$('cntPlus').addEventListener('click',()=>setCnt(1));
 $('vipBtn').addEventListener('click',()=>{buzz(20);relay({k:'ctl',a:'ok'})});
 
 /* ---- Analógico ---- */
 let pid=null,lastSend=0,lastKey='',joyOn=false;
 const joy=$('joy'),knob=$('knob');
+let trailT=null,trailV=null;
 function sendMove(x,y,force){
- const now=performance.now(),key=Math.round(x*20)+','+Math.round(y*20);
- if(!force&&(key===lastKey||now-lastSend<50))return;
- lastKey=key;lastSend=now;relay({k:'mv',x:Math.round(x*100)/100,y:Math.round(y*100)/100});
+ const now=performance.now(),key=Math.round(x*40)+','+Math.round(y*40);
+ if(!force&&key===lastKey)return;
+ if(!force&&now-lastSend<25){ // não perde a última posição: envia assim que passar o intervalo
+  trailV=[x,y];if(!trailT)trailT=setTimeout(()=>{trailT=null;if(trailV){const v=trailV;trailV=null;sendMove(v[0],v[1])}},26);return;
+ }
+ trailV=null;lastKey=key;lastSend=now;relay({k:'mv',x:Math.round(x*100)/100,y:Math.round(y*100)/100});
 }
 function moveStick(e){
  const r=joy.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,max=r.width/2-8;
@@ -173,6 +185,7 @@ document.querySelectorAll('.sc button').forEach(b=>b.addEventListener('click',()
 /* Evita rolagem/zoom acidentais */
 document.addEventListener('touchmove',e=>{if(!e.target.closest('.grid,input[type=range]'))e.preventDefault()},{passive:false});
 document.addEventListener('gesturestart',e=>e.preventDefault());
+setInterval(()=>send({t:'ping',ts:performance.now()}),2000);
 window.padDebug=()=>({ui,me,vip,names,joined});
 if(code&&$('name').value)$('go').focus();
 })();

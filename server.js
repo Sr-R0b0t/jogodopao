@@ -111,6 +111,7 @@ wss.on('connection',ws=>{
     room.slots[n]=room.slots[ws.slot];room.slots[ws.slot]=null;ws.slot=n;
     send(ws,{t:'slot',slot:n});lobby(room);break;
    }
+   case 'ping': send(ws,{t:'pong',ts:m.ts});break;
    case 'lock':
     if(room&&room.host===ws)room.started=true;break;
   }

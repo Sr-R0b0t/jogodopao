@@ -53,6 +53,12 @@ input[type=text]{width:100%;padding:14px;border-radius:14px;border:2px solid #a7
 .sc button{border:0;border-radius:18px;padding:26px 4px;font-size:2.2rem;font-weight:1000;background:linear-gradient(#cfa9ff,#8b5dff);color:#fff;box-shadow:0 6px 0 #4c2fb0}
 .sc button small{display:block;font-size:.7rem;margin-top:6px}
 .sc button:active{transform:translateY(4px);box-shadow:0 2px 0 #4c2fb0}
+.cnt{display:none;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px;padding:8px 12px;border-radius:14px;background:#2a1b43;border:2px solid #a78bca;font-weight:900;font-size:.85rem}
+.cnt small{opacity:.7;font-weight:700}
+.cnt div{display:flex;align-items:center;gap:12px}
+.cnt button{width:46px;height:46px;border-radius:50%;border:0;background:linear-gradient(#ffe48a,#ffb938);color:#1b1030;font-size:1.6rem;font-weight:1000;line-height:1}
+.cnt b{font-size:1.5rem;min-width:1.4em;text-align:center;color:#ffdf79}
+#ping{position:fixed;top:calc(4px + env(safe-area-inset-top));right:10px;font-size:.65rem;font-weight:800;opacity:.8;z-index:8;pointer-events:none}
 #toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#000c;padding:10px 16px;border-radius:12px;font-weight:800;display:none;z-index:9}
 </style>
 </head>
@@ -74,6 +80,7 @@ input[type=text]{width:100%;padding:14px;border-radius:14px;border:2px solid #a7
 <section id="vLobby" class="view">
   <h1>Escolha seu personagem</h1>
   <p class="sub" id="lobbySub">Vagas sem jogador viram bots 🤖</p>
+  <div class="cnt" id="cntRow"><span>👥 Jogadores na partida <small>(o resto vira bot)</small></span><div><button type="button" id="cntMinus">−</button><b id="cntVal">8</b><button type="button" id="cntPlus">+</button></div></div>
   <div class="grid" id="grid"></div>
 </section>
 
@@ -100,6 +107,7 @@ input[type=text]{width:100%;padding:14px;border-radius:14px;border:2px solid #a7
 </section>
 
 <div class="bar" id="vipBar"><button class="btn green" id="vipBtn">▶ INICIAR</button></div>
+<div id="ping"></div>
 <div id="toast"></div>
 <script src="js/pad.js"></script>
 </body>

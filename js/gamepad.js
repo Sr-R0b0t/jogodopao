@@ -51,6 +51,8 @@ function gpHandle(pi,s,E,now,dt,pv){
     if(E('b'))tvPadLeave(pi);
     const dx=s.x<-.5?-1:s.x>.5?1:0,pdx=pv.x<-.5?-1:pv.x>.5?1:0;
     if(dx&&dx!==pdx)tvPadCycle(pi,dx);
+    const dy=s.y<-.5?-1:s.y>.5?1:0,pdy=pv.y<-.5?-1:pv.y>.5?1:0;
+    if(dy&&dy!==pdy)tvSetCount(Number(document.getElementById('netPlayerCount').value)-dy);
    }
    if(E('start'))tvPrimaryAction(true);
    return;

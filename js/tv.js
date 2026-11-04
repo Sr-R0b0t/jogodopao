@@ -4,12 +4,26 @@ const tvForced=/[?&]tv(=1|=true|&|$)/.test(location.search);
 const tvPads={};            // índice do gamepad -> vaga (slot)
 const tvPadBowl={};         // vaga -> {aim,pow,turn} (boliche com controle)
 let tvUiSent={},tvLastPush=0;
+/* Cada jogador ganha uma cor própria (marca no boneco, lista da sala e painel do celular). */
+const TV_COLORS=['#ff3b3b','#3b8bff','#35d45a','#ffd21f','#b04dff','#ff8a1f','#19e6ff','#ff6fc8'];
+let tvColorMap={};
+function tvColor(slot){
+ if(tvColorMap[slot]===undefined){const used=new Set(Object.values(tvColorMap));tvColorMap[slot]=TV_COLORS.find(c=>!used.has(c))||TV_COLORS[slot%TV_COLORS.length]}
+ return tvColorMap[slot];
+}
+function tvSetCount(n){
+ if(tournamentCharacterLocked||!Number.isFinite(n))return;
+ const sel=document.getElementById('netPlayerCount');
+ sel.value=String(Math.max(2,Math.min(8,Math.round(n))));tvUiSent={};
+}
+function tvCtl(d){if(d.a==='cnt')tvSetCount(Number(d.n));else tvPrimaryAction(true)}
 const tvLocalSlots=()=>new Set(Object.values(tvPads));
 
 function tvReset(){
- Object.keys(tvPads).forEach(k=>delete tvPads[k]);tvUiSent={};
+ Object.keys(tvPads).forEach(k=>delete tvPads[k]);tvUiSent={};tvColorMap={};
  const box=document.getElementById('tvBox');if(box)box.hidden=true;
  if(!tvForced)document.body.classList.remove('tv-mode');
+ tvPixelRatio(false);
 }
 function tvFullscreen(){
  try{const d=document.documentElement;if(!document.fullscreenElement&&d.requestFullscreen)d.requestFullscreen().catch(()=>{})}catch(e){}
@@ -45,16 +59,22 @@ function tvRenderQR(){
   for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(qr.isDark(r,k))c.fillRect((k+quiet)*cell,(r+quiet)*cell,cell,cell);
  }catch(e){console.error(e)}
 }
+function tvPixelRatio(on){ // TVs costumam ter tela 4K: limitar a resolução mantém o jogo fluido (menos atraso no controle)
+ renderer.setPixelRatio(on?Math.min(devicePixelRatio,1.25):Math.min(devicePixelRatio,LOW_POWER?1.5:2));resize();
+}
 function tvOnJoined(){
+ tvPixelRatio(true);
  document.body.classList.add('tv-mode');
  document.getElementById('tvBox').hidden=false;
  tvRenderQR();tvUiSent={};
 }
 function tvOnLobby(){
  if(!net.tv)return;
+  if(!tournamentCharacterLocked)Object.keys(tvColorMap).forEach(s=>{if(!net.names[s])delete tvColorMap[s]}); // libera a cor de quem saiu
+ net.names.forEach((nm,i)=>{if(nm)tvColor(i)});
  tvUiSent={}; // reenvia o painel para todos (inclusive quem reconectou)
  const n=net.names.filter(Boolean).length;
- document.getElementById('tvHint').textContent=n?'👆 Quem entrou primeiro (👑) inicia a partida pelo celular — ou aperte START no controle.':'📱 Escaneie o QR code com a câmera do celular. 🎮 Tem controle? Aperte A para entrar.';
+ document.getElementById('tvHint').textContent=n?'👆 Quem entrou primeiro (👑) inicia a partida pelo celular — ou aperte START no controle. 🎮 No controle: ▲▼ muda a quantidade de jogadores.':'📱 Escaneie o QR code com a câmera do celular. 🎮 Tem controle? Aperte A para entrar.';
 }
 
 /* Ação principal da vez (iniciar / próxima rodada / pódio…). Quem tem permissão: celular VIP, START do controle, Enter. */
@@ -79,7 +99,7 @@ function tvFrame(now){
  const scr=podiumActive?'podium':document.getElementById('scoreOverlay').classList.contains('show')?'score':document.getElementById('screenMinigames').style.display!=='none'?'game':'lobby';
  net.names.forEach((nm,slot)=>{
   if(!nm||local.has(slot))return;
-  const st={scr,mode:gameMode,run:running&&!ended?1:0,vip:slot===net.vip?1:0,prim:slot===net.vip&&prim?prim.label:'',go:tournamentCharacterLocked?1:0};
+  const st={col:tvColor(slot),cnt:Number(document.getElementById('netPlayerCount').value),scr,mode:gameMode,run:running&&!ended?1:0,vip:slot===net.vip?1:0,prim:slot===net.vip&&prim?prim.label:'',go:tournamentCharacterLocked?1:0};
   if(scr==='game'){
    if(gameMode==='bowling'&&bowlingOrder){
     const cur=bowlingOrder[bowlingTurn];

@@ -128,6 +128,7 @@ function netRenderPlayers(){
  net.names.forEach((n,i)=>{
   if(!n)return;
   const row=document.createElement('div');row.className='net-row human'+(i===net.slot?' me':'')+(net.flash.has(n)?' flash':'');
+  if(net.tv&&typeof tvColor==='function')row.style.borderLeft='12px solid '+tvColor(i);
   const a=document.createElement('b');a.textContent=n+(i===net.slot?' (você)':'');
   if(i===net.hostSlot){const h=document.createElement('span');h.className='tag-host';h.textContent='👑 anfitrião';a.append(h)}
   const c=document.createElement('span');c.textContent=specs[i].name;
@@ -160,7 +161,7 @@ function setPlayerNames(){
 
 /* ---------- ANFITRIÃO: recebe comandos dos convidados ---------- */
 function netHostInput(slot,d){
- if(d&&d.k==='ctl'){if(net.tv&&slot===net.vip&&typeof tvPrimaryAction==='function')tvPrimaryAction(true);return}
+ if(d&&d.k==='ctl'){if(net.tv&&slot===net.vip&&typeof tvCtl==='function')tvCtl(d);return}
  if(!net.humans.has(slot)||!d)return;
  if(d.k==='tap'){
   if(!running)return;
