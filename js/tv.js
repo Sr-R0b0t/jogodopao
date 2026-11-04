@@ -173,7 +173,7 @@ function tvPadLeave(pi){
 function tvUpdateGp(){
  const el=document.getElementById('tvGp');if(!el)return;
  const l=[...(navigator.getGamepads?navigator.getGamepads():[])].filter(g=>g&&g.connected);
- el.textContent=l.length?'🎮 '+l.length+' controle'+(l.length>1?'s':'')+' conectado'+(l.length>1?'s':'')+': aperte A (X no PlayStation) para entrar.':'🎮 Para jogar com controle: pareie no Bluetooth do aparelho (ou ligue por cabo USB) e aperte um botão.';
+ el.textContent=l.length?'🎮 '+l.length+' controle'+(l.length>1?'s':'')+' conectado'+(l.length>1?'s':'')+': aperte A (X no PlayStation) para entrar • △ abre o menu com seleção amarela • SELECT = configurações.':'🎮 Para jogar com controle: pareie no Bluetooth do aparelho (ou ligue por cabo USB) e aperte um botão.';
 }
 window.addEventListener('gamepadconnected',tvUpdateGp);window.addEventListener('gamepaddisconnected',tvUpdateGp);
 setInterval(tvUpdateGp,1500);

@@ -30,7 +30,7 @@ function applyMode(){
  if(soccerMode){
   applySoccerVisibility();
   document.querySelector('main > p').textContent='Um jogador é sorteado goleiro e os outros batem pênaltis, um de cada vez. Escolha esquerda, meio ou direita!';
-  document.getElementById('gameNote').textContent='O goleiro vence com mais defesas do que gols sofridos e leva os pontos sozinho (mais pontos a cada defesa). Se os batedores vencerem, o time todo pontua.';
+  document.getElementById('gameNote').textContent='O goleiro vence com mais defesas do que gols sofridos (ou com 3 defesas) e leva os pontos sozinho (mais pontos a cada defesa). Se os batedores vencerem, o time todo pontua.';
  }
  document.getElementById('touchControls').dataset.mode=gameMode;
  applyCameraPose();

@@ -62,6 +62,17 @@ function gpHandle(pi,s,E,now,dt,pv){
   const ov=document.getElementById('scoreOverlay').classList.contains('show');
   const lobbyOn=document.getElementById('screenOnline').style.display!=='none'&&!document.getElementById('netLobby').hidden;
   if(lobbyOn&&!podiumActive&&!ov){
+   if(E('start')){gpState.tvNav=false;tvPrimaryAction(true);return}
+   if(E('yb')){ // △/Y liga e desliga o modo menu (seleção amarela) no lobby da TV
+    gpState.tvNav=!gpState.tvNav;
+    if(gpState.tvNav){const it=gpFocusables(gpMenuRoot());(it.find(e=>e.classList.contains('primary-flow-button'))||it[0])?.focus()}
+    else if(document.activeElement)document.activeElement.blur();
+    return;
+   }
+   if(gpState.tvNav){
+    if(E('b')){gpState.tvNav=false;if(document.activeElement)document.activeElement.blur();return}
+    gpMenu(s,E,now);return;
+   }
    if(tvPads[pi]===undefined){if(E('a'))tvPadJoin(pi)}
    else{
     if(E('b'))tvPadLeave(pi);
@@ -70,10 +81,15 @@ function gpHandle(pi,s,E,now,dt,pv){
     const dy=s.y<-.5?-1:s.y>.5?1:0,pdy=pv.y<-.5?-1:pv.y>.5?1:0;
     if(dy&&dy!==pdy)tvSetCount(Number(document.getElementById('netPlayerCount').value)-dy);
    }
-   if(E('start'))tvPrimaryAction(true);
    return;
   }
-  if(ov||podiumActive){if(E('a')||E('start'))tvPrimaryAction(true);return}
+  if(ov||podiumActive){
+   if(E('start')){tvPrimaryAction(true);return}
+   const root=gpMenuRoot(),foc=document.activeElement&&root.contains(document.activeElement)&&document.activeElement!==root;
+   if(foc||s.x||s.y||E('b'))gpMenu(s,E,now);      // mexeu no direcional: navega pelos botões
+   else if(E('a'))tvPrimaryAction(true);           // A sem seleção: ação principal
+   return;
+  }
  }
  gpMenu(s,E,now);
 }

@@ -87,7 +87,7 @@ function soccerResult(now){
 }
 function finishSoccer(){
  const s=soccer;s.ph='done';ended=true;running=false;clearBots();
- const goalieWins=s.saves>s.goals,gains={},detail={},gn=players[s.g].name;
+ const goalieWins=s.saves>s.goals||s.saves>=3,gains={},detail={},gn=players[s.g].name;
  activeIndices().forEach(i=>{
   if(i===s.g){gains[i]=Math.max(SOCCER.loseEach,SOCCER.goalieBase+SOCCER.goalieEachSave*s.saves);detail[i]='🧤 Goleiro • '+s.saves+' defesa'+(s.saves===1?'':'s')+' x '+s.goals+' gol'+(s.goals===1?'':'s')+' sofrido'+(s.goals===1?'':'s')}
   else{gains[i]=goalieWins?SOCCER.loseEach:SOCCER.teamWinEach;detail[i]='⚽ Batedor • '+(s.goalsBy[i]||0)+' gol'+((s.goalsBy[i]||0)===1?'':'s')+' • time '+(goalieWins?'perdeu':'venceu')}
