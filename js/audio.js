@@ -35,7 +35,7 @@ function sfxClick(){tone(620,.045,'square',.035,0,390)}
 function sfxCream(){noisePop(.25,.18,1500);tone(220,.28,'sawtooth',.08,0,90);tone(520,.12,'sine',.06,.04,250)}
 function sfxFinish(){[523,659,784].forEach((f,i)=>tone(f,.18,'triangle',.11,i*.09))}
 /* ---- Sons gravados (pasta audio/). Carregam depois do 1º toque; se faltarem, usa os sons sintetizados. ---- */
-const SAMPLE_URLS={whistle:'audio/apito.mp3',kick:'audio/chute.mp3',bite:'audio/mordida.mp3',metalHit:'audio/metal-impacto.mp3',metalRoll:'audio/metal-rolando.wav',metalGoal:'audio/metal-gol.mp3'};
+const SAMPLE_URLS={whistle:'audio/apito.mp3',kick:'audio/chute.mp3',bite:'audio/mordida.mp3',metalHit:'audio/metal-impacto.mp3',metalRoll:'audio/metal-rolando.wav',metalGoal:'audio/metal-gol.mp3',pins:'audio/pino-boliche.mp3',victory:'audio/som-vitoria.mp3',winner:'audio/som-vencedor.mp3'};
 const sampleBuffers={},sampleLoading={};
 function loadSample(name){
  if(sampleBuffers[name]||sampleLoading[name])return;
@@ -61,6 +61,19 @@ function setRollLoop(level){            // som contínuo da bola de metal roland
 let lastMetalHit=0;
 function sfxMetalHit(vol=1){const t=performance.now();if(t-lastMetalHit<70)return;lastMetalHit=t;if(!playSample('metalHit',Math.max(.1,Math.min(1,vol))*.45))tone(900,.06,'square',.04,0,500)}
 function sfxMetalGoal(){if(!playSample('metalGoal',.5))sfxCream()}
+function sfxPins(count){const v=Math.min(1,.45+.055*count);if(!playSample('pins',v))noisePop(.5,.18,2200)}
+/* Pódio: toca o som de vitória e, logo em seguida, o som de vencedor (sem intervalo). */
+let podiumSnd=[];
+function stopPodiumSound(){podiumSnd.forEach(s=>{try{s.stop()}catch(e){}});podiumSnd=[]}
+function sfxPodiumSequence(){
+ if(!audioEnabled)return false;
+ ensureAudio();const v=sampleBuffers.victory,w=sampleBuffers.winner;
+ if(!v||!w){loadSample('victory');loadSample('winner');return false}
+ stopPodiumSound();
+ const t0=audioCtx.currentTime+.05;
+ [[v,t0,.95],[w,t0+v.duration,.8]].forEach(([buf,when,vol])=>{const s=audioCtx.createBufferSource(),g=audioCtx.createGain();s.buffer=buf;g.gain.value=vol;s.connect(g);g.connect(masterGain);s.start(when);podiumSnd.push(s)});
+ return true;
+}
 function sfxBite(){if(playSample('bite',1))return;sfxChew()}   // mordida final (som gravado)
 function sfxWhistle(){if(!playSample('whistle',1)){tone(1800,.25,'sine',.12);tone(2000,.25,'sine',.1,.28)}}
 function sfxKick(){if(!playSample('kick',1)){noisePop(.12,.2,900);tone(120,.15,'sine',.15,0,60)}}

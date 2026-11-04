@@ -37,16 +37,25 @@ function takeSlot(room,ws,name,pref){
  if(slot<0)return -1;
  room.slots[slot]={ws,name};ws.room=room;ws.slot=slot;return slot;
 }
+function pickVip(room){ // VIP = celular que pode iniciar partida/avançar rodadas na TV
+ const v=room.vip;
+ if(v&&room.slots[v.slot]&&room.slots[v.slot].ws===v)return;
+ const s=room.slots.find(x=>x&&x.ws&&x.ws.ctrl);room.vip=s?s.ws:null;
+}
 function lobby(room){
  const names=room.slots.map(s=>s?s.name:null);
- room.slots.forEach(s=>s&&send(s.ws,{t:'lobby',names,host:room.host.slot}));
+ if(room.tv)pickVip(room);
+ const m={t:'lobby',names,host:room.tv?-1:room.host.slot,vip:room.vip?room.vip.slot:-1,tv:!!room.tv,started:!!room.started};
+ room.slots.forEach(s=>s&&send(s.ws,m));
+ if(room.tv)send(room.host,m);
 }
 function leave(ws){
  const room=ws.room;if(!room)return;ws.room=null;
  if(room.host===ws){
-  room.slots.forEach(s=>s&&s.ws!==ws&&(send(s.ws,{t:'closed'}),s.ws.room=null));
+  room.slots.forEach(s=>s&&s.ws&&s.ws!==ws&&(send(s.ws,{t:'closed'}),s.ws.room=null));
   rooms.delete(room.code);return;
  }
+ if(!room.slots[ws.slot]||room.slots[ws.slot].ws!==ws)return;
  room.slots[ws.slot]=null;
  send(room.host,{t:'left',slot:ws.slot});lobby(room);
 }
@@ -61,30 +70,44 @@ wss.on('connection',ws=>{
   switch(m.t){
    case 'create':{
     if(room)leave(ws);
-    const r={code:newCode(),host:ws,slots:Array(SLOTS).fill(null),started:false};
+    const r={code:newCode(),host:ws,slots:Array(SLOTS).fill(null),started:false,tv:!!m.tv,vip:null};
     rooms.set(r.code,r);
-    const slot=takeSlot(r,ws,cleanName(m.name),m.pref);
-    send(ws,{t:'joined',code:r.code,slot,host:true});lobby(r);break;
+    let slot=-1;
+    if(r.tv){ws.room=r;ws.slot=-1} // TV: anfitrião sem personagem; os celulares são os jogadores
+    else slot=takeSlot(r,ws,cleanName(m.name),m.pref);
+    send(ws,{t:'joined',code:r.code,slot,host:true,tv:r.tv});lobby(r);break;
    }
    case 'join':{
     if(room)leave(ws);
     const r=rooms.get(String(m.code||'').toUpperCase().trim());
     if(!r)return send(ws,{t:'err',m:'Sala não encontrada. Confira o código.'});
-    if(r.started)return send(ws,{t:'err',m:'Essa partida já começou.'});
-    if(r.slots.filter(Boolean).length>=MAX_HUMANS)return send(ws,{t:'err',m:'Sala cheia (8 jogadores).'});
-    const slot=takeSlot(r,ws,cleanName(m.name),m.pref);
+    const rejoin=r.tv&&Number.isInteger(m.pref)&&m.pref>=0&&m.pref<SLOTS&&!r.slots[m.pref]; // celular que caiu e volta no mesmo personagem
+    if(r.started&&!rejoin)return send(ws,{t:'err',m:'Essa partida já começou.'});
+    if(r.slots.filter(Boolean).length>=MAX_HUMANS&&!rejoin)return send(ws,{t:'err',m:'Sala cheia (8 jogadores).'});
+    if(m.ctrl)ws.ctrl=true;
+    const slot=r.started?(rejoin?takeSlot(r,ws,cleanName(m.name),m.pref):-1):takeSlot(r,ws,cleanName(m.name),m.pref);
     if(slot<0)return send(ws,{t:'err',m:'Sala cheia (8 jogadores).'});
-    send(ws,{t:'joined',code:r.code,slot,host:false});lobby(r);break;
+    send(ws,{t:'joined',code:r.code,slot,host:false,tv:!!r.tv});lobby(r);break;
    }
    case 'relay': // jogador -> anfitrião
     if(room&&room.host!==ws)send(room.host,{t:'in',slot:ws.slot,d:m.d});break;
    case 'bc': // anfitrião -> todos os outros
-    if(room&&room.host===ws)room.slots.forEach(s=>s&&s.ws!==ws&&send(s.ws,{t:'s',d:m.d}));break;
+    if(room&&room.host===ws)room.slots.forEach(s=>s&&s.ws&&s.ws!==ws&&!s.ws.ctrl&&send(s.ws,{t:'s',d:m.d}));break;
+   case 'cc': // anfitrião (TV) -> celulares-controle (todos, ou só o do slot indicado)
+    if(room&&room.host===ws)room.slots.forEach((s,i)=>s&&s.ws&&s.ws.ctrl&&(m.slot===undefined||m.slot===i)&&send(s.ws,{t:'c',d:m.d}));break;
+   case 'local': // TV: reserva uma vaga para um controle (gamepad) ligado na própria TV
+    if(room&&room.host===ws&&room.tv&&Number.isInteger(m.slot)&&m.slot>=0&&m.slot<SLOTS&&!room.slots[m.slot]){
+     if(Number.isInteger(m.from)&&room.slots[m.from]&&room.slots[m.from].local)room.slots[m.from]=null;
+     room.slots[m.slot]={ws:null,name:uniqueName(room,cleanName(m.name)),local:true};lobby(room);
+    }break;
+   case 'unlocal':
+    if(room&&room.host===ws&&room.tv&&room.slots[m.slot]&&room.slots[m.slot].local){room.slots[m.slot]=null;lobby(room)}break;
    case 'pick':{ // trocar de personagem enquanto está no lobby
     if(!room||room.started)return;
     const n=m.slot;
     if(!Number.isInteger(n)||n<0||n>=SLOTS)return;
     if(room.slots[n])return send(ws,{t:'pickfail'});
+    if(!room.slots[ws.slot]||room.slots[ws.slot].ws!==ws)return;
     room.slots[n]=room.slots[ws.slot];room.slots[ws.slot]=null;ws.slot=n;
     send(ws,{t:'slot',slot:n});lobby(room);break;
    }

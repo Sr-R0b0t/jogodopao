@@ -2,17 +2,17 @@
    ~20x por segundo; os convidados só mostram essas fotos e enviam seus comandos (toque, analógico, mira).
    Vagas sem jogador humano continuam sendo bots (rodam no anfitrião). */
 const net={role:'offline',ws:null,slot:0,code:'',names:Array(specs.length).fill(null),humans:new Set(),mv:{},
- target:null,sm:null,smb:null,lastSnap:0,lastMv:0,lastMvKey:'',bwKey:'',prevTurn:-1,pref:0,hostSlot:0,prevNames:null,flash:new Set()};
+ target:null,sm:null,smb:null,lastSnap:0,lastMv:0,lastMvKey:'',bwKey:'',prevTurn:-1,pref:0,hostSlot:0,prevNames:null,flash:new Set(),tv:false,vip:-1,started:false};
 const NET_TICK_MS=50;
 /* Se o jogo estiver hospedado num site estático (Netlify, GitHub Pages...), coloque aqui o endereço
    do servidor online (ex.: 'jogo-do-pao.onrender.com'). Deixe vazio se o servidor serve o próprio jogo. */
-const DEFAULT_SERVER='';
+const DEFAULT_SERVER='jogodopao.onrender.com';
 const r2=v=>Math.round(v*100)/100,clamp1=v=>Math.max(-1,Math.min(1,Number(v)||0));
 function isHumanSlot(i){return i===humanIndex||net.humans.has(i)}
 
 /* ---------- Conexão ---------- */
 function netSendRaw(o){if(net.ws&&net.ws.readyState===1)net.ws.send(JSON.stringify(o))}
-function netBroadcast(d){if(net.role==='host')netSendRaw({t:'bc',d})}
+function netBroadcast(d){if(net.role==='host'&&!net.tv)netSendRaw({t:'bc',d})} // na TV os celulares não recebem fotos do jogo (só o painel do controle)
 function netSendInput(d){if(net.role==='client')netSendRaw({t:'relay',d})}
 function netSetStatus(msg,bad){const el=document.getElementById('netStatus');el.textContent=msg||'';el.className=bad?'bad':''}
 function netServerUrl(){
@@ -44,6 +44,7 @@ function netLeave(silent){
  net.role='offline';net.names=Array(specs.length).fill(null);setPlayerNames();netRenderGrid();net.humans.clear();net.mv={};net.target=null;net.sm=null;net.smb=null;net.prevTurn=-1;net.bwKey='';
  tournamentCharacterLocked=false;
  document.body.classList.remove('net-client');
+ if(net.tv){net.tv=false;humanIndex=0;net.vip=-1;net.started=false;if(typeof tvReset==='function')tvReset()}
  document.getElementById('netLobby').hidden=true;
  document.getElementById('netJoinBox').hidden=false;document.getElementById('netName').disabled=false;net.prevNames=null;
  if(!silent)netSetStatus('');
@@ -58,6 +59,7 @@ document.getElementById('netJoin').addEventListener('click',()=>{
 });
 document.getElementById('netStart').addEventListener('click',()=>{
  if(net.role!=='host')return;
+ if(net.tv&&!net.names.some(Boolean)){netSetStatus('Escaneie o QR code com o celular (ou aperte A no controle) para entrar.',true);return}
  net.humans=new Set(net.names.map((n,i)=>n&&i!==net.slot?i:-1).filter(i=>i>=0));
  humanIndex=net.slot;tournamentCharacterLocked=true;setPlayerNames();
  const act=pickActive(Number(document.getElementById('netPlayerCount').value)||MAX_PLAYERS,net.names.map((n,i)=>n?i:-1).filter(i=>i>=0));
@@ -76,6 +78,7 @@ function netOnMessage(m){
  switch(m.t){
   case 'joined':
    net.slot=m.slot;net.pref=m.slot;net.code=m.code;net.role=m.host?'host':'client';humanIndex=m.slot;
+   if(m.tv&&m.host){net.tv=true;humanIndex=-1;net.slot=-1;net.pref=-1;if(typeof tvOnJoined==='function')tvOnJoined(m)}
    document.getElementById('netJoinBox').hidden=true;document.getElementById('netLobby').hidden=false;
    document.getElementById('netName').disabled=true;net.prevNames=null;
    document.getElementById('netCodeShow').textContent=m.code;
@@ -115,7 +118,7 @@ function netRenderGrid(){
   g.append(b);
  }
 }
-function netPick(i){if(net.role!=='offline'&&!net.names[i]&&i!==net.slot)netSendRaw({t:'pick',slot:i})}
+function netPick(i){if(net.tv)return;if(net.role!=='offline'&&!net.names[i]&&i!==net.slot)netSendRaw({t:'pick',slot:i})}
 /* Lista de quem está na sala (o anfitrião vê os jogadores chegando). */
 function netRenderPlayers(){
  const box=document.getElementById('netPlayers');if(!box)return;
@@ -133,7 +136,8 @@ function netRenderPlayers(){
 }
 function netOnLobby(m){
  const prev=net.prevNames,now=m.names.filter(Boolean);
- net.names=m.names;net.hostSlot=m.host;net.flash.clear();
+ net.names=m.names;net.hostSlot=m.host;net.flash.clear();net.vip=m.vip===undefined?-1:m.vip;net.started=!!m.started;
+ if(net.tv&&net.role==='host'&&tournamentCharacterLocked)net.names.forEach((nm,i)=>{if(nm&&isActive(i))net.humans.add(i);else if(!nm)net.humans.delete(i)}); // celular que reconectou volta a controlar o personagem
  if(prev){
   const joined=now.filter(n=>!prev.includes(n)),left=prev.filter(n=>!now.includes(n));
   joined.forEach(n=>net.flash.add(n));
@@ -142,6 +146,7 @@ function netOnLobby(m){
  }
  net.prevNames=now;
  setPlayerNames();netRenderPlayers();netRenderGrid();
+ if(typeof tvOnLobby==='function')tvOnLobby();
 }
 /* Mostra o nome escolhido pelo jogador (online) no lugar do nome do personagem. */
 function setPlayerNames(){
@@ -155,6 +160,7 @@ function setPlayerNames(){
 
 /* ---------- ANFITRIÃO: recebe comandos dos convidados ---------- */
 function netHostInput(slot,d){
+ if(d&&d.k==='ctl'){if(net.tv&&slot===net.vip&&typeof tvPrimaryAction==='function')tvPrimaryAction(true);return}
  if(!net.humans.has(slot)||!d)return;
  if(d.k==='tap'){
   if(!running)return;
@@ -205,7 +211,10 @@ function netClientMsg(d){
   case 'start':
    document.getElementById('scoreOverlay').classList.remove('show');
    document.getElementById('gameMode').value=d.mode;reset();running=true;ended=false;net.bwKey='';net.prevTurn=-1;netClientUI();break;
-  case 'cd':showRoundBanner(d.title,d.sub,d.n>0?String(d.n):'VAI!');if(d.label)document.getElementById('roundLabel').textContent=d.label;cdBeep(d.n);if(d.n<=0)setTimeout(hideRoundBanner,700);break;
+  case 'cd':showRoundBanner(d.title,d.sub,d.n>0?String(d.n):'VAI!',d.desc);if(d.label)document.getElementById('roundLabel').textContent=d.label;cdBeep(d.n);if(d.n<=0)setTimeout(hideRoundBanner,700);break;
+  case 'podium':showPodium(d.order,d.scores,true);break;
+  case 'podiumhide':hidePodium();break;
+  case 'pins':{const c=d.n;setTimeout(()=>{if(audioEnabled)sfxPins(c)},d.delay||0);break}
   case 'ovhide':document.getElementById('scoreOverlay').classList.remove('show');break;
   case 'overlay':netShowOverlay(d);break;
   case 'snap':netApplySnap(d);break;
@@ -231,7 +240,7 @@ function netApplySnap(S){
  if(!net.sm){net.sm=S.p.map(a=>[a[0],a[1],a[2]]);net.smb=S.b?S.b.map(a=>[a[0],a[1],a[2]]):null}
  if(S.b&&!net.smb)net.smb=S.b.map(a=>[a[0],a[1],a[2]]);
  net.target=S;
- if(S.m!==gameMode){document.getElementById('gameMode').value=S.m;applyMode()}
+ if(S.m!==gameMode&&!podiumActive&&S.m!=='podium'){document.getElementById('gameMode').value=S.m;applyMode()}
  running=!!S.r;
  players.forEach((p,i)=>{
   const a=S.p[i];p.count=a[6];p.root.visible=!!a[5];
@@ -246,6 +255,7 @@ function netApplySnap(S){
   const key=S.bw.t+'|'+S.bw.s.join()+'|'+S.bw.f;
   if(key!==net.bwKey){
    net.bwKey=key;
+   const sum=S.bw.s.reduce((x,y)=>x+Math.max(0,y||0),0);if(S.bw.f===0&&false);net.bwSum=sum;
    if(S.bw.t!==net.prevTurn){
     net.prevTurn=S.bw.t;
     if(bowlingOrder[S.bw.t]===humanIndex){bowlingAimValue=0;bowlingPowerValue=70;document.getElementById('bowlingPower').value='70';updateBowlingControlValues();showBowlingArrowHint()}

@@ -74,7 +74,7 @@ let tapAllowed=false;
 function pressTap(){tapAllowed=true;try{document.getElementById('tap').click()}finally{tapAllowed=false}}
 document.getElementById('tap').addEventListener('click',e=>{
  if(e&&e.detail===0&&!tapAllowed)return;
- if(!running)return;
+ if(!running||humanIndex<0)return; // na TV ninguém clica na tela
  if(isTurbo()){shipBlastPress();return}
  if(gameMode==='ball')return; // Batalha das Bolas: só direção (sem botão de empurrão)
  if(net.role==='client'){sfxClick();netSendInput({k:'tap',aim:r2(bowlingAimValue),pow:bowlingPowerValue});return}
@@ -86,9 +86,10 @@ document.getElementById('tap').addEventListener('click',e=>{
 document.getElementById('start').addEventListener('click',start);
 document.getElementById('reset').addEventListener('click',()=>{ // reinicia o mesmo minigame, com contagem curta
  cancelCountdown();reset();
- const info=MINIGAMES.find(m=>m.id===gameMode);runCountdown(3,'↻ '+(info?info.label:''),document.getElementById('roundLabel').textContent);
+ const info=MINIGAMES.find(m=>m.id===gameMode);runCountdown(3,'↻ '+(info?info.label:''),document.getElementById('roundLabel').textContent,undefined,info&&info.desc);
 });
 document.addEventListener('keydown',e=>{
+ if(net.tv){if((e.code==='Enter'||e.code==='NumpadEnter')&&!/BUTTON|SELECT|INPUT/.test((e.target||{}).tagName||'')){const p=tvPrimaryAction(true);if(p)e.preventDefault()}return}
  if((e.code==='Space'||e.code==='Enter')&&running&&isTurbo()){e.preventDefault();if(!e.repeat)shipBlastPress();return}
  if((e.code==='Space'||e.code==='Enter')&&running&&gameMode!=='ball'&&gameMode!=='soccer'&&!isShipMode()){
   e.preventDefault();
@@ -97,9 +98,20 @@ document.addEventListener('keydown',e=>{
  }
 });
 
+/* Trava o scroll da página enquanto o minigame está na tela (evita rolar sem querer ao controlar no celular) */
+let pageLocked=false;
+function updatePageLock(){
+ const scr=document.getElementById('screenMinigames'),ov=document.getElementById('scoreOverlay');
+ const lock=!!scr&&scr.style.display!=='none'&&!(ov&&ov.classList.contains('show'));
+ if(lock!==pageLocked){pageLocked=lock;document.documentElement.classList.toggle('game-lock',lock);document.body.classList.toggle('game-lock',lock);if(lock)window.scrollTo(0,0)}
+}
+document.addEventListener('touchmove',e=>{if(pageLocked&&!e.target.closest('#scoreOverlay'))e.preventDefault()},{passive:false});
+document.addEventListener('wheel',e=>{if(pageLocked&&!e.target.closest('#scoreOverlay'))e.preventDefault()},{passive:false});
+document.addEventListener('keydown',e=>{if(pageLocked&&['ArrowUp','ArrowDown','Space','PageUp','PageDown','Home','End'].includes(e.code)&&!/INPUT|SELECT|TEXTAREA/.test((e.target||{}).tagName||''))e.preventDefault()});
+
 /* Loop de animação */
 function animate(now){
- requestAnimationFrame(animate);
+ requestAnimationFrame(animate);updatePageLock();
  const t=now*.001,dt=Math.min(.04,(now-lastTime)/1000);lastTime=now;
  if(gameMode==='bowling'&&running&&net.role!=='client')resolveBowlingThrow(now);
  if(gameMode==='bowling')animateFallenPins(now);
@@ -152,11 +164,12 @@ function animate(now){
  }
 
  updateBallMode(now,dt,t);
- updateTouchControls(dt);
+ updateTouchControls(dt);updateGamepads(now,dt);if(net.tv)tvFrame(now);
  if(net.role!=='client'){updateSoccerMode(now,dt);updateShipMode(now,dt)}
  shipVisualUpdate(dt);
  soccerUiUpdate();soccerAudioCue();
  players.forEach((p,i)=>{if(p.glb)animateGlbPlayer(p,i,dt)});
+ podiumUpdate(t,dt);
  updateSelfMarker(t);
  if(net.role==='client')netClientFrame(dt,now);else netHostFrame(now);
  breadRoot.rotation.y=Math.sin(t*.9)*.08;

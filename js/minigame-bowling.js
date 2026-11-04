@@ -157,6 +157,7 @@ function bowlingPathAt(lineX,u){
 }
 /* Calcula TODOS os pinos derrubados no momento do lançamento e agenda a queda de cada um
    (fallStart) para coincidir com a chegada da bola. Retorna a quantidade de pinos. */
+let bowlingFirstHit=0;
 function calculateBowlingShot(lineX,power,start,duration){
  const contact=BOWLING.ballR+BOWLING.pinR+.04,chance=BOWLING.chainBase+power*BOWLING.chainPower;
  const hits=new Map(),queue=[];
@@ -179,6 +180,7 @@ function calculateBowlingShot(lineX,power,start,duration){
    hits.set(other,{time:info.time+80+Math.random()*70,dirX:dx/len,dirZ:(dz-.5)/len});queue.push(other);
   });
  }
+ let firstHit=Infinity;hits.forEach(i=>{if(i.time<firstHit)firstHit=i.time});bowlingFirstHit=firstHit;
  hits.forEach((info,pin)=>{pin.down=true;pin.fallStart=info.time;pin.fallDirX=info.dirX;pin.fallDirZ=info.dirZ});
  return hits.size;
 }
@@ -193,6 +195,7 @@ function throwBowlingBall(playerIndex,opts){
  document.getElementById('tap').disabled=true;document.getElementById('bowlingControls').classList.remove('show');updateBowlingMoveControls();
  document.getElementById('status').textContent=players[playerIndex].name+' lançou a bola!';
  if(audioEnabled)sfxClick();
+ if(knocked>0){const delay=Math.max(0,bowlingFirstHit-performance.now());setTimeout(()=>{if(audioEnabled)sfxPins(knocked)},delay);if(net.role==='host')netBroadcast({k:'pins',n:knocked,delay})}
 }
 function resolveBowlingThrow(now){
  if(!bowlingBallState)return;

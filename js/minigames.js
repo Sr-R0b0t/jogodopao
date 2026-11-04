@@ -2,14 +2,15 @@
    Para ADICIONAR um jogo novo: acrescente {id,label} em MINIGAMES e trate o `gameMode` com esse id
    (ver applyMode/reset/start em game.js). O sorteio nunca repete um jogo até todos terem sido jogados. */
 const MINIGAMES=[
- {id:'bread',label:'Corrida do Pão'},
- {id:'ball',label:'Batalha das Bolas'},
- {id:'bowling',label:'Boliche na Ladeira'},
- {id:'soccer',label:'Pênaltis (Futebol)'},
- {id:'ship',label:'Arena das Naves',min:2,max:4},   // só com 2 a 4 jogadores
- {id:'turbo',label:'Arena Turbo',min:2,max:4}
+ {id:'bread',label:'Corrida do Pão',desc:'Clique o mais rápido que puder para chegar primeiro ao pão. Quem ficar por último come o pão!'},
+ {id:'ball',label:'Batalha das Bolas',desc:'Equilibre-se na sua bola e derrube os rivais da arena. Vence o último que ficar em pé!'},
+ {id:'bowling',label:'Boliche na Ladeira',desc:'Lance a bola pela ladeira e derrube os pinos. Vence quem derrubar mais pinos!'},
+ {id:'soccer',label:'Pênaltis (Futebol)',desc:'Um goleiro contra os batedores: escolha esquerda, meio ou direita. O goleiro ganha 2 pontos por defesa; os batedores vencem se marcarem mais gols.'},
+ {id:'ship',label:'Arena das Naves',min:2,max:4,desc:'Pilote sua nave e defenda seu gol das bolas de metal. Cada gol sofrido tira 1 das 15 vidas. Vence o último na arena!'},   // só com 2 a 4 jogadores
+ {id:'turbo',label:'Arena Turbo',min:2,max:4,desc:'Sua nave desliza só pelo seu lado. Defenda o gol, aproveite os pads verdes para acelerar a bola e use o ESPECIAL para empurrá-la. Vence o último na arena!'}
 ];
 let minigameBag=[],lastMinigame=null,roundNumber=0,roundTimer=null;
+let finalRound=false;   // true na última rodada do ciclo (todos os minigames sorteados): depois dela vem o pódio
 // o seletor de minigame fica escondido (só o jogo usa), mas segue a lista acima
 (function(){const sel=document.getElementById('gameMode');sel.replaceChildren(...MINIGAMES.map(m=>{const o=document.createElement('option');o.value=m.id;o.textContent=m.label;return o}))})();
 
@@ -26,14 +27,15 @@ function drawMinigame(){
  }
  lastMinigame=minigameBag.shift();return lastMinigame;
 }
-function resetMinigameBag(){minigameBag=[];lastMinigame=null;roundNumber=0;cancelCountdown()}
+function resetMinigameBag(){minigameBag=[];lastMinigame=null;roundNumber=0;finalRound=false;cancelCountdown()}
 
 /* Aviso grande no meio da tela (nome do minigame + contagem). Fica até hideRoundBanner(). */
 const COUNTDOWN_SECONDS=5;
 let cdTimer=null;
-function showRoundBanner(title,sub,count){
+function showRoundBanner(title,sub,count,desc){
  const el=document.getElementById('roundBanner');if(!el)return;
- el.innerHTML='<small>'+sub+'</small><b>'+title+'</b>'+(count!==undefined?'<span class="cd">'+count+'</span>':'');
+ el.innerHTML='<small>'+sub+'</small><b>'+title+'</b>'+(desc?'<p class="rb-desc"></p>':'')+(count!==undefined?'<span class="cd">'+count+'</span>':'');
+ const dp=el.querySelector('.rb-desc');if(dp)dp.textContent=desc;
  el.classList.add('show');
 }
 function hideRoundBanner(){const el=document.getElementById('roundBanner');if(el)el.classList.remove('show')}
@@ -43,12 +45,12 @@ function cdBeep(n){ // bip a cada segundo; som mais alto no "VAI!"
 }
 function cancelCountdown(){clearInterval(cdTimer);cdTimer=null;clearTimeout(roundTimer);hideRoundBanner()}
 /* 5…4…3…2…1…VAI! e então começa a partida (o anfitrião manda a contagem para todos). */
-function runCountdown(sec,title,sub,label){
+function runCountdown(sec,title,sub,label,desc){
  cancelCountdown();
  let n=sec;
  const tick=()=>{
-  showRoundBanner(title,sub,n>0?String(n):'VAI!');cdBeep(n);
-  netBroadcast({k:'cd',title,sub,n,label});
+  showRoundBanner(title,sub,n>0?String(n):'VAI!',desc);cdBeep(n);
+  netBroadcast({k:'cd',title,sub,n,label,desc});
   if(n<=0){
    clearInterval(cdTimer);cdTimer=null;setTimeout(hideRoundBanner,700);
    if(!running&&!ended&&!document.getElementById('scoreOverlay').classList.contains('show'))start();
@@ -63,6 +65,7 @@ function startRound(){
  if(net.role==='client')return;
  cancelCountdown();
  const id=drawMinigame(),info=MINIGAMES.find(m=>m.id===id);
+ finalRound=minigameBag.length===0&&eligibleMinigames().length>1;
  roundNumber++;
  document.getElementById('gameMode').value=id;gameMode=id;
  applyMode();reset();
@@ -71,5 +74,8 @@ function startRound(){
  const label='🎲 RODADA '+roundNumber+' • '+info.label.toUpperCase();
  document.getElementById('roundLabel').textContent=label;
  document.getElementById('status').textContent='🎲 Minigame sorteado: '+info.label+'! A partida começa em instantes…';
- runCountdown(COUNTDOWN_SECONDS,'🎲 '+info.label,'Rodada '+roundNumber,label);
+ runCountdown(COUNTDOWN_SECONDS,'🎲 '+info.label,'Rodada '+roundNumber,label,info.desc);
 }
+
+/* Home: número de minigames sempre igual ao da lista */
+{const el=document.getElementById('homeMgCount');if(el)el.textContent='🎮 '+MINIGAMES.length+' minigames'}

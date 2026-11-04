@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#1b1030">
+<title>Controle — Jogo do Pão</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%8E%AE%3C/text%3E%3C/svg%3E">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none;background:#1b1030;color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+.view{display:none;flex:1;min-height:0;flex-direction:column;padding:14px}
+.view.show{display:flex}
+h1{margin:0 0 4px;font-size:1.5rem;color:#ffdf79;text-align:center}
+.sub{margin:0 0 14px;text-align:center;opacity:.8;font-size:.95rem}
+input[type=text]{width:100%;padding:14px;border-radius:14px;border:2px solid #a78bca;background:#2a1b43;color:#fff;font-size:1.1rem;font-weight:800;text-align:center;-webkit-user-select:text;user-select:text}
+#code{letter-spacing:.3em;text-transform:uppercase}
+.btn{border:0;border-radius:18px;padding:16px;font-size:1.15rem;font-weight:1000;color:#1b1030;background:linear-gradient(#ffe48a,#ffb938);box-shadow:0 5px 0 #b57a14;width:100%}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #b57a14}
+.btn:disabled{opacity:.45}
+.btn.green{background:linear-gradient(#b2ffd0,#4fdc8a);box-shadow:0 5px 0 #228a52}
+.btn.green:active{box-shadow:0 2px 0 #228a52}
+#err{min-height:1.4em;margin:10px 0;text-align:center;color:#ff9aa8;font-weight:800}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;overflow:auto;touch-action:pan-y;flex:1;min-height:0;align-content:start;padding:2px}
+.ch{border:2px solid #4a3470;border-radius:14px;background:#2a1b43;color:#fff;padding:10px 4px;font-weight:900;font-size:.72rem;display:flex;flex-direction:column;align-items:center;gap:6px}
+.ch i{width:38px;height:38px;border-radius:50%;border:3px solid #fff3;display:block}
+.ch small{opacity:.8;font-weight:700;font-size:.62rem;min-height:1em}
+.ch.me{border-color:#ffdf79;background:#4a3470}
+.ch.taken{opacity:.4}
+.bar{padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:none}
+.bar.show{display:block}
+.center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px}
+.big{font-size:3rem}
+.msg{font-size:1.25rem;font-weight:900}
+.dim{opacity:.75}
+.who{padding:8px 12px;text-align:center;font-weight:900;color:#ffdf79;font-size:.95rem}
+/* jogo */
+.pad{flex:1;min-height:0;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.pad.single{justify-content:center}
+.joy{width:min(46vw,230px);height:min(46vw,230px);border-radius:50%;background:radial-gradient(#3a2760,#241640);border:4px solid #a78bca;position:relative;flex:none;touch-action:none}
+.joy i{position:absolute;left:50%;top:50%;width:42%;height:42%;margin:-21% 0 0 -21%;border-radius:50%;background:linear-gradient(#ffe48a,#ffb938);box-shadow:0 4px 0 #b57a14}
+.act{width:min(42vw,210px);height:min(42vw,210px);border-radius:50%;border:0;background:radial-gradient(#ff8a9a,#e8344f);color:#fff;font-size:1.2rem;font-weight:1000;box-shadow:0 8px 0 #8d1c2e;touch-action:none;flex:none}
+.act:active{transform:translateY(5px);box-shadow:0 3px 0 #8d1c2e}
+.act.blue{background:radial-gradient(#8fd3ff,#2f7bff);box-shadow:0 8px 0 #1a3f8f}
+.act.blue:active{box-shadow:0 3px 0 #1a3f8f}
+.act:disabled{opacity:.5}
+.huge{width:min(86vw,60vh);height:min(86vw,60vh);font-size:2rem}
+.bowl{width:100%;display:flex;flex-direction:column;gap:18px;padding:6px 6px 0}
+.bowl label{font-weight:900;display:flex;flex-direction:column;gap:8px}
+.bowl input[type=range]{width:100%;height:40px;touch-action:pan-x;accent-color:#ffb938}
+.sc{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%}
+.sc button{border:0;border-radius:18px;padding:26px 4px;font-size:2.2rem;font-weight:1000;background:linear-gradient(#cfa9ff,#8b5dff);color:#fff;box-shadow:0 6px 0 #4c2fb0}
+.sc button small{display:block;font-size:.7rem;margin-top:6px}
+.sc button:active{transform:translateY(4px);box-shadow:0 2px 0 #4c2fb0}
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#000c;padding:10px 16px;border-radius:12px;font-weight:800;display:none;z-index:9}
+</style>
+</head>
+<body>
+<section id="vJoin" class="view show">
+  <div class="center">
+    <div class="big">🎮</div>
+    <h1>Controle do Jogo do Pão</h1>
+    <p class="sub">Entre na sala que aparece na TV</p>
+    <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:10px">
+      <input id="name" type="text" maxlength="12" placeholder="Seu nome" autocomplete="off">
+      <input id="code" type="text" maxlength="5" placeholder="CÓDIGO" autocomplete="off" autocapitalize="characters">
+      <button id="go" class="btn">ENTRAR</button>
+      <div id="err"></div>
+    </div>
+  </div>
+</section>
+
+<section id="vLobby" class="view">
+  <h1>Escolha seu personagem</h1>
+  <p class="sub" id="lobbySub">Vagas sem jogador viram bots 🤖</p>
+  <div class="grid" id="grid"></div>
+</section>
+
+<section id="vGame" class="view">
+  <div class="who" id="who"></div>
+  <div class="pad" id="padStick"><div class="joy" id="joy"><i id="knob"></i></div><button class="act blue" id="special">💨<br>ESPECIAL</button></div>
+  <div class="pad single" id="padBread"><button class="act huge" id="bigBtn">👆<br>CLICAR!</button></div>
+  <div class="pad single" id="padBowl"><div class="bowl">
+    <label>↔ Posição <input id="aim" type="range" min="-100" max="100" value="0"></label>
+    <label>💪 Força <b id="powTxt">70%</b><input id="pow" type="range" min="35" max="100" value="70"></label>
+    <button class="btn green" id="throwBtn">🎳 LANÇAR!</button>
+  </div></div>
+  <div class="pad single" id="padSoccer"><div style="width:100%"><div class="msg" id="scTitle" style="text-align:center;margin-bottom:14px"></div>
+    <div class="sc"><button data-d="-1">⬅<small>ESQUERDA</small></button><button data-d="0">⬆<small>MEIO</small></button><button data-d="1">➡<small>DIREITA</small></button></div></div></div>
+  <div class="center" id="padWait"><div class="big">⏳</div><div class="msg" id="waitTxt">Aguarde…</div></div>
+</section>
+
+<section id="vInfo" class="view">
+  <div class="center"><div class="big" id="infoIcon">📺</div><div class="msg" id="infoTxt">Olhe para a TV!</div><div class="dim" id="infoSub"></div></div>
+</section>
+
+<section id="vEnd" class="view">
+  <div class="center"><div class="big">📺</div><div class="msg" id="endTxt">A TV encerrou a sala.</div><button class="btn" id="again" style="max-width:300px">Entrar de novo</button></div>
+</section>
+
+<div class="bar" id="vipBar"><button class="btn green" id="vipBtn">▶ INICIAR</button></div>
+<div id="toast"></div>
+<script src="js/pad.js"></script>
+</body>
+</html>

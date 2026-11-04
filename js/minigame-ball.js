@@ -13,6 +13,7 @@ window.addEventListener('keyup',e=>{keys[e.code]=false});
 /* Vetor de movimento do jogador local (teclado ou analógico), de -1 a 1. */
 function humanMoveVector(){
  if(joystick.active)return {x:joystick.x,y:joystick.y};
+ if(typeof gpMove!=='undefined'&&gpMove.active)return {x:gpMove.x,y:gpMove.y};
  let ix=0,iz=0;
  if(keys.ArrowLeft||keys.KeyA)ix-=1;if(keys.ArrowRight||keys.KeyD)ix+=1;if(keys.ArrowUp||keys.KeyW)iz-=1;if(keys.ArrowDown||keys.KeyS)iz+=1;
  const l=Math.hypot(ix,iz)||1;return {x:ix/l,y:iz/l};

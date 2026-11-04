@@ -7,7 +7,7 @@ const SOCCER={
  kickMs:1100,launch:.45,resultMs:1700,introMs:2000,
  teamWinEach:3,       // batedores venceram (gols >= defesas): cada batedor ganha
  loseEach:1,          // quem perdeu ganha (participação)
- goalieBase:4,goalieEachSave:2  // goleiro venceu (defesas > gols): ganha 4 + 2 por defesa, sozinho
+ goalieBase:0,goalieEachSave:2  // goleiro ganha 2 pontos por defesa (3 defesas = 6 pontos), vença ou não; no mínimo loseEach
 };
 const GOAL_Z=-4.5,BALL_Z=1.6,GOALIE_Z=-4.0,KICKER_POS=[-1.5,2.4],KICKER_SCALE=.78,GOALIE_SCALE=.85,DIR_X=[-2.0,0,2.0]; // DIR_X[dir+1]
 const DIR_NAME={'-1':'esquerda','0':'meio','1':'direita'};
@@ -89,13 +89,13 @@ function finishSoccer(){
  const s=soccer;s.ph='done';ended=true;running=false;clearBots();
  const goalieWins=s.saves>s.goals,gains={},detail={},gn=players[s.g].name;
  activeIndices().forEach(i=>{
-  if(i===s.g){gains[i]=goalieWins?SOCCER.goalieBase+SOCCER.goalieEachSave*s.saves:SOCCER.loseEach;detail[i]='🧤 Goleiro • '+s.saves+' defesa'+(s.saves===1?'':'s')+' x '+s.goals+' gol'+(s.goals===1?'':'s')+' sofrido'+(s.goals===1?'':'s')}
+  if(i===s.g){gains[i]=Math.max(SOCCER.loseEach,SOCCER.goalieBase+SOCCER.goalieEachSave*s.saves);detail[i]='🧤 Goleiro • '+s.saves+' defesa'+(s.saves===1?'':'s')+' x '+s.goals+' gol'+(s.goals===1?'':'s')+' sofrido'+(s.goals===1?'':'s')}
   else{gains[i]=goalieWins?SOCCER.loseEach:SOCCER.teamWinEach;detail[i]='⚽ Batedor • '+(s.goalsBy[i]||0)+' gol'+((s.goalsBy[i]||0)===1?'':'s')+' • time '+(goalieWins?'perdeu':'venceu')}
  });
  setStatus(goalieWins?'🧤 '+gn+' venceu como goleiro!':'⚽ Os batedores venceram o goleiro '+gn+'!');
  showRoundResults(gains,detail,'Pênaltis',goalieWins?'🧤 O goleiro venceu!':'⚽ Os batedores venceram!',
   gn+' fez '+s.saves+' defesa'+(s.saves===1?'':'s')+' e sofreu '+s.goals+' gol'+(s.goals===1?'':'s')+'.',
-  'Batedores: '+SOCCER.teamWinEach+' pts cada se vencerem • Goleiro: '+SOCCER.goalieBase+' + '+SOCCER.goalieEachSave+' por defesa se vencer • Perdedores: '+SOCCER.loseEach+' pt');
+  'Batedores: '+SOCCER.teamWinEach+' pts cada se vencerem • Goleiro: '+SOCCER.goalieEachSave+' pts por defesa (3 defesas = 6) • Perdedores: '+SOCCER.loseEach+' pt');
 }
 
 /* ---------- Atualização a cada frame (anfitrião/offline) ---------- */

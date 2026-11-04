@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 
-const GAME_SCRIPTS=['audio','settings','tournament','flow','scene','characters','net','minigame-ball','roster','minigame-bread','minigame-bowling','minigame-soccer','minigame-ship','bowling-ui','character-select','touch-controls','self-marker','glb-characters','minigames','game'];
+const GAME_SCRIPTS=['audio','settings','tournament','flow','scene','characters','net','minigame-ball','roster','minigame-bread','minigame-bowling','minigame-soccer','minigame-ship','bowling-ui','character-select','touch-controls','self-marker','glb-characters','minigames','podium','qrcode','tv','gamepad','game'];
 const loaderEl=document.getElementById('bootLoader'),loaderMsg=document.getElementById('bootMsg');
 const setMsg=t=>{if(loaderMsg)loaderMsg.textContent=t};
 function loadScript(src){return new Promise((ok,fail)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>fail(new Error('Falha ao carregar '+src));document.body.appendChild(s)})}

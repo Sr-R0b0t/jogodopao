@@ -21,7 +21,7 @@ function buildScoreboard(gains,detail,modeLabel,subtitle){
  Object.keys(gains).forEach(i=>{tournamentScores[i]+=gains[i]});
  const order=players.map((p,i)=>({name:p.name,index:i,score:tournamentScores[i],isUser:i===humanIndex})).filter(o=>isActive(o.index)).sort((a,b)=>b.score-a.score||Number(b.isUser)-Number(a.isUser)||a.index-b.index);
  const sub=subtitle||'1º 5 pts • 2º 3 pts • 3º 2 pts • demais 1 pt';
- return `<div class="points-panel"><h3>🏆 Placar do campeonato</h3><div class="points-subtitle">${modeLabel} • Rodada ${roundsPlayed} • ${sub}</div><table class="points-table"><thead><tr><th>#</th><th>Personagem</th><th>Total</th></tr></thead><tbody>${order.map((p,pos)=>`<tr data-slot="${p.index}" class="${pos===0?'current-leader':''}"><td>${pos===0?'🥇':pos===1?'🥈':pos===2?'🥉':pos+1}</td><td>${p.name}${p.isUser?' <strong class="you" style="color:#8af0b3"> (VOCÊ)</strong>':''}${gains[p.index]?' <span class="gain">+'+gains[p.index]+'</span>':''}${detail&&detail[p.index]?'<small class="pt-detail">'+detail[p.index]+'</small>':''}</td><td>${p.score}</td></tr>`).join('')}</tbody></table><div class="points-actions"><button id="playNextRound">🎲 SORTEAR E INICIAR PRÓXIMO MINIGAME →</button><button id="resetTournament" class="secondary">↻ Zerar campeonato</button></div></div>`;
+ return `<div class="points-panel"><h3>🏆 Placar do campeonato</h3><div class="points-subtitle">${modeLabel} • Rodada ${roundsPlayed} • ${sub}</div><table class="points-table"><thead><tr><th>#</th><th>Personagem</th><th>Total</th></tr></thead><tbody>${order.map((p,pos)=>`<tr data-slot="${p.index}" class="${pos===0?'current-leader':''}"><td>${pos===0?'🥇':pos===1?'🥈':pos===2?'🥉':pos+1}</td><td>${p.name}${p.isUser?' <strong class="you" style="color:#8af0b3"> (VOCÊ)</strong>':''}${gains[p.index]?' <span class="gain">+'+gains[p.index]+'</span>':''}${detail&&detail[p.index]?'<small class="pt-detail">'+detail[p.index]+'</small>':''}</td><td>${p.score}</td></tr>`).join('')}</tbody></table><div class="points-actions">${finalRound?'<button id="showPodiumBtn">🏆 VER O PÓDIO FINAL →</button>':'<button id="playNextRound">🎲 SORTEAR E INICIAR PRÓXIMO MINIGAME →</button>'}<button id="resetTournament" class="secondary">↻ Zerar campeonato</button></div></div>`;
 }
 /* Mostra o resultado da rodada (depois do atraso) e envia o placar aos convidados. */
 function showRoundResults(gains,detail,modeLabel,headline,lead,subtitle){
@@ -42,6 +42,13 @@ function wireScoreboardActions(){
   document.getElementById('result').innerHTML='';
   netBroadcast({k:'ovhide'});
   startRound(); // sorteia o próximo minigame (sem repetir até todos terem sido jogados)
+ });
+ const pod=document.getElementById('showPodiumBtn');
+ if(pod)pod.addEventListener('click',()=>{
+  document.getElementById('scoreOverlay').classList.remove('show');
+  document.getElementById('result').classList.remove('show');document.getElementById('result').innerHTML='';
+  netBroadcast({k:'ovhide'});
+  startPodium();
  });
  const clear=document.getElementById('resetTournament');
  if(clear)clear.addEventListener('click',()=>{

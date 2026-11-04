@@ -92,6 +92,7 @@ function animateGlbPlayer(p,i,dt){
  else if((gameMode==='ball'&&running&&balls[i].alive||isShipMode()&&running&&p.count>0)&&g.speed>.6)state='walk';  // equilibrando na bola
  else if(gameMode==='ball'&&ended&&balls[i].alive)state='dance';                // venceu a batalha
  else if(gameMode==='bowling'&&bowlingBallState&&bowlingOrder[bowlingTurn]===i)state='jump'; // lançou a bola
+ if(typeof podiumActive!=='undefined'&&podiumActive&&p.podiumState)state=p.podiumState;   // pódio final
  setGlbState(p,state);
  g.mixer.update(dt);
 }
