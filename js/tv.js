@@ -17,10 +17,39 @@ function tvSetCount(n){
  sel.value=String(Math.max(2,Math.min(8,Math.round(n))));tvUiSent={};
 }
 function tvCtl(d){if(d.a==='cnt')tvSetCount(Number(d.n));else tvPrimaryAction(true)}
+/* ---- Conexão direta celular <-> TV (WebRTC). O servidor só faz a "apresentação"; os comandos passam direto pela rede local
+   (bem menos atraso). Se não conectar, tudo segue pelo servidor como antes. ---- */
+const TV_ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'}]};
+const tvPeers={};
+function tvClosePeer(slot){const P=tvPeers[slot];if(P){try{P.pc.close()}catch(e){}delete tvPeers[slot]}}
+function tvRtc(slot,d){
+ if(!window.RTCPeerConnection)return;
+ if(d.t==='offer'){
+  tvClosePeer(slot);
+  let pc;try{pc=new RTCPeerConnection(TV_ICE)}catch(e){return}
+  const P={pc,q:[],rd:false};tvPeers[slot]=P;
+  pc.onicecandidate=e=>{if(e.candidate)netSendRaw({t:'cc',slot,d:{k:'rtc',t:'ice',c:e.candidate.toJSON()}})};
+  pc.ondatachannel=e=>{
+   const ch=e.channel;
+   ch.onmessage=ev=>{
+    let m;try{m=JSON.parse(ev.data)}catch(_){return}
+    if(m.k==='png'){try{ch.send(JSON.stringify({k:'pong',ts:m.ts}))}catch(_){}return}
+    netHostInput(slot,m);
+   };
+  };
+  pc.setRemoteDescription({type:'offer',sdp:d.sdp}).then(()=>pc.createAnswer()).then(a=>pc.setLocalDescription(a)).then(()=>{
+   P.rd=true;netSendRaw({t:'cc',slot,d:{k:'rtc',t:'answer',sdp:pc.localDescription.sdp}});
+   P.q.forEach(c=>pc.addIceCandidate(c).catch(()=>{}));P.q=[];
+  }).catch(()=>{});
+ }else if(d.t==='ice'){
+  const P=tvPeers[slot];if(!P||!d.c)return;
+  if(P.rd)P.pc.addIceCandidate(d.c).catch(()=>{});else P.q.push(d.c);
+ }
+}
 const tvLocalSlots=()=>new Set(Object.values(tvPads));
 
 function tvReset(){
- Object.keys(tvPads).forEach(k=>delete tvPads[k]);tvUiSent={};tvColorMap={};
+ Object.keys(tvPads).forEach(k=>delete tvPads[k]);tvUiSent={};tvColorMap={};Object.keys(tvPeers).forEach(s=>tvClosePeer(s));
  const box=document.getElementById('tvBox');if(box)box.hidden=true;
  if(!tvForced)document.body.classList.remove('tv-mode');
  tvPixelRatio(false);

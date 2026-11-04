@@ -23,7 +23,33 @@ function serverUrl(){
  return proto+location.host;
 }
 const send=o=>{if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))};
-const relay=d=>send({t:'relay',d});
+const relayWs=d=>send({t:'relay',d});
+/* Conexão direta com a TV (WebRTC): bem menos atraso que passar pelo servidor. Cai para o servidor se não conectar. */
+let pc=null,dc=null,p2p=false,iceQ=[],rdSet=false;
+function relay(d){
+ if(p2p&&dc&&dc.readyState==='open'){try{dc.send(JSON.stringify(d));return}catch(e){}}
+ relayWs(d);
+}
+function closeRtc(){p2p=false;try{dc&&dc.close()}catch(e){}try{pc&&pc.close()}catch(e){}pc=dc=null;iceQ=[];rdSet=false}
+function startRtc(){
+ closeRtc();if(!window.RTCPeerConnection)return;
+ try{
+  const me0=pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
+  dc=pc.createDataChannel('ev',{ordered:true});
+  dc.onopen=()=>{if(pc===me0)p2p=true};
+  dc.onclose=()=>{if(pc===me0)p2p=false};
+  dc.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.k==='pong'){const ms=Math.round(performance.now()-m.ts);showPing(ms,true)}}catch(_){}};
+  pc.onicecandidate=e=>{if(e.candidate&&pc===me0)relayWs({k:'rtc',t:'ice',c:e.candidate.toJSON()})};
+  pc.onconnectionstatechange=()=>{if(pc===me0&&['failed','closed','disconnected'].includes(pc.connectionState))p2p=false};
+  pc.createOffer().then(o=>pc.setLocalDescription(o)).then(()=>{if(pc===me0)relayWs({k:'rtc',t:'offer',sdp:pc.localDescription.sdp})}).catch(()=>{});
+ }catch(e){pc=null}
+}
+function onRtc(d){
+ if(!pc)return;
+ if(d.t==='answer'){pc.setRemoteDescription({type:'answer',sdp:d.sdp}).then(()=>{rdSet=true;iceQ.forEach(c=>pc.addIceCandidate(c).catch(()=>{}));iceQ=[]}).catch(()=>{})}
+ else if(d.t==='ice'&&d.c){if(rdSet)pc.addIceCandidate(d.c).catch(()=>{});else iceQ.push(d.c)}
+}
+function showPing(ms,direct){const e=$('ping');e.textContent=ms+' ms'+(direct?' • direto':'');e.style.color=ms<80?'#6dffa3':ms<160?'#ffd36d':'#ff8a8a'}
 
 function connect(){
  let sock;
@@ -51,13 +77,14 @@ function onMsg(m){
   case 'joined':
    me=m.slot;joined=true;retrying=false;tries=0;ui=null;$('err').textContent='';
    try{navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{})}catch(e){}
-   render();break;
+   startRtc();render();break;
   case 'lobby':names=m.names;vip=m.vip;renderGrid();render();break;
   case 'slot':me=m.slot;renderGrid();break;
-  case 'pong':{const ms=Math.round(performance.now()-m.ts);const e=$('ping');e.textContent=ms+' ms';e.style.color=ms<80?'#6dffa3':ms<160?'#ffd36d':'#ff8a8a';break}
+  case 'pong':if(!p2p)showPing(Math.round(performance.now()-m.ts),false);break;
   case 'pickfail':toast('Esse personagem acabou de ser escolhido.');break;
-  case 'c':if(m.d&&m.d.k==='ui'){ui=m.d;if(ui.cd!==undefined)cdEnd=performance.now()+ui.cd;render()}break;
-  case 'closed':closedByTv=true;joined=false;show('vEnd');$('vipBar').classList.remove('show');break;
+  case 'c':if(m.d&&m.d.k==='rtc'){onRtc(m.d);break}
+   if(m.d&&m.d.k==='ui'){ui=m.d;if(ui.cd!==undefined)cdEnd=performance.now()+ui.cd;render()}break;
+  case 'closed':closeRtc();closedByTv=true;joined=false;show('vEnd');$('vipBar').classList.remove('show');break;
   case 'err':
    if(retrying&&joined){tries++;if(tries<30)setTimeout(connect,2000);else{closedByTv=true;show('vEnd');$('endTxt').textContent='Não consegui voltar para a sala.'}}
    else $('err').textContent=m.m;
@@ -185,7 +212,7 @@ document.querySelectorAll('.sc button').forEach(b=>b.addEventListener('click',()
 /* Evita rolagem/zoom acidentais */
 document.addEventListener('touchmove',e=>{if(!e.target.closest('.grid,input[type=range]'))e.preventDefault()},{passive:false});
 document.addEventListener('gesturestart',e=>e.preventDefault());
-setInterval(()=>send({t:'ping',ts:performance.now()}),2000);
-window.padDebug=()=>({ui,me,vip,names,joined});
+setInterval(()=>{if(p2p&&dc&&dc.readyState==='open')try{dc.send(JSON.stringify({k:'png',ts:performance.now()}))}catch(e){}else send({t:'ping',ts:performance.now()})},2000);
+window.padDebug=()=>({ui,me,vip,names,joined,p2p});
 if(code&&$('name').value)$('go').focus();
 })();

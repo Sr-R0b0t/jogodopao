@@ -161,6 +161,7 @@ function setPlayerNames(){
 
 /* ---------- ANFITRIÃO: recebe comandos dos convidados ---------- */
 function netHostInput(slot,d){
+ if(d&&d.k==='rtc'){if(net.tv&&typeof tvRtc==='function')tvRtc(slot,d);return}
  if(d&&d.k==='ctl'){if(net.tv&&slot===net.vip&&typeof tvCtl==='function')tvCtl(d);return}
  if(!net.humans.has(slot)||!d)return;
  if(d.k==='tap'){
@@ -173,6 +174,7 @@ function netHostInput(slot,d){
  else if(d.k==='aim')remoteBowlAim(slot,d.v);
 }
 function netHostLeft(slot){
+ if(typeof tvClosePeer==='function')tvClosePeer(slot);
  net.humans.delete(slot);delete net.mv[slot];
  if(!running)return;
  if(gameMode==='bread'&&players[slot].count<100)botTick(players[slot]); // bot assume
