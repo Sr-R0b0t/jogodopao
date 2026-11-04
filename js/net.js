@@ -124,7 +124,7 @@ function netRenderPlayers(){
  const box=document.getElementById('netPlayers');if(!box)return;
  box.replaceChildren();
  const count=net.names.filter(Boolean).length;
- document.getElementById('netCount').textContent='👥 Jogadores na sala ('+count+'/'+specs.length+')';
+ document.getElementById('netCount').textContent='👥 Jogadores na sala ('+count+'/8)';
  net.names.forEach((n,i)=>{
   if(!n)return;
   const row=document.createElement('div');row.className='net-row human'+(i===net.slot?' me':'')+(net.flash.has(n)?' flash':'');

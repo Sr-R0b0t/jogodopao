@@ -26,7 +26,9 @@ const send=o=>{if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))};
 const relayWs=d=>send({t:'relay',d});
 /* Conexão direta com a TV (WebRTC): bem menos atraso que passar pelo servidor. Cai para o servidor se não conectar. */
 let pc=null,dc=null,p2p=false,iceQ=[],rdSet=false;
+let lastDcPong=0;
 function relay(d){
+ if(d.k==='ctl')return relayWs(d); // comandos de menu (iniciar, avançar) sempre pelo servidor: chegam com certeza
  if(p2p&&dc&&dc.readyState==='open'){try{dc.send(JSON.stringify(d));return}catch(e){}}
  relayWs(d);
 }
@@ -36,9 +38,9 @@ function startRtc(){
  try{
   const me0=pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
   dc=pc.createDataChannel('ev',{ordered:true});
-  dc.onopen=()=>{if(pc===me0)p2p=true};
+  dc.onopen=()=>{if(pc===me0){p2p=true;lastDcPong=performance.now()}};
   dc.onclose=()=>{if(pc===me0)p2p=false};
-  dc.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.k==='pong'){const ms=Math.round(performance.now()-m.ts);showPing(ms,true)}}catch(_){}};
+  dc.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.k==='pong'){lastDcPong=performance.now();const ms=Math.round(performance.now()-m.ts);showPing(ms,true)}}catch(_){}};
   pc.onicecandidate=e=>{if(e.candidate&&pc===me0)relayWs({k:'rtc',t:'ice',c:e.candidate.toJSON()})};
   pc.onconnectionstatechange=()=>{if(pc===me0&&['failed','closed','disconnected'].includes(pc.connectionState))p2p=false};
   pc.createOffer().then(o=>pc.setLocalDescription(o)).then(()=>{if(pc===me0)relayWs({k:'rtc',t:'offer',sdp:pc.localDescription.sdp})}).catch(()=>{});
@@ -212,7 +214,13 @@ document.querySelectorAll('.sc button').forEach(b=>b.addEventListener('click',()
 /* Evita rolagem/zoom acidentais */
 document.addEventListener('touchmove',e=>{if(!e.target.closest('.grid,input[type=range]'))e.preventDefault()},{passive:false});
 document.addEventListener('gesturestart',e=>e.preventDefault());
-setInterval(()=>{if(p2p&&dc&&dc.readyState==='open')try{dc.send(JSON.stringify({k:'png',ts:performance.now()}))}catch(e){}else send({t:'ping',ts:performance.now()})},2000);
+setInterval(()=>{
+ if(p2p&&performance.now()-lastDcPong>4500){ // canal direto parou de responder: volta para o servidor e tenta reconectar
+  p2p=false;$('ping').textContent='';if(joined)startRtc();
+ }
+ if(p2p&&dc&&dc.readyState==='open')try{dc.send(JSON.stringify({k:'png',ts:performance.now()}))}catch(e){}
+ else send({t:'ping',ts:performance.now()});
+},2000);
 window.padDebug=()=>({ui,me,vip,names,joined,p2p});
 if(code&&$('name').value)$('go').focus();
 })();
