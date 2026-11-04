@@ -280,3 +280,17 @@ body.tv-mode #netGrid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
 .home-screen .tv-btn{margin-top:18px}
 .home-screen .home-tv-hint{margin:12px 0 4px;font-size:.8rem}
 .home-screen .home-features{margin-top:22px}
+
+.pad-hint{display:block;text-align:center;opacity:.75;margin-top:6px;font-size:.72rem}
+body:not(.gp-nav) .pad-hint{display:none}
+
+#osk{position:fixed;inset:0;z-index:10001;display:none;align-items:center;justify-content:center;padding:14px;background:#10091de6;backdrop-filter:blur(6px)}
+#osk.show{display:flex}
+.osk-card{width:min(720px,100%);padding:18px;border:2px solid #c5a1ec;border-radius:22px;background:linear-gradient(145deg,#46305f,#20162f);box-shadow:0 25px 80px #0009;text-align:center}
+.osk-title{font-weight:1000;color:#ffdf79;margin-bottom:6px}
+.osk-value{min-height:2.2em;padding:8px 12px;margin-bottom:10px;border-radius:12px;background:#150d24;border:2px solid #a78bca;font-size:1.5rem;font-weight:900;letter-spacing:.08em;word-break:break-all}
+.osk-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin-bottom:8px}
+.osk-grid button,.osk-row button{padding:11px 0;border-radius:10px;border:2px solid #6c4d96;background:#2a1b43;color:#fff;font-weight:900;font-size:1.05rem}
+.osk-row{display:grid;grid-template-columns:2fr 2fr 1fr 2fr;gap:6px;margin-bottom:8px}
+.osk-row .primary-flow-button{color:#38210b;padding:11px 0}
+.osk-card small{opacity:.75}
