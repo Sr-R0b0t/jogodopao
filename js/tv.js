@@ -34,7 +34,8 @@ function tvRtc(slot,d){
    ch.onmessage=ev=>{
     let m;try{m=JSON.parse(ev.data)}catch(_){return}
     if(m.k==='png'){try{ch.send(JSON.stringify({k:'pong',ts:m.ts}))}catch(_){}return}
-    netHostInput(slot,m);
+    const s=(Number.isInteger(m._s)&&net.names[m._s]&&!tvLocalSlots().has(m._s))?m._s:slot;delete m._s;
+    netHostInput(s,m);
    };
   };
   pc.setRemoteDescription({type:'offer',sdp:d.sdp}).then(()=>pc.createAnswer()).then(a=>pc.setLocalDescription(a)).then(()=>{

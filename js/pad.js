@@ -29,7 +29,7 @@ let pc=null,dc=null,p2p=false,iceQ=[],rdSet=false;
 let lastDcPong=0,rtcOff=qs.get('p2p')==='0';
 function relay(d){
  if(d.k==='ctl')return relayWs(d); // comandos de menu (iniciar, avançar) sempre pelo servidor: chegam com certeza
- if(p2p&&dc&&dc.readyState==='open'){try{dc.send(JSON.stringify(d));return}catch(e){}}
+ if(p2p&&dc&&dc.readyState==='open'){try{dc.send(JSON.stringify(Object.assign({_s:me},d)));return}catch(e){}} // _s = vaga atual (muda se o jogador troca de personagem)
  relayWs(d);
 }
 function closeRtc(){p2p=false;try{dc&&dc.close()}catch(e){}try{pc&&pc.close()}catch(e){}pc=dc=null;iceQ=[];rdSet=false}
