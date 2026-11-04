@@ -305,3 +305,28 @@ body:not(.gp-nav) .pad-hint{display:none}
 #drawBox .dr-card span{font-weight:900;letter-spacing:.08em;font-size:clamp(.9rem,2vw,1.3rem)}
 #drawBox .dr-card strong{font-size:clamp(1.3rem,3.6vw,2.4rem);color:#fff}
 @keyframes drPop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+#briefBox{position:absolute;inset:0;z-index:44;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;text-align:center;background:linear-gradient(160deg,#1b1030f7,#2d1a52f7);overflow:auto}
+#briefBox.show{display:flex}
+#briefBox .br-tag{font-size:.85rem;font-weight:900;letter-spacing:.22em;color:#dbc8ff}
+#briefBox h2{margin:0;font-size:clamp(1.6rem,4.4vw,3rem);color:#ffd166;text-shadow:0 4px 16px #000}
+#briefBox .br-demo{font-size:clamp(2.4rem,7vw,5rem);display:flex;gap:26px;height:1.3em}
+#briefBox .br-demo .d1{animation:brBob 1s ease-in-out infinite}
+#briefBox .br-demo .d2{animation:brBob 1s ease-in-out .5s infinite}
+@keyframes brBob{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-14px) scale(1.15)}}
+#briefBox .br-how{margin:0;max-width:min(900px,92%);font-size:clamp(1rem,2.2vw,1.6rem);font-weight:800;line-height:1.35;color:#fff}
+#briefBox .br-ctl{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+#briefBox .br-ctl div{display:flex;flex-direction:column;gap:4px;padding:12px 20px;border-radius:18px;background:#ffffff14;border:2px solid #a78bca;min-width:min(300px,42%)}
+#briefBox .br-ctl b{color:#ffd166;font-size:clamp(.95rem,1.8vw,1.3rem)}
+#briefBox .br-ctl span{font-size:clamp(.9rem,1.7vw,1.25rem);font-weight:800;color:#fff}
+#briefBox .br-chips{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:94%}
+#briefBox .br-chip{display:flex;gap:8px;align-items:center;padding:8px 14px;border-radius:999px;border:4px solid;background:#2a1a4a;font-weight:900;font-size:clamp(.85rem,1.6vw,1.2rem);color:#fff}
+#briefBox .br-chip.ok{background:#1d5a3a}
+#briefBox .br-foot{font-size:clamp(.8rem,1.5vw,1.1rem);font-weight:800;color:#bdf5cf}
+/* relógio do "última chance" bem visível (principalmente na TV) */
+#lastPlayerTimer.urgent{border-color:#ff2a2a;background:#7a1020;animation:lpPulse .5s ease-in-out infinite alternate}
+@keyframes lpPulse{from{transform:scale(1);box-shadow:0 0 0 0 #ff2a2a88}to{transform:scale(1.07);box-shadow:0 0 38px 8px #ff2a2aaa}}
+body.tv-mode #lastPlayerTimer.show{position:fixed;top:78px;left:50%;transform:translateX(-50%);z-index:60;max-width:none;padding:14px 34px;font-size:clamp(1.1rem,2.4vw,1.8rem);text-align:center;pointer-events:none}
+body.tv-mode #lastPlayerTimer strong{font-size:clamp(3rem,8vw,6rem);line-height:1}
+body.tv-mode #lastPlayerTimer.urgent{transform:translateX(-50%)}
+body.tv-mode #lastPlayerTimer.urgent{animation:lpPulseTv .5s ease-in-out infinite alternate}
+@keyframes lpPulseTv{from{transform:translateX(-50%) scale(1)}to{transform:translateX(-50%) scale(1.1)}}

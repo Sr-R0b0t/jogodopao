@@ -112,6 +112,7 @@ const panels=['padStick','padBread','padBowl','padSoccer','padWait'];
 function showPanel(id){panels.forEach(p=>$(p).style.display=p===id?'flex':'none')}
 function render(){
  if(!joined)return;
+ $('vipBtn').disabled=false;
  const scr=ui?ui.scr:'lobby';
  const col=ui&&ui.col?ui.col:'';
  document.body.style.boxShadow=col?'inset 0 0 0 7px '+col:'';
@@ -128,6 +129,7 @@ function render(){
  }
  if(scr==='score'){$('infoIcon').textContent='🏆';$('infoTxt').textContent='Resultado da rodada na TV!';$('infoSub').textContent=vipOn?'':'Aguardando o anfitrião avançar…';show('vInfo');return}
  if(scr==='podium'){$('infoIcon').textContent='🥇';$('infoTxt').textContent='Pódio na TV!';$('infoSub').textContent=vipOn?'':'Parabéns a todos!';show('vInfo');return}
+ if(ui.brief){stopStick();$('infoIcon').textContent='🎓';$('infoTxt').textContent=ui.bt||'Como jogar';$('infoSub').textContent=ui.rdy?'Pronto! Aguardando os outros…':(ui.bh||'Veja as instruções na TV');$('vipBtn').textContent=ui.rdy?'✅ PRONTO!':'👍 ENTENDI!';$('vipBtn').disabled=!!ui.rdy;$('vipBar').classList.add('show');show('vInfo');return}
  // jogo
  show('vGame');
  const who=CH[me]?CH[me][0]:'';$('who').textContent='Você é '+who+(col?' ●':'');
@@ -151,7 +153,7 @@ function render(){
 function setCnt(d){const n=Math.max(2,Math.min(8,Number($('cntVal').textContent)+d));$('cntVal').textContent=n;buzz(10);relay({k:'ctl',a:'cnt',n})}
 $('cntMinus').addEventListener('click',()=>setCnt(-1));
 $('cntPlus').addEventListener('click',()=>setCnt(1));
-$('vipBtn').addEventListener('click',()=>{buzz(20);relay({k:'ctl',a:'ok'})});
+$('vipBtn').addEventListener('click',()=>{buzz(20);if(ui&&ui.brief){relay({k:'rdy'});return}relay({k:'ctl',a:'ok'})});
 
 /* ---- Analógico ---- */
 let pid=null,lastSend=0,lastKey='',joyOn=false;

@@ -54,6 +54,7 @@ function gpHandle(pi,s,E,now,dt,pv){
  if(E('sel')){document.getElementById('settingsBtn').click();return} // SELECT/SHARE abre as configurações em qualquer tela
  if(gpInGame()){
   if(E('start')){gpOpenSettings();return} // START durante o jogo = menu (reiniciar, som, sair)
+  if(net.tv&&tvBrief&&tvBrief.on){const sl=tvPads[pi];if(sl!==undefined&&E('a'))tvBriefReady(sl);return}   // tela "como jogar": A = entendi
   if(net.tv){const slot=tvPads[pi];if(slot!==undefined)gpTvGame(pi,slot,s,E,dt,pv)}
   else gpLocalGame(s,E,dt,pv);
   return;

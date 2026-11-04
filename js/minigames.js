@@ -43,7 +43,7 @@ function cdBeep(n){ // bip a cada segundo; som mais alto no "VAI!"
  if(n>0)tone(n<=2?700:520,.12,'square',.07);
  else{tone(784,.2,'triangle',.12);tone(1046,.35,'triangle',.11,.14)}
 }
-function cancelCountdown(){clearInterval(cdTimer);cdTimer=null;clearTimeout(roundTimer);hideRoundBanner()}
+function cancelCountdown(){if(typeof tvBriefStop==='function')tvBriefStop();clearInterval(cdTimer);cdTimer=null;clearTimeout(roundTimer);hideRoundBanner()}
 /* 5…4…3…2…1…VAI! e então começa a partida (o anfitrião manda a contagem para todos). */
 function runCountdown(sec,title,sub,label,desc){
  cancelCountdown();
@@ -74,8 +74,18 @@ function startRound(){
  const label='🎲 RODADA '+roundNumber+' • '+info.label.toUpperCase();
  document.getElementById('roundLabel').textContent=label;
  document.getElementById('status').textContent='🎲 Minigame sorteado: '+info.label+'! A partida começa em instantes…';
+ if(net.tv&&net.role==='host'&&typeof tvBriefStart==='function'){tvBriefStart(id,info,label);return}   // TV: antes de valer, mostra "como jogar" e espera todos darem OK
  runCountdown(COUNTDOWN_SECONDS,'🎲 '+info.label,'Rodada '+roundNumber,label,info.desc);
 }
+/* Instruções mostradas na TV antes de cada minigame */
+const MODE_HELP={
+ bread:{demo:['🍞','👆'],how:'Aperte o botão o mais rápido que conseguir: são 100 cliques. O último a terminar come o pão! Quando só um faltar, ele tem 30 segundos.',phone:'Toque no botão grande CLICAR!',pad:'Aperte A (X no PlayStation) várias vezes'},
+ ball:{demo:['🔵','💥'],how:'Equilibre-se na sua bola e empurre os rivais para fora da arena. Vence o último que ficar em pé!',phone:'Arraste o joystick para rolar a bola',pad:'Analógico ou direcional movem a bola'},
+ bowling:{demo:['⚫','🎳'],how:'Na sua vez, escolha a direção e a força e lance a bola pela ladeira. Vence quem derrubar mais pinos!',phone:'Ajuste direção e força nas barras e toque em LANÇAR',pad:'◀▶ mira, ▲▼ força, A lança'},
+ soccer:{demo:['⚽','🧤'],how:'Um goleiro contra os batedores. Cada um escolhe ESQUERDA, MEIO ou DIREITA ao mesmo tempo. Se o goleiro escolher o mesmo lado do chute, defende! 3 defesas ou mais defesas que gols e o goleiro vence.',phone:'Toque em ESQUERDA, MEIO ou DIREITA',pad:'◀ esquerda, ▲ meio, ▶ direita'},
+ ship:{demo:['🚀','⚪'],how:'Pilote sua nave na frente do seu gol e rebata as bolas de metal. Cada gol sofrido tira 1 das 15 vidas. Às vezes o jogo sorteia duplas 2 contra 2!',phone:'Arraste o joystick para mover a nave',pad:'Analógico ou direcional movem a nave'},
+ turbo:{demo:['⚡','🚀'],how:'Sua nave desliza só pelo seu lado. Defenda o gol, use os pads verdes para acelerar a bola e o ESPECIAL para empurrá-la. Às vezes o jogo sorteia duplas 2 contra 2!',phone:'Joystick move • botão ESPECIAL empurra a bola',pad:'Analógico move • A usa o ESPECIAL'}
+};
 
 /* Home: número de minigames sempre igual ao da lista */
 {const el=document.getElementById('homeMgCount');if(el)el.textContent='🎮 '+MINIGAMES.length+' minigames'}

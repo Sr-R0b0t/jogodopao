@@ -23,11 +23,11 @@ function throwCream(p){
 }
 
 /* Cronômetro do último jogador (30 s) */
-let lastPlayerTimerId=null,lastPlayerInterval=null,lastPlayerDeadline=0;
+let lastPlayerBeep=-1,lastPlayerTimerId=null,lastPlayerInterval=null,lastPlayerDeadline=0;
 function stopLastPlayerTimer(){
  if(lastPlayerTimerId){clearTimeout(lastPlayerTimerId);lastPlayerTimerId=null}
  if(lastPlayerInterval){clearInterval(lastPlayerInterval);lastPlayerInterval=null}
- const el=document.getElementById('lastPlayerTimer');if(el)el.classList.remove('show');
+ const el=document.getElementById('lastPlayerTimer');if(el)el.classList.remove('show','urgent');lastPlayerBeep=-1;
 }
 /* Ordem de chegada: quem terminou (do mais rápido ao mais lento); quem não terminou empata no fim. */
 function breadRanking(){
@@ -66,7 +66,8 @@ function beginLastPlayerTimer(){
  document.getElementById('status').textContent=`Última chance para ${last.name}: 30 segundos!`;
  lastPlayerInterval=setInterval(()=>{
   const remain=Math.max(0,Math.ceil((lastPlayerDeadline-Date.now())/1000));
-  if(el)el.innerHTML=`⏳ ${last.name}, termine a prova!<strong>${remain}</strong> segundos restantes`;
+  if(el){el.innerHTML=`⏳ ${last.name}, termine a prova!<strong>${remain}</strong> segundos restantes`;el.classList.toggle('urgent',remain<=10)}
+  if(remain!==lastPlayerBeep&&remain<=10&&remain>0){lastPlayerBeep=remain;try{if(audioEnabled)tone(remain<=3?900:640,.09,'square',.07)}catch(e){}}
  },200);
  lastPlayerTimerId=setTimeout(()=>{
   stopLastPlayerTimer();

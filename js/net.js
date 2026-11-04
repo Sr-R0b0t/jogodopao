@@ -162,6 +162,7 @@ function setPlayerNames(){
 /* ---------- ANFITRIÃO: recebe comandos dos convidados ---------- */
 function netHostInput(slot,d){
  if(d&&d.k==='rtc'){if(net.tv&&typeof tvRtc==='function')tvRtc(slot,d);return}
+ if(d&&d.k==='rdy'){if(net.tv&&typeof tvBriefReady==='function')tvBriefReady(slot);return}
  if(d&&d.k==='ctl'){if(net.tv&&slot===net.vip&&typeof tvCtl==='function')tvCtl(d);return}
  if(!net.humans.has(slot)||!d)return;
  if(d.k==='tap'){

@@ -143,7 +143,7 @@ function soccerUiUpdate(){
  const panel=document.getElementById('soccerPick'),hud=document.getElementById('soccerHud');if(!panel||!hud)return;
  const on=gameMode==='soccer'&&!!soccer;
  hud.classList.toggle('show',on);
- if(on)hud.textContent='⚽ Chute '+Math.min(soccer.sh,soccer.tot)+'/'+soccer.tot+' • Gols '+soccer.goals+' • 🧤 Defesas '+soccer.saves+' • Goleiro: '+players[soccer.g].name;
+ if(on)hud.textContent='⚽ Chute '+Math.min(soccer.sh,soccer.tot)+'/'+soccer.tot+' • Gols '+soccer.goals+' • 🧤 Defesas '+soccer.saves+' • Goleiro: '+players[soccer.g].name+(soccer.ph==='pick'?' • ⏱ '+soccer.left+'s':'');
  const mine=on&&soccer.ph==='pick'&&!!soccer.need&&soccer.need.includes(humanIndex)&&soccerSentShot!==soccer.sh;
  panel.classList.toggle('show',mine);
  if(mine)document.getElementById('soccerPickTitle').textContent=(humanIndex===soccer.k?'⚽ Onde você vai CHUTAR?':'🧤 Onde você vai DEFENDER?')+'  ('+soccer.left+'s)';

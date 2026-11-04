@@ -4,6 +4,52 @@ const tvForced=/[?&]tv(=1|=true|&|$)/.test(location.search);
 const tvPads={};            // índice do gamepad -> vaga (slot)
 const tvPadBowl={};         // vaga -> {aim,pow,turn} (boliche com controle)
 let tvUiSent={},tvLastPush=0;
+/* ---- Tela "Como jogar" antes de cada minigame: todos dão OK (bots sempre prontos) e então começa a valer ---- */
+let tvBrief=null;
+const TV_BRIEF_MAX=90000;
+function tvBriefHumans(){return activeIndices().filter(i=>isHumanSlot(i))}
+function tvBriefStart(id,info,label){
+ tvBrief={on:true,id,info,label,ready:new Set(),t0:performance.now(),sig:'x'};
+ tvUiSent={};tvBriefRender();
+}
+function tvBriefReady(slot){if(!tvBrief||!tvBrief.on||!isActive(slot)||tvBrief.ready.has(slot))return;tvBrief.ready.add(slot);try{if(audioEnabled)tone(880,.1,'triangle',.08)}catch(e){}tvBriefRender()}
+function tvBriefStop(){if(tvBrief)tvBrief.on=false;const el=document.getElementById('briefBox');if(el)el.classList.remove('show')}
+function tvBriefGo(){
+ if(!tvBrief||!tvBrief.on)return;
+ const {info,label}=tvBrief;tvBriefStop();
+ runCountdown(3,'🎲 '+info.label,'Rodada '+roundNumber,label,info.desc);
+}
+function tvBriefRender(){
+ if(!tvBrief||!tvBrief.on)return;
+ const H=MODE_HELP[tvBrief.id]||{demo:['🎮',''],how:'',phone:'',pad:''};
+ let el=document.getElementById('briefBox');
+ if(!el){el=document.createElement('div');el.id='briefBox';const ref=document.getElementById('roundBanner');(ref&&ref.parentElement||document.body).appendChild(el)}
+ el.replaceChildren();
+ const add=(par,tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;par.appendChild(e);return e};
+ add(el,'div','br-tag','🎓 COMO JOGAR • RODADA '+roundNumber);
+ add(el,'h2','',tvBrief.info.label);
+ const demo=add(el,'div','br-demo');add(demo,'span','d1',H.demo[0]);add(demo,'span','d2',H.demo[1]);
+ add(el,'p','br-how',H.how);
+ const ctl=add(el,'div','br-ctl');
+ const c1=add(ctl,'div','');add(c1,'b','','📱 No celular');add(c1,'span','',H.phone);
+ const c2=add(ctl,'div','');add(c2,'b','','🎮 No controle');add(c2,'span','',H.pad);
+ const chips=add(el,'div','br-chips');
+ activeIndices().forEach(i=>{
+  const human=isHumanSlot(i),ok=!human||tvBrief.ready.has(i);
+  const c=add(chips,'div','br-chip'+(ok?' ok':''));c.style.borderColor=tvColor(i);
+  add(c,'span','',players[i].name);add(c,'em','',ok?(human?'✅':'🤖 ✅'):'⏳');
+ });
+ add(el,'div','br-foot','Aperte 👍 ENTENDI! no celular (ou A no controle). Bots já estão prontos. Quando todos derem OK, a partida começa!');
+ el.classList.add('show');
+}
+function tvBriefTick(now){
+ if(!tvBrief||!tvBrief.on)return;
+ const hum=tvBriefHumans(),sig=hum.map(i=>i+(tvBrief.ready.has(i)?'y':'n')).join(',');
+ if(sig!==tvBrief.sig){tvBrief.sig=sig;tvBriefRender()}
+ const el=now-tvBrief.t0;
+ if(el>1800&&hum.every(i=>tvBrief.ready.has(i)))tvBriefGo();
+ else if(el>TV_BRIEF_MAX)tvBriefGo();
+}
 /* Cada jogador ganha uma cor própria (marca no boneco, lista da sala e painel do celular). */
 const TV_COLORS=['#ff3b3b','#3b8bff','#35d45a','#ffd21f','#b04dff','#ff8a1f','#19e6ff','#ff6fc8'];
 let tvColorMap={};
@@ -50,7 +96,7 @@ function tvRtc(slot,d){
 const tvLocalSlots=()=>new Set(Object.values(tvPads));
 
 function tvReset(){
- Object.keys(tvPads).forEach(k=>delete tvPads[k]);tvUiSent={};tvColorMap={};Object.keys(tvPeers).forEach(s=>tvClosePeer(s));
+ Object.keys(tvPads).forEach(k=>delete tvPads[k]);tvBriefStop();tvUiSent={};tvColorMap={};Object.keys(tvPeers).forEach(s=>tvClosePeer(s));
  const box=document.getElementById('tvBox');if(box)box.hidden=true;
  if(!tvForced)document.body.classList.remove('tv-mode');
  tvPixelRatio(false);
@@ -109,6 +155,7 @@ function tvOnLobby(){
 
 /* Ação principal da vez (iniciar / próxima rodada / pódio…). Quem tem permissão: celular VIP, START do controle, Enter. */
 function tvPrimary(){
+ if(tvBrief&&tvBrief.on)return {label:'▶ COMEÇAR AGORA',run:tvBriefGo};
  const click=b=>({label:b.textContent.trim(),run:()=>b.click()});
  if(podiumActive){const b=document.getElementById('podiumAgain');return b?click(b):null}
  const ov=document.getElementById('scoreOverlay');
@@ -124,6 +171,7 @@ function tvPrimaryAction(exec){const p=tvPrimary();if(p&&exec)p.run();return p}
 
 /* Painel dos celulares: só reenvia quando algo muda. */
 function tvFrame(now){
+ tvBriefTick(now);
  if(!net.tv||net.role!=='host'||now-tvLastPush<100)return;tvLastPush=now;
  const prim=tvPrimary(),local=tvLocalSlots();
  const scr=podiumActive?'podium':document.getElementById('scoreOverlay').classList.contains('show')?'score':document.getElementById('screenMinigames').style.display!=='none'?'game':'lobby';
@@ -137,6 +185,7 @@ function tvFrame(now){
    }
    if(gameMode==='soccer'&&soccer&&soccer.ph==='pick'&&soccer.need&&soccer.need.includes(slot)){st.sc=slot===soccer.k?1:2;st.sh=soccer.sh}
    if(isTurbo()&&ship&&ship.cd)st.cdT=ship.cd[slot];
+   if(tvBrief&&tvBrief.on){st.brief=1;st.rdy=tvBrief.ready.has(slot)?1:0;st.bt=tvBrief.info.label;st.bh=(MODE_HELP[tvBrief.id]||{}).phone||''}
   }
   const key=JSON.stringify(st);
   if(tvUiSent[slot]===key)return;
