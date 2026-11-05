@@ -3,6 +3,9 @@
    termina de carregar. Se o arquivo faltar ou falhar, o jogo segue normalmente com o modelo simples. */
 const glbReady=[]; // promessas de carregamento (as miniaturas esperam por elas)
 const GLB_CHARACTERS={
+ monkey:{url:'models/macaco.glb',height:2.3,modelHeight:1.7,
+  clips:{idle:'Idle_9',walk:'Walking',run:'Running',dance:'Backflip_Sweep_Kick',jump:'Jump_Over_Obstacle_2',kick:'Kick_a_Soccer_Ball',hop:'Hop_with_Arms_Raised'},
+  once:['jump','kick'],markY:2.8},
  fabola:{url:'models/fabola.glb',height:2.3,modelHeight:1.7,
   clips:{idle:'Idle_9',walk:'Walking',run:'Running',dance:'FunnyDancing_01',jump:'Jump_Over_Obstacle_2',kick:'Kick_a_Soccer_Ball',hop:'Hop_with_Arms_Raised'},
   once:['jump','kick'],markY:2.8},
@@ -89,7 +92,8 @@ function animateGlbPlayer(p,i,dt){
  }
  else if(p.finished)state='dance';                                                   // terminou a corrida do pão
  else if(gameMode==='bread'&&running)state='run';                               // clicando = correndo
- else if((gameMode==='ball'&&running&&balls[i].alive||isShipMode()&&running&&p.count>0)&&g.speed>.6)state='walk';  // equilibrando na bola
+ else if((gameMode==='ball'&&running&&balls[i].alive||isShipMode()&&running&&p.count>0||gameMode==='dodge'&&running&&p.count>0)&&g.speed>.6)state='walk';  // equilibrando na bola
+ else if(gameMode==='dodge'&&ended&&p.count>0&&typeof dodgeTeams!=='undefined'&&dodgeTeams&&dodgeAlive(dodgeTeamOf(i))>0&&dodgeAlive(1-dodgeTeamOf(i))===0)state='dance';
  else if(gameMode==='ball'&&ended&&balls[i].alive)state='dance';                // venceu a batalha
  else if(gameMode==='bowling'&&bowlingBallState&&bowlingOrder[bowlingTurn]===i)state='jump'; // lançou a bola
  if(typeof podiumActive!=='undefined'&&podiumActive&&p.podiumState)state=p.podiumState;   // pódio final

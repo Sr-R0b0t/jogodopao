@@ -7,25 +7,30 @@ let running=false,ended=false,botTimers=[],lastTime=performance.now(),celebrateS
 function clearBots(){botTimers.forEach(clearTimeout);botTimers=[]}
 
 function updateHud(){
- players.forEach((p,i)=>{const b=balls[i];document.getElementById('tag'+i).classList.toggle('me',i===humanIndex);document.querySelector(`#tag${i} b`).textContent=gameMode==='ball'?(b.alive?'NA ARENA':(b.falling?'CAINDO!':'FORA!')):isShipMode()?'❤ '+p.count:`${p.count} / 100`});
+ players.forEach((p,i)=>{const b=balls[i];document.getElementById('tag'+i).classList.toggle('me',i===humanIndex);document.querySelector(`#tag${i} b`).textContent=gameMode==='ball'?(b.alive?'NA ARENA':(b.falling?'CAINDO!':'FORA!')):isShipMode()?'❤ '+p.count:gameMode==='dodge'?(p.count>0?'EM JOGO':'QUEIMADO'):`${p.count} / 100`});
  document.getElementById('tap').textContent=gameMode==='ball'?'🎯 EMPURRÃO!':gameMode==='bowling'?'🎳 LANÇAR BOLA!':'👆 CLICAR!';
 }
 function applyMode(){
  gameMode=document.getElementById('gameMode').value;
- const ballMode=gameMode==='ball',bowlingMode=gameMode==='bowling',soccerMode=gameMode==='soccer',shipMode=isShipMode();
+ const dodgeMode=gameMode==='dodge',ballMode=gameMode==='ball',bowlingMode=gameMode==='bowling',soccerMode=gameMode==='soccer',shipMode=isShipMode();
  document.getElementById('tap').disabled=!running;
  document.getElementById('tap').style.display=ballMode||soccerMode||(shipMode&&!isTurbo())?'none':'';
+ document.getElementById('tap').textContent=dodgeMode?'🏐 ARREMESSAR!':document.getElementById('tap').textContent;
  document.getElementById('tap').textContent=ballMode?'🎯 EMPURRÃO!':bowlingMode?'🎳 JOGAR BOLA!':'👆 CLICAR!';
  document.querySelector('main > p').textContent=ballMode?'Fique em cima da sua bola e derrube todos os rivais da arena! Último personagem em pé vence. Pegue velocidade e bata nos rivais!':bowlingMode?'Cada personagem tem um lançamento pela ladeira. Derrube o máximo de pinos; quem derrubar mais vence!':'Chegue a 100 cliques! Quem terminar primeiro joga creme no pão. Quem terminar por último... vai ter que dar a mordida final! 😂';
  document.getElementById('gameNote').textContent=ballMode?'Controles: WASD, setas ou o analógico. Quanto mais distância você pega, mais rápido fica — e mais forte é a batida!':bowlingMode?'Boliche: use as setas (ou os botões) para se posicionar, escolha a força e lance. Acertar nos cantos também derruba pinos.':'Corrida: chegue a 100 cliques. É necessária conexão à internet para carregar a biblioteca 3D.';
- breadRoot.visible=!ballMode&&!bowlingMode&&!soccerMode&&!shipMode;soccerRoot.visible=soccerMode;shipRoot.visible=shipMode;
- floor.visible=rimMesh.visible=inner.visible=!shipMode;arenaDots.forEach(d=>d.visible=!shipMode);arenaRing.visible=ballMode;bowlingRoot.visible=bowlingMode;balls.forEach((b,i)=>b.mesh.visible=ballMode&&isActive(i));
+ dodgeRoot.visible=dodgeMode;breadRoot.visible=!ballMode&&!bowlingMode&&!soccerMode&&!shipMode&&!dodgeMode;soccerRoot.visible=soccerMode;shipRoot.visible=shipMode;
+ floor.visible=rimMesh.visible=inner.visible=!shipMode&&!dodgeMode;arenaDots.forEach(d=>d.visible=!shipMode&&!dodgeMode);arenaRing.visible=ballMode;bowlingRoot.visible=bowlingMode;balls.forEach((b,i)=>b.mesh.visible=ballMode&&isActive(i));
  if(bowlingMode){updateBowlingHud();applyBowlingVisibility()}
  else{document.getElementById('bowlingTopScore').classList.remove('show');document.getElementById('bowlingHud').classList.remove('show');document.getElementById('bowlingControls').classList.remove('show');players.forEach(p=>{p.root.visible=p.active!==false});refreshTags()}
  if(shipMode){
   document.querySelector('main > p').textContent='Pilote a nave e defenda o seu gol das bolas metálicas! Cada gol sofrido tira 1 vida; quem zera sai e o gol vira barreira.';
   document.getElementById('gameNote').textContent='Controles: WASD, setas ou o analógico. Bata nas bolas para mandá-las no gol dos rivais. Vence o último na arena.';
   if(isTurbo()){document.querySelector('main > p').textContent='Arena Turbo: sua nave desliza só pelo seu lado. Defenda o gol das bolas que saem das cápsulas dos cantos!';document.getElementById('gameNote').textContent='Controles: setas/WASD ou o analógico (esquerda-direita nas naves de baixo e de cima; cima-baixo nas dos lados). Os pads verdes aceleram a bola. Vence o último na arena.'}
+ }
+ if(dodgeMode){
+  document.querySelector('main > p').textContent='Queimada: dois times, uma linha no meio. Pegue uma bola do seu lado e acerte os rivais — quem é acertado sai!';
+  document.getElementById('gameNote').textContent='Controles: WASD/setas ou analógico para andar; Espaço/Enter (ou botão) arremessa. Não dá para cruzar a linha: acerte de longe e desvie das bolas deles!';
  }
  if(soccerMode){
   applySoccerVisibility();
@@ -49,6 +54,7 @@ function reset(){
  if(gameMode==='bowling')setupBowling();
  if(gameMode==='soccer')setupSoccer();
  if(isShipMode())setupShip();
+ if(gameMode==='dodge')setupDodge();
  document.getElementById('result').className='';document.getElementById('result').textContent='';
  document.getElementById('start').disabled=false;document.getElementById('tap').disabled=true;
  document.getElementById('characterChoice').disabled=tournamentCharacterLocked;document.getElementById('gameMode').disabled=false;
@@ -64,6 +70,7 @@ function start(){
  if(gameMode==='bowling'){setupBowling();startBowlingTurn()}
  else if(gameMode==='soccer')startSoccer();
  else if(isShipMode())startShip();
+ else if(gameMode==='dodge')startDodge();
  else players.filter((p,i)=>!isHumanSlot(i)&&isActive(i)).forEach((p,i)=>botTimers.push(setTimeout(()=>botTick(p),p.delay+i*45)));
 }
 
@@ -76,6 +83,7 @@ document.getElementById('tap').addEventListener('click',e=>{
  if(e&&e.detail===0&&!tapAllowed)return;
  if(!running||humanIndex<0)return; // na TV ninguém clica na tela
  if(isTurbo()){shipBlastPress();return}
+ if(gameMode==='dodge'){dodgePress();return}
  if(gameMode==='ball')return; // Batalha das Bolas: só direção (sem botão de empurrão)
  if(net.role==='client'){sfxClick();netSendInput({k:'tap',aim:r2(bowlingAimValue),pow:bowlingPowerValue});return}
  if(gameMode==='bowling'){throwBowlingBall(humanIndex);return}
@@ -90,8 +98,9 @@ document.getElementById('reset').addEventListener('click',()=>{ // reinicia o me
 });
 document.addEventListener('keydown',e=>{
  if(net.tv){if((e.code==='Enter'||e.code==='NumpadEnter')&&!/BUTTON|SELECT|INPUT/.test((e.target||{}).tagName||'')){const p=tvPrimaryAction(true);if(p)e.preventDefault()}return}
+ if((e.code==='Space'||e.code==='Enter')&&running&&gameMode==='dodge'){e.preventDefault();if(!e.repeat)dodgePress();return}
  if((e.code==='Space'||e.code==='Enter')&&running&&isTurbo()){e.preventDefault();if(!e.repeat)shipBlastPress();return}
- if((e.code==='Space'||e.code==='Enter')&&running&&gameMode!=='ball'&&gameMode!=='soccer'&&!isShipMode()){
+ if((e.code==='Space'||e.code==='Enter')&&running&&gameMode!=='ball'&&gameMode!=='soccer'&&gameMode!=='dodge'&&!isShipMode()){
   e.preventDefault();
   if(e.repeat)return;            // tecla segurada = não conta de novo
   pressTap();
@@ -117,7 +126,7 @@ function animate(now){
  if(gameMode==='bowling')animateFallenPins(now);
 
  players.forEach((p,i)=>{
-  const moving=running&&!p.finished&&gameMode!=='bowling'&&gameMode!=='soccer'&&!isShipMode();
+  const moving=running&&!p.finished&&gameMode!=='bowling'&&gameMode!=='soccer'&&gameMode!=='dodge'&&!isShipMode();
   const idleBob=Math.sin(t*2.1+p.phase)*.035;
   const gait=t*11.5+p.phase;
   p.rig.position.y=moving?Math.abs(Math.sin(gait))*.12+Math.sin(gait*2)*.018:idleBob;
@@ -165,14 +174,16 @@ function animate(now){
 
  updateBallMode(now,dt,t);
  updateTouchControls(dt);updateGamepads(now,dt);if(net.tv)tvFrame(now);
- if(net.role!=='client'){updateSoccerMode(now,dt);updateShipMode(now,dt)}
- shipVisualUpdate(dt);
+ if(net.role!=='client'){updateSoccerMode(now,dt);updateShipMode(now,dt);updateDodgeMode(now,dt)}
+ shipVisualUpdate(dt);dodgeVisualUpdate(dt);
  soccerUiUpdate();soccerAudioCue();
- players.forEach((p,i)=>{if(p.glb)animateGlbPlayer(p,i,dt)});
+ players.forEach((p,i)=>{if(p.glb&&p.root.visible&&isActive(i))animateGlbPlayer(p,i,dt)});   // não anima quem não está em cena (poupa CPU no celular)
  podiumUpdate(t,dt);
  updateSelfMarker(t);
  if(net.role==='client')netClientFrame(dt,now);else netHostFrame(now);
  breadRoot.rotation.y=Math.sin(t*.9)*.08;
+ if(net.tv||LOW_POWER)tvPerfTick(now);
+ if(net.tv&&tvBrief&&tvBrief.on)return   // tela "como jogar" cobre o 3D: não gasta GPU desenhando por baixo
  renderer.render(scene,camera);
 }
 

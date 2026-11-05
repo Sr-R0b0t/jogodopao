@@ -27,7 +27,7 @@ function refreshTags(){
   const tag=document.getElementById('tag'+i);if(!tag)return;
   const k=list.indexOf(i);
   tag.dataset.pos=k<0?0:Math.round(k*8/list.length)%8;
-  tag.style.display=(k<0||gameMode==='bowling'||gameMode==='soccer')?'none':'';
+  tag.style.display=(k<0||gameMode==='bowling'||gameMode==='soccer'||gameMode==='dodge')?'none':'';
  });
 }
 // Seletor da tela de personagens (modo offline); lembra a última escolha.

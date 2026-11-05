@@ -7,6 +7,7 @@ const MINIGAMES=[
  {id:'bowling',label:'Boliche na Ladeira',desc:'Lance a bola pela ladeira e derrube os pinos. Vence quem derrubar mais pinos!'},
  {id:'soccer',label:'Pênaltis (Futebol)',desc:'Um goleiro contra os batedores: escolha esquerda, meio ou direita. O goleiro ganha 2 pontos por defesa; os batedores vencem se marcarem mais gols.'},
  {id:'ship',label:'Arena das Naves',min:2,max:4,desc:'Pilote sua nave e defenda seu gol das bolas de metal. Cada gol sofrido tira 1 das 15 vidas. Vence o último na arena!'},   // só com 2 a 4 jogadores
+ {id:'dodge',label:'Queimada',min:2,max:8,even:true,desc:'Dois times, uma linha no meio da quadra que ninguém pode cruzar. Pegue uma bola do seu lado e arremesse nos rivais: quem for acertado sai! Vence o time que eliminar todos.'},
  {id:'turbo',label:'Arena Turbo',min:2,max:4,desc:'Sua nave desliza só pelo seu lado. Defenda o gol, aproveite os pads verdes para acelerar a bola e use o ESPECIAL para empurrá-la. Vence o último na arena!'}
 ];
 let minigameBag=[],lastMinigame=null,roundNumber=0,roundTimer=null;
@@ -17,7 +18,7 @@ let finalRound=false;   // true na última rodada do ciclo (todos os minigames s
 /* "Saco" de sorteio: embaralha todos, tira um por rodada; quando esvazia, embaralha de novo
    (evitando abrir o novo ciclo com o mesmo jogo que acabou de ser jogado). */
 /* Minigames que podem ser sorteados com a quantidade atual de jogadores (min/max opcionais). */
-function eligibleMinigames(){const n=activeIndices().length;return MINIGAMES.filter(m=>(!m.min||n>=m.min)&&(!m.max||n<=m.max))}
+function eligibleMinigames(){const n=activeIndices().length;return MINIGAMES.filter(m=>(!m.min||n>=m.min)&&(!m.max||n<=m.max)&&(!m.even||n%2===0))}
 function drawMinigame(){
  const ok=new Set(eligibleMinigames().map(m=>m.id));
  minigameBag=minigameBag.filter(id=>ok.has(id));
@@ -84,6 +85,7 @@ const MODE_HELP={
  bowling:{demo:['⚫','🎳'],how:'Na sua vez, escolha a direção e a força e lance a bola pela ladeira. Vence quem derrubar mais pinos!',phone:'Ajuste direção e força nas barras e toque em LANÇAR',pad:'◀▶ mira, ▲▼ força, A lança'},
  soccer:{demo:['⚽','🧤'],how:'Um goleiro contra os batedores. Cada um escolhe ESQUERDA, MEIO ou DIREITA ao mesmo tempo. Se o goleiro escolher o mesmo lado do chute, defende! 3 defesas ou mais defesas que gols e o goleiro vence.',phone:'Toque em ESQUERDA, MEIO ou DIREITA',pad:'◀ esquerda, ▲ meio, ▶ direita'},
  ship:{demo:['🚀','⚪'],how:'Pilote sua nave na frente do seu gol e rebata as bolas de metal. Cada gol sofrido tira 1 das 15 vidas. Às vezes o jogo sorteia duplas 2 contra 2!',phone:'Arraste o joystick para mover a nave',pad:'Analógico ou direcional movem a nave'},
+ dodge:{demo:['🏐','🎯'],how:'Dois times de lados opostos da quadra — ninguém cruza a linha do meio! Chegue perto de uma bola do SEU lado para pegar e arremesse nos rivais: quem for acertado sai. Desvie das bolas deles! Vence o time que eliminar todos.',phone:'Joystick move • botão ARREMESSAR joga a bola',pad:'Analógico move • A arremessa'},
  turbo:{demo:['⚡','🚀'],how:'Sua nave desliza só pelo seu lado. Defenda o gol, use os pads verdes para acelerar a bola e o ESPECIAL para empurrá-la. Às vezes o jogo sorteia duplas 2 contra 2!',phone:'Joystick move • botão ESPECIAL empurra a bola',pad:'Analógico move • A usa o ESPECIAL'}
 };
 

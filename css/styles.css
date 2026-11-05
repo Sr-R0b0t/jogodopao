@@ -330,3 +330,6 @@ body.tv-mode #lastPlayerTimer strong{font-size:clamp(3rem,8vw,6rem);line-height:
 body.tv-mode #lastPlayerTimer.urgent{transform:translateX(-50%)}
 body.tv-mode #lastPlayerTimer.urgent{animation:lpPulseTv .5s ease-in-out infinite alternate}
 @keyframes lpPulseTv{from{transform:translateX(-50%) scale(1)}to{transform:translateX(-50%) scale(1.1)}}
+/* TV: efeitos pesados de CSS desligados (desfoque sobre o 3D custa muito em TVs) */
+body.tv-mode #scoreOverlay,body.tv-mode .modal,body.tv-mode #osk{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+body.tv-mode .home-orbit,body.tv-mode .preview-avatar{animation:none;filter:none}

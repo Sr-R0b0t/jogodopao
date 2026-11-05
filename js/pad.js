@@ -137,7 +137,7 @@ function render(){
  if(!ui.run){showPanel('padWait');$('waitTxt').textContent='Prepare-se…';stopStick();return}
  if(mode==='bread'){showPanel('padBread');stopStick()}
  else if(mode==='ball'||mode==='ship'){showPanel('padStick');$('special').style.display='none';$('joy').style.margin='0 auto'}
- else if(mode==='turbo'){showPanel('padStick');$('special').style.display='';$('joy').style.margin=''}
+ else if(mode==='turbo'||mode==='dodge'){showPanel('padStick');$('special').style.display='';$('joy').style.margin=''}
  else if(mode==='bowling'){
   stopStick();
   const key=ui.cur+'|'+ui.turn;
@@ -148,7 +148,7 @@ function render(){
   if(ui.sc&&sentSh!==ui.sh){showPanel('padSoccer');$('scTitle').textContent=ui.sc===1?'⚽ Onde você vai CHUTAR?':'🧤 Onde você vai DEFENDER?'}
   else{showPanel('padWait');$('waitTxt').textContent=ui.sc?'Escolha enviada! ✅':'Olhe para a TV…'}
  }else{showPanel('padWait');$('waitTxt').textContent='Olhe para a TV…'}
- if(mode!=='turbo'&&mode!=='ball'&&mode!=='ship')stopStick();
+ if(mode!=='turbo'&&mode!=='ball'&&mode!=='ship'&&mode!=='dodge')stopStick();
 }
 function setCnt(d){const n=Math.max(2,Math.min(8,Number($('cntVal').textContent)+d));$('cntVal').textContent=n;buzz(10);relay({k:'ctl',a:'cnt',n})}
 $('cntMinus').addEventListener('click',()=>setCnt(-1));
@@ -185,13 +185,14 @@ joy.addEventListener('pointermove',e=>{if(e.pointerId===pid)moveStick(e)});
 $('bigBtn').addEventListener('pointerdown',e=>{e.preventDefault();buzz(8);relay({k:'tap'})});
 const sp=$('special');
 sp.addEventListener('pointerdown',e=>{
- e.preventDefault();if(performance.now()<cdEnd)return;
+ e.preventDefault();if(ui&&ui.mode==='dodge'){buzz(25);relay({k:'tap'});return}
+ if(performance.now()<cdEnd)return;
  buzz(25);relay({k:'tap'});cdEnd=performance.now()+BLAST_CD;
 });
 (function loop(){
  const left=cdEnd-performance.now();
  sp.disabled=false;sp.style.opacity=left>0?.5:1;
- sp.innerHTML=left>0?'⏳<br>'+(left/1000).toFixed(1)+'s':'💨<br>ESPECIAL';
+ const dg=ui&&ui.mode==='dodge';sp.innerHTML=dg?'🏐<br>ARREMESSAR':left>0?'⏳<br>'+(left/1000).toFixed(1)+'s':'💨<br>ESPECIAL';if(dg)sp.style.opacity=1;
  requestAnimationFrame(loop);
 })();
 

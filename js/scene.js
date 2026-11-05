@@ -33,7 +33,7 @@ function applyCameraPose(){
  if(typeof podiumActive!=='undefined'&&podiumActive){ // pódio: câmera de frente, afasta em telas estreitas
   const d=Math.max(12.4,14.3/aspect);camera.position.set(0,4.3+(d-12.4)*.15,d);camera.lookAt(0,2.7,0);return;
  }
- if(typeof gameMode!=='undefined'&&isShipMode()){ // visão de cima, de frente para a arena quadrada
+ if(typeof gameMode!=='undefined'&&(isShipMode()||gameMode==='dodge')){ // visão de cima, de frente para a arena quadrada
   const mob=document.body.classList.contains('touch-ui')?1.1:1,z=((typeof isTurbo==='function'&&isTurbo())?1.07:1)*mob,tgt=[0,0,.8*z],base=[0,15*z,12.8*z],s=Math.max(1,13*z/(15.4*aspect));
   camera.position.set(0,tgt[1]+(base[1]-tgt[1])*s,tgt[2]+(base[2]-tgt[2])*s);camera.lookAt(...tgt);return;
  }
