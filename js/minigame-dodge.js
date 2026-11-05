@@ -1,7 +1,7 @@
 /* Minigame: Queimada — 2 times (2, 4, 6 ou 8 jogadores), uma linha no meio da quadra que ninguém pode cruzar.
    Bolas aparecem na quadra; pegue uma (chegue perto, do SEU lado), arremesse nos adversários: quem for acertado sai.
    O anfitrião (ou o modo offline) roda tudo; os convidados só recebem posições (S.dq no snapshot). */
-const DODGE={W:5.2,D:6.2,r:.55,speed:5.6,accel:30,ballR:.38,throwV:11.5,drag:.25,spawnEvery:3800,time:90,hitR:.88,botReact:.32,maxBalls:n=>n<=2?2:n<=4?3:n<=6?4:5};
+const DODGE={W:7.4,D:8.4,r:.55,speed:6.4,accel:30,ballR:.38,throwV:13,drag:.22,spawnEvery:3200,time:90,hitR:.88,botReact:.32,maxBalls:n=>n<=2?3:n<=4?4:n<=6?5:6};
 const DODGE_COLORS=['#3aa0ff','#ff4a4a'],DODGE_EMOJI=['🔵','🔴'];   // time 0 = lado de lá (z<0), time 1 = lado de cá (z>0)
 const dodgeRoot=new THREE.Group();scene.add(dodgeRoot);dodgeRoot.visible=false;
 /* quadra */
@@ -52,21 +52,21 @@ function startDodge(){
  const sh=act.slice().sort(()=>Math.random()-.5),h=sh.length/2;
  const teams=[sh.slice(0,h),sh.slice(h)];
  applyDodgeTeams(teams);
- dodge={balls:[],out:{},outAt:{},hold:{},vel:{},bot:{},t0:now+DRAW_MS,nextSpawn:now+DRAW_MS+900,spawned:0,end:0,throws:0,hits:0,lastThrow:{}};
+ dodge={balls:[],out:{},outAt:{},hold:{},vel:{},bot:{},t0:now+PRE_MS,nextSpawn:now+PRE_MS+900,spawned:0,end:0,throws:0,hits:0,lastThrow:{}};
  teams.forEach((g,k)=>g.forEach((i,j)=>{
   const p=players[i];p.count=1;p.root.visible=true;p.root.scale.setScalar(.9);p.root.rotation.set(0,k===0?0:Math.PI,0);
   p.root.position.set(-DODGE.W+1.4+(j+.5)/g.length*(DODGE.W*2-2.8),0,dodgeSideZ(k)*(DODGE.D*.55));dodge.vel[i]={x:0,z:0};
  }));
  // uma bola de cada lado logo no começo
- dodgeSpawnBall(0);dodgeSpawnBall(1);dodge.balls.forEach(b=>b.born=now+DRAW_MS);
+ dodgeSpawnBall(0);dodgeSpawnBall(1);dodge.balls.forEach(b=>b.born=now+PRE_MS);
  const nm=g=>g.map(i=>players[i].name);
  const o={sub:'Sorteio dos times',title:'Queimada!',pool:act.map(i=>players[i].name),
   final:teams.map((g,k)=>({label:DODGE_EMOJI[k]+' Time '+(k+1),names:nm(g),color:DODGE_COLORS[k]}))};
- runDrawAnim(o);netBroadcast({k:'draw',o,dodgeTeams:teams});
+ o.dodgeTeams=teams;runPreGame(o,'🏐 Queimada',nm(teams[0]).join(' + ')+'  x  '+nm(teams[1]).join(' + '));
  document.getElementById('status').textContent='🏐 '+nm(teams[0]).join(' + ')+'  x  '+nm(teams[1]).join(' + ')+'. Pegue uma bola e acerte os rivais — sem cruzar a linha!';
 }
 function dodgeSpawnBall(side){
- const n=dodge.balls.length;if(n>=DODGE.maxBalls(activeIndices().length))return;
+ if(dodge.balls.length>=DODGE.maxBalls(activeIndices().length)+2)return;
  const x=(Math.random()*2-1)*(DODGE.W-1.2);
  dodge.balls.push({x,y:3.2,z:(side===0?-1:1)*(.5+Math.random()*1.4),vx:0,vz:0,st:0,team:-1,hold:-1,born:performance.now(),drop:true});
  dodge.spawned++;
@@ -158,9 +158,14 @@ function updateDodgeMode(now,dt){
   if(e>=0){const q=players[e].root.position,want=Math.atan2(q.x-p.position.x,q.z-p.position.z);let d=want-p.rotation.y;d=Math.atan2(Math.sin(d),Math.cos(d));p.rotation.y+=d*Math.min(1,dt*10)}
  });
  // bolas
- if(started&&now>=D.nextSpawn&&D.balls.length<DODGE.maxBalls(act.length)){
-  const c0=D.balls.filter(b=>b.z<0).length,c1=D.balls.length-c0;dodgeSpawnBall(c0<=c1?0:1);D.nextSpawn=now+DODGE.spawnEvery;
- }else if(now>=D.nextSpawn)D.nextSpawn=now+800;
+ // bolas disponíveis por lado (soltas, no chão, sem estar na mão de alguém)
+ const av=[0,0];D.balls.forEach(b=>{if(b.st===0)av[b.z<0?0:1]++});
+ if(started&&now>=D.nextSpawn){
+  const need=av[0]===0?0:av[1]===0?1:-1;                 // lado sem nenhuma bola: sempre ganha uma
+  if(need>=0){dodgeSpawnBall(need);D.nextSpawn=now+1500}
+  else if(D.balls.length<DODGE.maxBalls(act.length)){dodgeSpawnBall(av[0]<=av[1]?0:1);D.nextSpawn=now+DODGE.spawnEvery}
+  else D.nextSpawn=now+800;
+ }
  D.balls.forEach((b,bi)=>{
   if(b.st===1){                                                  // carregada: segue o jogador
    const o=players[b.hold].root.position,ry=players[b.hold].root.rotation.y;
@@ -186,6 +191,7 @@ function updateDodgeMode(now,dt){
     }
    }
   }else{b.vx*=Math.max(0,1-2.2*dt);b.vz*=Math.max(0,1-2.2*dt)}   // rolando devagar
+  if(b.st===0&&Math.abs(b.z)<.5&&Math.hypot(b.vx,b.vz)<1.5){const to=av[0]<=av[1]?-1:1;b.vz=to*2.6}   // parada no meio: rola para o lado que precisa
   // paredes
   const W=DODGE.W-DODGE.ballR,Z=DODGE.D-DODGE.ballR;
   if(b.x>W){b.x=W;b.vx=-Math.abs(b.vx)*.7}else if(b.x<-W){b.x=-W;b.vx=Math.abs(b.vx)*.7}

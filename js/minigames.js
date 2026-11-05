@@ -93,9 +93,10 @@ const MODE_HELP={
 {const el=document.getElementById('homeMgCount');if(el)el.textContent='🎮 '+MINIGAMES.length+' minigames'}
 
 /* ---- Animação de sorteio (goleiro / duplas): nomes girando, desacelerando e revelando o resultado ---- */
-const DRAW_MS=4200;
+const DRAW_MS=4200;                      // sorteio do goleiro (giro + resultado)
+const TEAMS_SPIN=2700,TEAMS_HOLD=4000,PRE_COUNT=5,PRE_MS=TEAMS_SPIN+TEAMS_HOLD+PRE_COUNT*1000;   // duplas: giro, 4 s mostrando, contagem de 5 s
 let drawTimers=[];
-function stopDrawAnim(){drawTimers.forEach(clearTimeout);drawTimers=[];const el=document.getElementById('drawBox');if(el)el.classList.remove('show')}
+function stopDrawAnim(){drawTimers.forEach(clearTimeout);drawTimers=[];const el=document.getElementById('drawBox');if(el)el.classList.remove('show');hideRoundBanner()}
 function runDrawAnim(o){
  stopDrawAnim();
  let el=document.getElementById('drawBox');
@@ -125,7 +126,17 @@ function runDrawAnim(o){
    c.append(l,n);fin.append(c);
   });
   try{if(audioEnabled){tone(784,.18,'triangle',.1);tone(1046,.3,'triangle',.1,.16)}}catch(e){}
-  drawTimers.push(setTimeout(()=>el.classList.remove('show'),Math.max(900,DRAW_MS-SPIN-100)));
+  drawTimers.push(setTimeout(()=>el.classList.remove('show'),o.hold||Math.max(900,DRAW_MS-SPIN-100)));
  };
  step();
+}
+
+/* Depois do sorteio de duplas/times: mostra o resultado por 4 s e então faz a contagem 5…1 até o jogo valer.
+   Chamado no início do minigame (anfitrião/offline); os convidados recebem o sorteio e a contagem por mensagem. */
+function runPreGame(o,title,sub){
+ o.hold=TEAMS_HOLD;runDrawAnim(o);netBroadcast({k:'draw',o,teams:o.teams,dodgeTeams:o.dodgeTeams});
+ for(let n=PRE_COUNT;n>=1;n--){
+  drawTimers.push(setTimeout(()=>{showRoundBanner(title,sub,String(n));cdBeep(n);netBroadcast({k:'cd',title,sub,n})},TEAMS_SPIN+TEAMS_HOLD+(PRE_COUNT-n)*1000));
+ }
+ drawTimers.push(setTimeout(()=>{showRoundBanner(title,sub,'VAI!');cdBeep(0);netBroadcast({k:'cd',title,sub,n:0});setTimeout(hideRoundBanner,700)},PRE_MS));
 }

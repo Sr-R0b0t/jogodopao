@@ -210,11 +210,11 @@ function startShip(){
  if(act.length===4&&Math.random()<.5){
   const sh=act.slice().sort(()=>Math.random()-.5),teams=[[sh[0],sh[1]],[sh[2],sh[3]]];
   applyShipTeams(teams);
-  ship.nextSpawn=now+SHIP.spawnDelayMs+DRAW_MS;
+  ship.pre=now+PRE_MS;ship.nextSpawn=ship.pre+SHIP.spawnDelayMs;
   const nm=g=>g.map(i=>players[i].name);
   const o={sub:'Sorteio de duplas',title:'2 contra 2!',pool:act.map(i=>players[i].name),pairs:true,
    final:teams.map((g,k)=>({label:TEAM_EMOJI[k]+' Dupla '+(k+1),names:nm(g),color:TEAM_COLORS[k]}))};
-  runDrawAnim(o);netBroadcast({k:'draw',o,teams});
+  o.teams=teams;runPreGame(o,'🤝 Duplas',teams.map(g=>nm(g).join(' + ')).join('  x  '));
   document.getElementById('status').textContent='🤝 Duplas! '+nm(teams[0]).join(' + ')+'  x  '+nm(teams[1]).join(' + ')+'. A dupla que ficar viva vence!';
  }
 }
@@ -326,6 +326,7 @@ function shipBotTurbo(i,now){
 /* ---------- Atualização a cada frame (anfitrião/offline) ---------- */
 function updateShipMode(now,dt){
  if(!isShipMode()||!running||!ship)return;
+ if(ship.pre&&now<ship.pre)return;      // sorteio de duplas e contagem: ninguém se mexe ainda
  const act=activeIndices().filter(i=>players[i].count>0),A=SHIP_A;
  // 1) naves
  for(const i of act){

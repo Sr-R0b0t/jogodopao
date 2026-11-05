@@ -31,6 +31,37 @@ function gpInGame(){
 /* Direção do pênalti a partir do controle: ◀ = -1, ▲/▼ = 0, ▶ = 1 (ou undefined se solto). */
 function gpSoccerDir(s){return s.x<-.5?-1:s.x>.5?1:Math.abs(s.y)>.5?0:undefined}
 
+/* ---- Vários controles no mesmo aparelho (offline): o 1º controle comanda o personagem escolhido;
+   cada controle extra entra com A na tela de personagens e ganha o próprio personagem (◀▶ troca, B sai). ---- */
+const localPads={};            // índice do gamepad -> vaga (só offline)
+let localMainPad=-1;
+const localPadList=()=>Object.keys(localPads);
+function localOffline(){return net.role==='offline'&&!net.tv&&document.getElementById('screenOnline').style.display==='none'}
+function localFreeSlot(from,dir){
+ const N=specs.length,used=new Set([humanIndex,...Object.values(localPads)]);
+ for(let k=1;k<=N;k++){const s=((from+dir*k)%N+N)%N;if(!used.has(s))return s}
+ return -1;
+}
+/* Mantém net.humans e evita que um controle extra fique com o mesmo personagem do principal. */
+function localPadsSync(){
+ if(net.role!=='offline'||net.tv)return;
+ Object.keys(localPads).forEach(pi=>{if(localPads[pi]===humanIndex){const s=localFreeSlot(humanIndex,1);if(s<0)delete localPads[pi];else localPads[pi]=s}});
+ net.humans.clear();Object.values(localPads).forEach(s=>net.humans.add(s));
+}
+const localPadSlots=()=>Object.values(localPads);
+function localPadMsg(){
+ const n=localPadList().length;
+ window.gpFlash&&window.gpFlash('🎮 '+(n?Object.keys(localPads).map((pi,k)=>'Controle '+(k+2)+' = '+players[localPads[pi]].name).join('  •  ')+'  (◀▶ troca • B sai)':'Controle extra: aperte A para entrar'),5000);
+}
+function localPadMenu(pi,s,E,pv){
+ if(localPads[pi]===undefined){
+  if(E('a')){const f=localFreeSlot(-1,1);if(f>=0&&localPadList().length<MAX_PLAYERS-1){localPads[pi]=f;localPadsSync();localPadMsg()}}
+  return;
+ }
+ if(E('b')){delete localPads[pi];localPadsSync();window.gpFlash&&window.gpFlash('🎮 Controle saiu',2500);return}
+ const d=gpSoccerDir(s),p=gpSoccerDir({x:pv.x||0,y:pv.y||0});
+ if(d!==undefined&&p===undefined&&d!==0){const f=localFreeSlot(localPads[pi],d);if(f>=0){localPads[pi]=f;localPadsSync();localPadMsg()}}
+}
 function updateGamepads(now,dt){
  gpMove.active=false;gpMove.x=gpMove.y=0;
  const list=navigator.getGamepads?navigator.getGamepads():[];
@@ -38,9 +69,14 @@ function updateGamepads(now,dt){
   if(!g||!g.connected)continue;
   const s=gpRead(g),pv=gpState.prev[g.index]||{};
   if(!gpState.used&&(s.a||s.b||s.start||s.x||s.y)){gpState.used=true;document.body.classList.add('gp-nav');try{unlockAudioOnce()}catch(e){}}
-  gpHandle(g.index,s,k=>s[k]&&!pv[k],now,dt,pv);
+  const any=s.a||s.b||s.start||s.x||s.y||s.sel||Math.abs(s.x)>.5||Math.abs(s.y)>.5;
+  if(localMainPad<0||!list[localMainPad]||!list[localMainPad].connected){if(any&&!(localPads[g.index]!==undefined))localMainPad=g.index}
+  const Ef=k=>s[k]&&!pv[k];
+  if(g.index!==localMainPad&&localOffline()&&!tournamentCharacterLocked&&!gpInGame()&&!document.getElementById('settingsModal').classList.contains('show')){localPadMenu(g.index,s,Ef,pv)}
+  else gpHandle(g.index,s,Ef,now,dt,pv);
   gpState.prev[g.index]=s;
  }
+ Object.keys(localPads).forEach(pi=>{const g=list[pi];if(!g||!g.connected){delete localPads[pi];localPadsSync()}});
  Object.keys(tvPads).forEach(pi=>{ // controle desconectado: libera a vaga
   const g=list[pi];if(!g||!g.connected)tvPadLeave(Number(pi));
  });
@@ -56,7 +92,8 @@ function gpHandle(pi,s,E,now,dt,pv){
   if(E('start')){gpOpenSettings();return} // START durante o jogo = menu (reiniciar, som, sair)
   if(net.tv&&tvBrief&&tvBrief.on){const sl=tvPads[pi];if(sl!==undefined&&E('a'))tvBriefReady(sl);return}   // tela "como jogar": A = entendi
   if(net.tv){const slot=tvPads[pi];if(slot!==undefined)gpTvGame(pi,slot,s,E,dt,pv)}
-  else gpLocalGame(s,E,dt,pv);
+  else if(localPads[pi]!==undefined&&net.role==='offline'){if(running)gpTvGame(pi,localPads[pi],s,E,dt,pv)}   // controle extra: personagem próprio
+  else if(pi===localMainPad||localPadList().length===0||localMainPad<0)gpLocalGame(s,E,dt,pv);
   return;
  }
  if(net.tv){
@@ -171,7 +208,8 @@ function gpMenu(s,E,now){
  document.body.appendChild(el);
  let hideT=null;
  const flash=(t,ms)=>{el.textContent=t;el.style.display='block';clearTimeout(hideT);if(ms)hideT=setTimeout(()=>el.style.display='none',ms)};
- window.addEventListener('gamepadconnected',e=>flash('🎮 Controle conectado: '+(e.gamepad.id||'').slice(0,38)+(e.gamepad.mapping==='standard'?'':' (mapeamento não padrão)'),6000));
+ window.gpFlash=flash;
+ window.addEventListener('gamepadconnected',e=>{const n=[...(navigator.getGamepads?navigator.getGamepads():[])].filter(x=>x&&x.connected).length;flash('🎮 Controle conectado: '+(e.gamepad.id||'').slice(0,38)+(e.gamepad.mapping==='standard'?'':' (mapeamento não padrão)')+(n>1&&!net.tv?'\n➕ Com 2+ controles: o 1º usa o personagem escolhido; os outros apertam A na tela de personagens para entrar.':''),9000)});
  window.addEventListener('gamepaddisconnected',()=>flash('🎮 Controle desconectado',3500));
  if(!window.isSecureContext)flash('⚠️ Controles só funcionam em páginas https ou localhost (esta página é http comum).',0);
  else if(!navigator.getGamepads)flash('⚠️ Este navegador não suporta controles.',0);
