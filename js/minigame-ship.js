@@ -446,11 +446,11 @@ function shipVisualUpdate(dt){
   g.position.set(p.root.position.x,.1+Math.sin(t*3+i)*.04,p.root.position.z);g.rotation.y=p.root.rotation.y;
  });
  Object.entries(shipSideOf).forEach(([pl,s])=>{barriers[s].visible=players[pl].count<=0&&isActive(Number(pl));goalStrips[s].visible=players[pl].count>0});
- const list=net.role==='client'?(shipClient?shipClient.balls:[]):(ship?ship.balls.map(b=>[b.x,b.z,Math.min(1,(performance.now()-b.born)/400)]):[]);
+ const list=net.role==='client'?(shipClient?(shipClient.b||[]):[]):(ship?ship.balls.map(b=>[b.x,b.z,Math.min(1,(performance.now()-b.born)/400)]):[]);
  shipBallMeshes.forEach((m,k)=>{const b=list[k];m.visible=!!b;if(b){m.position.set(b[0],SHIP.ballR+.12,b[1]);m.scale.setScalar(b[2]===undefined?1:b[2]);m.rotation.x+=dt*6;m.rotation.z+=dt*4}});
  if(net.role==='client'&&shipClient&&shipClient.goals!==shipSeenGoals){if(shipClient.goals>shipSeenGoals){if(audioEnabled)sfxMetalGoal();if(shipClient.ls!==undefined)flashGoal(shipClient.ls)}shipSeenGoals=shipClient.goals}
  {let sp=0,n=0;for(const b of (net.role==='client'?[]:(ship&&running?ship.balls:[]))){sp=Math.max(sp,Math.hypot(b.vx,b.vz));n++}
-  if(net.role==='client'&&shipClient&&running){sp=SHIP.startSpeed*1.4;n=shipClient.balls.length}
+  if(net.role==='client'&&shipClient&&running){sp=SHIP.startSpeed*1.4;n=(shipClient.b||[]).length}
   setRollLoop(n?Math.min(1,.35+sp/SHIP.maxBallSpeed*.65):0);
   if(net.role==='client'&&shipClient&&shipClient.imp!==undefined){if(shipClient.imp>(shipSeenImp||0)&&audioEnabled)sfxMetalHit(.8);shipSeenImp=shipClient.imp}}
  // faixa do gol: vermelha ao levar gol, volta à cor do dono em ~1,6s
