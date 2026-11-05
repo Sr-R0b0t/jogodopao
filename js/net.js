@@ -76,6 +76,7 @@ const _qs=new URLSearchParams(location.search);if(_qs.get('server'))document.get
 
 /* ---------- Mensagens do servidor ---------- */
 function netOnMessage(m){
+ if(m&&m.t==='pong'){p2pShowPing(Math.round(performance.now()-m.ts),false);return}
  switch(m.t){
   case 'joined':
    net.slot=m.slot;net.pref=m.slot;net.code=m.code;net.role=m.host?'host':'client';humanIndex=m.slot;

@@ -38,6 +38,7 @@ function p2pClientStart(){
  if(!window.RTCPeerConnection||net.role!=='client'||new URLSearchParams(location.search).get('p2p')==='0')return;
  let pc;try{pc=p2pC.pc=new RTCPeerConnection(P2P_ICE)}catch(e){return}
  p2pC.ev=pc.createDataChannel('ev',{ordered:true});
+ p2pC.ev.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.k==='pong')p2pShowPing(Math.round(performance.now()-m.ts),true)}catch(_){}};
  p2pC.sn=pc.createDataChannel('sn',{ordered:false,maxRetransmits:0});
  p2pC.sn.onmessage=e=>{if(p2pC.pc!==pc)return;try{const S=JSON.parse(e.data);p2pC.lastSnap=performance.now();if(S.k==='snap')netApplySnap(S)}catch(_){}};
  pc.onicecandidate=e=>{if(e.candidate&&p2pC.pc===pc)netSendRaw({t:'relay',d:{k:'rtc',t:'ice',c:e.candidate.toJSON()}})};
@@ -55,3 +56,19 @@ function p2pClientSend(d){
  return false;
 }
 function p2pReset(){p2pClientClose();Object.keys(p2pH).forEach(k=>p2pHostClose(k))}
+
+/* ---------- Indicador de atraso (convidado): mostra se está "direto" ou pelo "servidor" ---------- */
+function p2pShowPing(ms,direct){
+ let el=document.getElementById('netPing');
+ if(!el){el=document.createElement('div');el.id='netPing';el.style.cssText='position:fixed;right:8px;bottom:6px;z-index:60;padding:3px 8px;border-radius:10px;background:#000a;color:#bdf5cf;font:800 11px system-ui,sans-serif;pointer-events:none';document.body.appendChild(el)}
+ el.style.display='block';
+ el.textContent=(direct?'⚡ ':'🌐 ')+ms+' ms • '+(direct?'direto':'servidor');
+ el.style.color=ms<80?'#bdf5cf':ms<160?'#ffe38a':'#ff9a9a';
+}
+setInterval(()=>{
+ const el=document.getElementById('netPing');
+ if(net.role!=='client'){if(el)el.style.display='none';return}
+ const ts=performance.now(),ch=p2pC.ev;
+ if(ch&&ch.readyState==='open'&&p2pC.lastSnap>0&&ts-p2pC.lastSnap<2500){try{ch.send(JSON.stringify({k:'png',ts}));return}catch(e){}}
+ netSendRaw({t:'ping',ts});
+},2000);
