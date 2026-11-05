@@ -179,7 +179,7 @@ function animate(now){
  soccerUiUpdate();soccerAudioCue();
  players.forEach((p,i)=>{if(p.glb&&p.root.visible&&isActive(i))animateGlbPlayer(p,i,dt)});   // não anima quem não está em cena (poupa CPU no celular)
  podiumUpdate(t,dt);
- updateSelfMarker(t);
+ updateSelfMarker(t);updateNameTags();
  if(net.role==='client')netClientFrame(dt,now);else netHostFrame(now);
  breadRoot.rotation.y=Math.sin(t*.9)*.08;
  if(net.tv)tvPerfTick(now);

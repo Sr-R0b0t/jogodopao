@@ -3,7 +3,7 @@
    Vagas sem jogador humano continuam sendo bots (rodam no anfitrião). */
 const net={role:'offline',ws:null,slot:0,code:'',names:Array(specs.length).fill(null),humans:new Set(),mv:{},
  target:null,sm:null,smb:null,lastSnap:0,lastMv:0,lastMvKey:'',bwKey:'',prevTurn:-1,pref:0,hostSlot:0,prevNames:null,flash:new Set(),tv:false,vip:-1,started:false};
-const NET_TICK_MS=50;
+const NET_TICK_MS=33;
 /* Se o jogo estiver hospedado num site estático (Netlify, GitHub Pages...), coloque aqui o endereço
    do servidor online (ex.: 'jogo-do-pao.onrender.com'). Deixe vazio se o servidor serve o próprio jogo. */
 const DEFAULT_SERVER='jogodopao.onrender.com';
@@ -13,7 +13,7 @@ function isHumanSlot(i){return i===humanIndex||net.humans.has(i)}
 /* ---------- Conexão ---------- */
 function netSendRaw(o){if(net.ws&&net.ws.readyState===1)net.ws.send(JSON.stringify(o))}
 function netBroadcast(d){if(net.role==='host'&&!net.tv)netSendRaw({t:'bc',d})} // na TV os celulares não recebem fotos do jogo (só o painel do controle)
-function netSendInput(d){if(net.role==='client')netSendRaw({t:'relay',d})}
+function netSendInput(d){if(net.role==='client'){if(p2pClientSend(d))return;netSendRaw({t:'relay',d})}}
 function netSetStatus(msg,bad){const el=document.getElementById('netStatus');el.textContent=msg||'';el.className=bad?'bad':''}
 function netServerUrl(){
  const v=(document.getElementById('netServer').value||'').trim();
@@ -40,6 +40,7 @@ function netConnect(onOpen){
  };
 }
 function netLeave(silent){
+ p2pReset();
  const ws=net.ws;net.ws=null;if(ws){try{ws.close()}catch(e){}}
  net.role='offline';net.names=Array(specs.length).fill(null);setPlayerNames();netRenderGrid();net.humans.clear();net.mv={};net.target=null;net.sm=null;net.smb=null;net.prevTurn=-1;net.bwKey='';
  tournamentCharacterLocked=false;
@@ -161,7 +162,7 @@ function setPlayerNames(){
 
 /* ---------- ANFITRIÃO: recebe comandos dos convidados ---------- */
 function netHostInput(slot,d){
- if(d&&d.k==='rtc'){if(net.tv&&typeof tvRtc==='function')tvRtc(slot,d);return}
+ if(d&&d.k==='rtc'){if(net.tv){if(typeof tvRtc==='function')tvRtc(slot,d)}else p2pHostSignal(slot,d);return}
  if(d&&d.k==='rdy'){if(net.tv&&typeof tvBriefReady==='function')tvBriefReady(slot);return}
  if(d&&d.k==='ctl'){if(net.tv&&slot===net.vip&&typeof tvCtl==='function')tvCtl(d);return}
  if(!net.humans.has(slot)||!d)return;
@@ -177,6 +178,7 @@ function netHostInput(slot,d){
 }
 function netHostLeft(slot){
  if(typeof tvClosePeer==='function')tvClosePeer(slot);
+ p2pHostClose(slot);
  net.humans.delete(slot);delete net.mv[slot];
  if(!running)return;
  if(gameMode==='bread'&&players[slot].count<100)botTick(players[slot]); // bot assume
@@ -198,7 +200,7 @@ function netSnapshot(){
 }
 function netHostFrame(now){
  if(net.role!=='host'||now-net.lastSnap<NET_TICK_MS)return;
- net.lastSnap=now;netBroadcast(netSnapshot());
+ net.lastSnap=now;const S=netSnapshot();netBroadcast(S);p2pHostSend(S);
 }
 /* Envia o placar atual (já montado na tela do anfitrião) para os convidados. */
 function netSendOverlay(){
@@ -211,7 +213,7 @@ function netClientMsg(d){
  if(!d)return;
  switch(d.k){
   case 'begin':
-   humanIndex=net.slot;tournamentCharacterLocked=true;document.body.classList.add('net-client');setPlayerNames();if(d.act)setActivePlayers(d.act);
+   humanIndex=net.slot;tournamentCharacterLocked=true;document.body.classList.add('net-client');p2pClientStart();setPlayerNames();if(d.act)setActivePlayers(d.act);
    reset();showFlowScreen('screenMinigames');
    document.getElementById('status').textContent='Aguardando o anfitrião iniciar a partida…';break;
   case 'start':
@@ -224,7 +226,8 @@ function netClientMsg(d){
   case 'pins':{const c=d.n;setTimeout(()=>{if(audioEnabled)sfxPins(c)},d.delay||0);break}
   case 'ovhide':document.getElementById('scoreOverlay').classList.remove('show');break;
   case 'overlay':netShowOverlay(d);break;
-  case 'snap':netApplySnap(d);break;
+  case 'snap':if(!p2pFresh())netApplySnap(d);break;
+  case 'rtc':if(d.to===net.slot)p2pClientSignal(d);break;
  }
 }
 function netShowOverlay(d){
@@ -279,7 +282,7 @@ function netApplySnap(S){
 /* Chamado a cada frame no convidado: suaviza posições e envia o analógico. */
 function netClientFrame(dt,now){
  const S=net.target;if(!S||!net.sm)return;
- const k=Math.min(1,dt*14);
+ const k=Math.min(1,dt*20);
  const myTurn=!!(S.bw&&S.bw.o[S.bw.t]===humanIndex&&!S.bw.f);
  players.forEach((p,i)=>{
   if(p.biting)return;
@@ -295,7 +298,7 @@ function netClientFrame(dt,now){
   if(!(myTurn)){bowlingBall.position.x+=(S.bw.ball[0]-bowlingBall.position.x)*k;bowlingBall.position.y=S.bw.ball[1];bowlingBall.position.z=S.bw.ball[2]}
   if(S.bw.f)bowlingBall.rotation.x-=.3;
  }
- if((gameMode==='ball'||isShipMode()||gameMode==='dodge')&&running&&now-net.lastMv>=66){
+ if((gameMode==='ball'||isShipMode()||gameMode==='dodge')&&running&&now-net.lastMv>=33){
   const v=humanMoveVector(),key=r2(v.x)+','+r2(v.y);
   if(key!==net.lastMvKey||now-net.lastMv>400){net.lastMvKey=key;net.lastMv=now;netSendInput({k:'mv',x:r2(v.x),y:r2(v.y)})}
  }
