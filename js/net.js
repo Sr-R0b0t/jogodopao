@@ -2,7 +2,7 @@
    ~20x por segundo; os convidados só mostram essas fotos e enviam seus comandos (toque, analógico, mira).
    Vagas sem jogador humano continuam sendo bots (rodam no anfitrião). */
 const net={role:'offline',ws:null,slot:0,code:'',names:Array(specs.length).fill(null),humans:new Set(),mv:{},
- target:null,sm:null,smb:null,lastSnap:0,lastMv:0,lastMvKey:'',bwKey:'',prevTurn:-1,pref:0,hostSlot:0,prevNames:null,flash:new Set(),tv:false,vip:-1,started:false};
+ target:null,sm:null,smb:null,lastSnap:0,lastP2p:0,lastMv:0,lastMvKey:'',bwKey:'',prevTurn:-1,pref:0,hostSlot:0,prevNames:null,flash:new Set(),tv:false,vip:-1,started:false};
 const NET_TICK_MS=33;
 /* Se o jogo estiver hospedado num site estático (Netlify, GitHub Pages...), coloque aqui o endereço
    do servidor online (ex.: 'jogo-do-pao.onrender.com'). Deixe vazio se o servidor serve o próprio jogo. */
@@ -199,7 +199,13 @@ function netSnapshot(){
  return S;
 }
 function netHostFrame(now){
- if(net.role!=='host'||now-net.lastSnap<NET_TICK_MS)return;
+ if(net.role!=='host')return;
+ const fast=p2pHostOpen();
+ if(fast){
+  if(now-net.lastP2p<16)return;
+  net.lastP2p=now;const S=netSnapshot();p2pHostSend(S);if(now-net.lastSnap>=NET_TICK_MS){net.lastSnap=now;netBroadcast(S)}return;
+ }
+ if(now-net.lastSnap<NET_TICK_MS)return;
  net.lastSnap=now;const S=netSnapshot();netBroadcast(S);p2pHostSend(S);
 }
 /* Envia o placar atual (já montado na tela do anfitrião) para os convidados. */
@@ -269,7 +275,7 @@ function netApplySnap(S){
    const sum=S.bw.s.reduce((x,y)=>x+Math.max(0,y||0),0);if(S.bw.f===0&&false);net.bwSum=sum;
    if(S.bw.t!==net.prevTurn){
     net.prevTurn=S.bw.t;
-    if(bowlingOrder[S.bw.t]===humanIndex){bowlingAimValue=0;bowlingPowerValue=70;document.getElementById('bowlingPower').value='70';updateBowlingControlValues();showBowlingArrowHint()}
+    if(bowlingOrder[S.bw.t]===humanIndex){bowlingAimValue=0;players[humanIndex].root.position.x=0;bowlingBall.position.x=BOWLING.ballOffset;bowlingPowerValue=70;document.getElementById('bowlingPower').value='70';updateBowlingControlValues();showBowlingArrowHint()}
    }
    applyBowlingVisibility();updateBowlingMoveControls();updateBowlingHud();
   }
@@ -282,13 +288,15 @@ function netApplySnap(S){
 /* Chamado a cada frame no convidado: suaviza posições e envia o analógico. */
 function netClientFrame(dt,now){
  const S=net.target;if(!S||!net.sm)return;
- const k=Math.min(1,dt*20);
+ const k=Math.min(1,dt*(p2pFresh()?32:20));
  const myTurn=!!(S.bw&&S.bw.o[S.bw.t]===humanIndex&&!S.bw.f);
  players.forEach((p,i)=>{
   if(p.biting)return;
   const a=S.p[i],sm=net.sm[i];
   sm[0]+=(a[0]-sm[0])*k;sm[1]+=(a[1]-sm[1])*k;sm[2]+=(a[2]-sm[2])*k;
-  if(gameMode==='bowling'&&i===humanIndex&&myTurn)return; // sua posição é local
+  if(gameMode==='bowling'&&i===humanIndex&&myTurn){            // só o X (mira) é local; o resto (altura, direção do corpo) vem do anfitrião
+   p.root.position.y=sm[1];p.root.position.z=sm[2];p.root.rotation.set(a[4],a[3],a[8]||0);return;
+  }
   p.root.position.set(sm[0],sm[1],sm[2]);p.root.rotation.y=a[3];p.root.rotation.x=a[4];p.root.rotation.z=a[8]||0;
  });
  if(S.b&&net.smb)balls.forEach((b,i)=>{const t=S.b[i],sm=net.smb[i];sm[0]+=(t[0]-sm[0])*k;sm[1]+=(t[1]-sm[1])*k;sm[2]+=(t[2]-sm[2])*k;b.mesh.position.set(sm[0],sm[1],sm[2])});
@@ -298,7 +306,7 @@ function netClientFrame(dt,now){
   if(!(myTurn)){bowlingBall.position.x+=(S.bw.ball[0]-bowlingBall.position.x)*k;bowlingBall.position.y=S.bw.ball[1];bowlingBall.position.z=S.bw.ball[2]}
   if(S.bw.f)bowlingBall.rotation.x-=.3;
  }
- if((gameMode==='ball'||isShipMode()||gameMode==='dodge')&&running&&now-net.lastMv>=33){
+ if((gameMode==='ball'||isShipMode()||gameMode==='dodge')&&running&&now-net.lastMv>=(p2pFresh()?16:33)){
   const v=humanMoveVector(),key=r2(v.x)+','+r2(v.y);
   if(key!==net.lastMvKey||now-net.lastMv>400){net.lastMvKey=key;net.lastMv=now;netSendInput({k:'mv',x:r2(v.x),y:r2(v.y)})}
  }

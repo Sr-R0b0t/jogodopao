@@ -25,6 +25,7 @@ function p2pHostSignal(slot,d){
   if(P.rd)P.pc.addIceCandidate(d.c).catch(()=>{});else P.q.push(d.c);
  }
 }
+const p2pHostOpen=()=>Object.keys(p2pH).some(k=>p2pH[k].sn&&p2pH[k].sn.readyState==='open');
 function p2pHostSend(S){
  const slots=Object.keys(p2pH);if(!slots.length)return;
  const s=JSON.stringify(S);
