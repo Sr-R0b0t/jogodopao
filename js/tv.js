@@ -135,8 +135,26 @@ function tvRenderQR(){
   for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(qr.isDark(r,k))c.fillRect((k+quiet)*cell,(r+quiet)*cell,cell,cell);
  }catch(e){console.error(e)}
 }
-function tvPixelRatio(on){ // TVs costumam ter tela 4K: limitar a resolução mantém o jogo fluido (menos atraso no controle)
- renderer.setPixelRatio(on?Math.min(devicePixelRatio,1.25):Math.min(devicePixelRatio,LOW_POWER?1.5:2));resize();
+/* TVs têm processador/GPU fracos: resolução limitada a 1x e um "regulador" que, se o FPS cair, reduz a resolução
+   e desliga as sombras automaticamente (nunca sobe de novo na mesma sessão, para não oscilar). */
+const tvPerf={ratio:1,shadows:true,t0:0,frames:0,low:0};
+function tvPixelRatio(on){
+ if(on){tvPerf.ratio=Math.min(devicePixelRatio,1);tvPerf.shadows=true;tvPerf.t0=0;tvPerf.frames=0;tvPerf.low=0;
+  key.shadow.mapSize.set(512,512);if(key.shadow.map){key.shadow.map.dispose();key.shadow.map=null}}
+ else{key.castShadow=true;key.shadow.mapSize.set(LOW_POWER?512:1024,LOW_POWER?512:1024);if(key.shadow.map){key.shadow.map.dispose();key.shadow.map=null}}
+ renderer.setPixelRatio(on?tvPerf.ratio:Math.min(devicePixelRatio,LOW_POWER?1.5:2));resize();
+}
+function tvPerfTick(now){
+ if(!tvPerf.t0){tvPerf.t0=now;tvPerf.frames=0;return}
+ tvPerf.frames++;
+ const el=now-tvPerf.t0;if(el<2000)return;
+ const fps=tvPerf.frames*1000/el;tvPerf.t0=now;tvPerf.frames=0;
+ if(document.hidden||document.getElementById('briefBox')&&document.getElementById('briefBox').classList.contains('show'))return;
+ if(fps<46){
+  tvPerf.low++;
+  if(tvPerf.shadows){tvPerf.shadows=false;key.castShadow=false}
+  else if(tvPerf.ratio>.55){tvPerf.ratio=Math.max(.55,tvPerf.ratio*.82);renderer.setPixelRatio(tvPerf.ratio);resize()}
+ }
 }
 function tvOnJoined(){
  tvPixelRatio(true);
