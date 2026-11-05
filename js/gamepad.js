@@ -43,6 +43,16 @@ function localFreeSlot(from,dir){
  return -1;
 }
 /* Mantém net.humans e evita que um controle extra fique com o mesmo personagem do principal. */
+/* ◀▶ andam de um em um; ▲▼ pulam uma linha da grade de personagens (pula os já ocupados). */
+function localMoveSlot(from,dx,dy){
+ const N=specs.length,used=new Set([humanIndex,...Object.values(localPads)]);
+ if(dx&&!dy)return localFreeSlot(from,dx);
+ const grid=document.getElementById('characterGrid');
+ const cols=Math.max(1,grid?getComputedStyle(grid).gridTemplateColumns.split(' ').length:4);
+ let t=from+(dy||0)*cols+(dx||0);
+ for(let k=0;k<N&&t>=0&&t<N;k++){if(!used.has(t))return t;t+=(dy||0)*cols}
+ return -1;
+}
 function localPadsSync(){
  if(net.role!=='offline'||net.tv)return;
  Object.keys(localPads).forEach(pi=>{if(localPads[pi]===humanIndex){const s=localFreeSlot(humanIndex,1);if(s<0)delete localPads[pi];else localPads[pi]=s}});
@@ -80,15 +90,18 @@ function localPadMenu(pi,s,E,pv){
   return;
  }
  if(E('b')){delete localPads[pi];localPadsSync();window.gpFlash&&window.gpFlash('🎮 Controle saiu',2500);return}
- const d=gpSoccerDir(s),p=gpSoccerDir({x:pv.x||0,y:pv.y||0});
- if(d!==undefined&&p===undefined&&d!==0){const f=localFreeSlot(localPads[pi],d);if(f>=0){localPads[pi]=f;localPadsSync();localPadMsg()}}
+ const dx=s.x<-.5?-1:s.x>.5?1:0,dy=s.y<-.5?-1:s.y>.5?1:0,pdx=pv.x<-.5?-1:pv.x>.5?1:0,pdy=pv.y<-.5?-1:pv.y>.5?1:0;
+ const now=performance.now();gpState.lpAt=gpState.lpAt||{};
+ if(!dx&&!dy){gpState.lpAt[pi]=0;return}
+ const na=gpState.lpAt[pi]||0;if(now<na)return;gpState.lpAt[pi]=now+(na===0?330:170);   // segurar repete devagar
+ const f=localMoveSlot(localPads[pi],dx,dy);if(f>=0){localPads[pi]=f;localPadsSync();localPadMsg()}
 }
 function updateGamepads(now,dt){
  gpMove.active=false;gpMove.x=gpMove.y=0;
  const list=navigator.getGamepads?navigator.getGamepads():[];
  for(const g of list){
   if(!g||!g.connected)continue;
-  const s=gpRead(g),pv=gpState.prev[g.index]||{};
+  const s=gpRead(g),pv=gpState.prev[g.index]||{};gpState.cur=g.index;
   if(!gpState.used&&(s.a||s.b||s.start||s.x||s.y)){gpState.used=true;document.body.classList.add('gp-nav');try{unlockAudioOnce()}catch(e){}}
   const any=s.a||s.b||s.start||s.x||s.y||s.sel||Math.abs(s.x)>.5||Math.abs(s.y)>.5;
   if(localMainPad<0||!list[localMainPad]||!list[localMainPad].connected){if(any&&!(localPads[g.index]!==undefined))localMainPad=g.index}
@@ -201,9 +214,11 @@ function gpMenu(s,E,now){
  if(E('a')){if(cur.tagName==='BUTTON'||cur.type==='checkbox')cur.click();else if(cur.tagName==='INPUT'&&(cur.type==='text'||!cur.type))gpOskOpen(cur);return}
  if(E('b')&&root.id!=='osk'){const back=[...root.querySelectorAll('.back-flow-button,#closeSettings')].find(gpVisible);if(back)back.click();return}
  const dx=s.x<-.5?-1:s.x>.5?1:0,dy=s.y<-.5?-1:s.y>.5?1:0;
- if(!dx&&!dy){gpState.navAt=0;return}
- if(now<gpState.navAt)return;
- gpState.navAt=now+(gpState.navAt===0?330:140);
+ const nk=gpState.cur;gpState.navs=gpState.navs||{};
+ if(!dx&&!dy){gpState.navs[nk]=0;return}
+ const na=gpState.navs[nk]||0;
+ if(now<na)return;
+ gpState.navs[nk]=now+(na===0?330:140);
  // valores: ◀▶ ajusta listas e barras
  if(dx&&(cur.tagName==='SELECT'||cur.type==='range')){
   if(cur.tagName==='SELECT')cur.selectedIndex=Math.max(0,Math.min(cur.options.length-1,cur.selectedIndex+dx));
