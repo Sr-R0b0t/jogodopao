@@ -37,11 +37,11 @@ function breadRanking(){
  return {ranking,detail};
 }
 /* Resultado (Corrida do Pão e Batalha das Bolas): ranking = grupos em ordem de colocação. */
-function showScoreScreen(ranking,modeLabel,headline,lead,detail){
+function showScoreScreen(ranking,modeLabel,headline,lead,detail,gainsOv,subtitle){
  stopLastPlayerTimer();
  const result=document.getElementById('result');
  result.classList.remove('show');result.innerHTML='';
- showRoundResults(pointsForRanking(ranking),detail||{},modeLabel,headline,lead); // o placar só aparece SCORE_DELAY_MS depois
+ showRoundResults(gainsOv||pointsForRanking(ranking),detail||{},modeLabel,headline,lead,subtitle); // o placar só aparece SCORE_DELAY_MS depois
 }
 function finishAll(){
  if(ended||!activePlayers().every(p=>p.count>=100))return;

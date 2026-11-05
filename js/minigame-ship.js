@@ -278,7 +278,12 @@ function finishShip(){const byTime=false;
  }
  const w=ranking[0].map(i=>players[i].name).join(', ');
  document.getElementById('status').textContent=byTime?'⏱️ Tempo esgotado!':'🏆 '+w+' é o último na arena!';
- showScoreScreen(ranking,isTurbo()?'Arena Turbo':'Arena das Naves','🚀 Fim da arena!',(byTime?'Tempo esgotado. Mais vidas: ':'Último na arena: ')+w+'.',detail);
+ let gainsOv=null,sub;
+ if(shipTeams&&ranking.length===2&&ranking[0]===shipTeams.find(g=>g===ranking[0])){   // duplas: vencedora 5 pts cada, perdedora 0
+  gainsOv={};ranking[0].forEach(i=>gainsOv[i]=RANK_POINTS[0]);ranking[1].forEach(i=>gainsOv[i]=0);
+  sub='Dupla vencedora: '+RANK_POINTS[0]+' pts cada • dupla perdedora: 0 pt';
+ }
+ showScoreScreen(ranking,isTurbo()?'Arena Turbo':'Arena das Naves','🚀 Fim da arena!',(byTime?'Tempo esgotado. Mais vidas: ':(shipTeams?'Dupla vencedora: ':'Último na arena: '))+w+'.',detail,gainsOv,sub);
 }
 
 /* ---------- IA dos bots ---------- */
