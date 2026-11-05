@@ -2,7 +2,7 @@
    ~20x por segundo; os convidados só mostram essas fotos e enviam seus comandos (toque, analógico, mira).
    Vagas sem jogador humano continuam sendo bots (rodam no anfitrião). */
 const net={role:'offline',ws:null,slot:0,code:'',names:Array(specs.length).fill(null),humans:new Set(),mv:{},
- target:null,sm:null,smb:null,lastSnap:0,lastP2p:0,lastMv:0,lastMvKey:'',bwKey:'',prevTurn:-1,pref:0,hostSlot:0,prevNames:null,flash:new Set(),tv:false,vip:-1,started:false};
+ target:null,sm:null,smb:null,buf:[],lastTs:0,off:undefined,ib:null,lastSnap:0,lastP2p:0,lastMv:0,lastMvKey:'',bwKey:'',prevTurn:-1,pref:0,hostSlot:0,prevNames:null,flash:new Set(),tv:false,vip:-1,started:false};
 const NET_TICK_MS=33;
 /* Se o jogo estiver hospedado num site estático (Netlify, GitHub Pages...), coloque aqui o endereço
    do servidor online (ex.: 'jogo-do-pao.onrender.com'). Deixe vazio se o servidor serve o próprio jogo. */
@@ -42,7 +42,7 @@ function netConnect(onOpen){
 function netLeave(silent){
  p2pReset();
  const ws=net.ws;net.ws=null;if(ws){try{ws.close()}catch(e){}}
- net.role='offline';net.names=Array(specs.length).fill(null);setPlayerNames();netRenderGrid();net.humans.clear();net.mv={};net.target=null;net.sm=null;net.smb=null;net.prevTurn=-1;net.bwKey='';
+ net.role='offline';net.buf=[];net.lastTs=0;net.off=undefined;net.names=Array(specs.length).fill(null);setPlayerNames();netRenderGrid();net.humans.clear();net.mv={};net.target=null;net.sm=null;net.smb=null;net.prevTurn=-1;net.bwKey='';
  tournamentCharacterLocked=false;
  document.body.classList.remove('net-client');
  if(net.tv){net.tv=false;humanIndex=0;net.vip=-1;net.started=false;if(typeof tvReset==='function')tvReset()}
@@ -186,7 +186,7 @@ function netHostLeft(slot){
  if(gameMode==='bowling'&&bowlingOrder[bowlingTurn]===slot&&!bowlingBallState)botTimers.push(setTimeout(()=>throwBowlingBall(slot),900));
 }
 function netSnapshot(){
- const S={k:'snap',m:gameMode,r:running?1:0,st:document.getElementById('status').textContent,
+ const S={k:'snap',ts:performance.now(),m:gameMode,r:running?1:0,st:document.getElementById('status').textContent,
   p:players.map(p=>[r2(p.root.position.x),r2(p.root.position.y),r2(p.root.position.z),r2(p.root.rotation.y),r2(p.root.rotation.x),p.root.visible?1:0,p.count,p.finished?1:0,r2(p.root.rotation.z)]),
   bi:players.findIndex(p=>p.biting)};
  const lt=document.getElementById('lastPlayerTimer');S.lt=lt.classList.contains('show')?lt.innerHTML:'';
@@ -220,7 +220,7 @@ function netClientMsg(d){
  if(!d)return;
  switch(d.k){
   case 'begin':
-   humanIndex=net.slot;tournamentCharacterLocked=true;document.body.classList.add('net-client');p2pClientStart();setPlayerNames();if(d.act)setActivePlayers(d.act);
+   humanIndex=net.slot;tournamentCharacterLocked=true;document.body.classList.add('net-client');net.buf=[];net.lastTs=0;net.off=undefined;p2pClientStart();setPlayerNames();if(d.act)setActivePlayers(d.act);
    reset();showFlowScreen('screenMinigames');
    document.getElementById('status').textContent='Aguardando o anfitrião iniciar a partida…';break;
   case 'start':
@@ -254,6 +254,12 @@ function netClientUI(){
  document.getElementById('tap').disabled=!ok;
 }
 function netApplySnap(S){
+ if(S.ts!==undefined){                                  // fotos fora de ordem (canal sem retransmissão) são descartadas
+  if(net.lastTs&&S.ts<=net.lastTs)return;
+  net.lastTs=S.ts;
+  const o=performance.now()-S.ts;net.off=(net.off===undefined||o<net.off)?o:net.off+.02;   // diferença entre os relógios (usa o menor valor visto)
+  net.buf.push(S);if(net.buf.length>30)net.buf.shift();
+ }
  if(!net.sm){net.sm=S.p.map(a=>[a[0],a[1],a[2]]);net.smb=S.b?S.b.map(a=>[a[0],a[1],a[2]]):null}
  if(S.b&&!net.smb)net.smb=S.b.map(a=>[a[0],a[1],a[2]]);
  net.target=S;
@@ -287,20 +293,41 @@ function netApplySnap(S){
  updateHud();netClientUI();
 }
 /* Chamado a cada frame no convidado: suaviza posições e envia o analógico. */
+/* Interpolação entre fotos: desenha o jogo ~50 ms (direto) ou ~90 ms (servidor) no passado, entre as duas fotos mais próximas,
+   pelo relógio do anfitrião. Fica liso mesmo que as fotos cheguem em intervalos irregulares (Wi-Fi/4G). */
+function netInterpPair(now){
+ const B=net.buf;if(!B.length||net.off===undefined)return null;
+ const rt=now-net.off-(p2pFresh()?50:90);
+ let ia=-1;for(let k=0;k<B.length;k++){if(B[k].ts<=rt)ia=k;else break}
+ if(ia<0)return {a:B[0],b:B[0],u:0};
+ if(ia===B.length-1)return {a:B[ia],b:B[ia],u:0};
+ const A=B[ia],C=B[ia+1];return {a:A,b:C,u:Math.max(0,Math.min(1,(rt-A.ts)/(C.ts-A.ts||1)))};
+}
+const nLerp=(x,y,u)=>x+(y-x)*u;
+function nLerpAng(x,y,u){let d=y-x;d=Math.atan2(Math.sin(d),Math.cos(d));return x+d*u}
+/* lista de bolas/objetos [x,y,z,...] interpolada pelo índice (campos 'n' primeiros são numéricos contínuos) */
+function netInterpList(la,lb,u,cont){
+ if(!lb)return null;
+ return lb.map((q,i)=>{const p=la&&la[i];if(!p||la.length!==lb.length)return q;
+  if(Math.hypot((p[0]||0)-(q[0]||0),(p[cont-1]||0)-(q[cont-1]||0))>4)return q;
+  return q.map((v,k)=>k<cont?nLerp(p[k],v,u):v)});
+}
 function netClientFrame(dt,now){
- const S=net.target;if(!S||!net.sm)return;
- const k=Math.min(1,dt*(p2pFresh()?32:20));
+ const S=net.target,I=netInterpPair(now);if(!S||!I)return;
+ const A=I.a,Bn=I.b,u=I.u,k=Math.min(1,dt*(p2pFresh()?32:20));
  const myTurn=!!(S.bw&&S.bw.o[S.bw.t]===humanIndex&&!S.bw.f);
  players.forEach((p,i)=>{
   if(p.biting)return;
-  const a=S.p[i],sm=net.sm[i];
-  sm[0]+=(a[0]-sm[0])*k;sm[1]+=(a[1]-sm[1])*k;sm[2]+=(a[2]-sm[2])*k;
+  const a=A.p[i],b=Bn.p[i]||a,far=Math.hypot(a[0]-b[0],a[2]-b[2])>4,uu=far?1:u;
+  const x=nLerp(a[0],b[0],uu),y=nLerp(a[1],b[1],uu),z=nLerp(a[2],b[2],uu),ry=nLerpAng(a[3],b[3],uu),rx=nLerp(a[4],b[4],uu),rz=nLerp(a[8]||0,b[8]||0,uu);
   if(gameMode==='bowling'&&i===humanIndex&&myTurn){            // só o X (mira) é local; o resto (altura, direção do corpo) vem do anfitrião
-   p.root.position.y=sm[1];p.root.position.z=sm[2];p.root.rotation.set(a[4],a[3],a[8]||0);return;
+   p.root.position.y=y;p.root.position.z=z;p.root.rotation.set(rx,ry,rz);return;
   }
-  p.root.position.set(sm[0],sm[1],sm[2]);p.root.rotation.y=a[3];p.root.rotation.x=a[4];p.root.rotation.z=a[8]||0;
+  p.root.position.set(x,y,z);p.root.rotation.set(rx,ry,rz);
  });
- if(S.b&&net.smb)balls.forEach((b,i)=>{const t=S.b[i],sm=net.smb[i];sm[0]+=(t[0]-sm[0])*k;sm[1]+=(t[1]-sm[1])*k;sm[2]+=(t[2]-sm[2])*k;b.mesh.position.set(sm[0],sm[1],sm[2])});
+ if(S.b&&A.b&&Bn.b)balls.forEach((bl,i)=>{const t0=A.b[i],t1=Bn.b[i]||t0;if(!t0)return;bl.mesh.position.set(nLerp(t0[0],t1[0],u),nLerp(t0[1],t1[1],u),nLerp(t0[2],t1[2],u))});
+ net.ibShip=(A.ar&&Bn.ar)?netInterpList(A.ar.b,Bn.ar.b,u,2):null;      // [x,z,escala]
+ net.ibDodge=(A.dq&&Bn.dq)?netInterpList(A.dq.b,Bn.dq.b,u,3):null;      // [x,y,z,estado,time]
  if(S.sc){const b=S.sc.ball;soccerBall.position.x+=(b[0]-soccerBall.position.x)*k;soccerBall.position.y+=(b[1]-soccerBall.position.y)*k;soccerBall.position.z+=(b[2]-soccerBall.position.z)*k}
  if(S.bw){
   S.bw.pins.forEach((a,i)=>{const m=bowlingPins[i].mesh;m.position.set(a[0],a[1],a[2]);m.rotation.set(a[3],0,a[4])});

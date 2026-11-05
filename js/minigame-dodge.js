@@ -239,12 +239,11 @@ function dodgeVisualUpdate(dt){
   const show=isActive(i)&&team>=0&&p.root.visible;
   r.visible=show;if(show){r.position.x=p.root.position.x;r.position.z=p.root.position.z;r.rotation.z=t*1.5}
  });
- const list=client?dodgeClient.b:(dodge?dodge.balls.map(b=>[b.x,b.y,b.z,b.st,b.team]):[]);
+ const list=client?(net.ibDodge||dodgeClient.b):(dodge?dodge.balls.map(b=>[b.x,b.y,b.z,b.st,b.team]):[]);
  dodgeBallMeshes.forEach((m,k)=>{
   const b=list[k];m.visible=!!b;
   if(b){
-   if(client){m.position.x+=(b[0]-m.position.x)*Math.min(1,dt*18);m.position.y+=(b[1]-m.position.y)*Math.min(1,dt*18);m.position.z+=(b[2]-m.position.z)*Math.min(1,dt*18);if(Math.abs(m.position.x-b[0])>3||Math.abs(m.position.z-b[2])>3)m.position.set(b[0],b[1],b[2])}
-   else m.position.set(b[0],b[1],b[2]);
+   m.position.set(b[0],b[1],b[2]);
    m.rotation.x+=dt*(b[3]===2?14:b[3]===0?2:0);m.rotation.z+=dt*(b[3]===2?6:0);
   }
  });
