@@ -44,7 +44,7 @@ function applyMode(){
 document.getElementById('gameMode').addEventListener('change',()=>{reset();applyMode()});
 
 function reset(){
- stopDrawAnim();if(typeof podiumActive!=='undefined'&&podiumActive&&gameMode!=='podium')hidePodium();running=false;ended=false;cancelScoreOverlay();stopLastPlayerTimer();clearBots();
+ if(typeof hudClearTeams==='function')hudClearTeams();stopDrawAnim();if(typeof podiumActive!=='undefined'&&podiumActive&&gameMode!=='podium')hidePodium();running=false;ended=false;cancelScoreOverlay();stopLastPlayerTimer();clearBots();
  projectiles.forEach(o=>scene.remove(o.mesh));projectiles.length=0;
  balls.forEach((b,i)=>{b.vx=0;b.vz=0;b.alive=isActive(i);b.stun=0;b.falling=false;b.fallAt=0;b.fallVx=0;b.fallVz=0;b.mesh.rotation.set(0,0,0);b.mesh.position.set(Math.cos(players[i].angle)*4.2*ARENA_SCALE,.72,Math.sin(players[i].angle)*3.6*ARENA_SCALE);b.mesh.visible=gameMode==='ball'&&isActive(i)});
  players.forEach(p=>{p.count=0;p.finished=false;p.biting=false;p.throwAt=0;p.root.position.set(Math.cos(p.angle)*(gameMode==='ball'?4.2*ARENA_SCALE:5.2),gameMode==='ball'?.72:0,Math.sin(p.angle)*(gameMode==='ball'?3.6*ARENA_SCALE:4.5));p.root.rotation.set(0,Math.atan2(-p.root.position.x,-p.root.position.z),0);p.root.visible=p.active!==false;p.root.scale.set(1,1,1);p.rig.position.set(0,0,0);p.rig.rotation.set(0,0,0);p.rig.scale.set(1,1,1);p.legs.forEach(l=>l.rotation.set(0,0,0));p.arms.forEach(a=>a.rotation.set(0,0,0))});

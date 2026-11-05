@@ -38,8 +38,8 @@ const selfMarkers=players.map(p=>{
 });
 let selfMarkerFor=-1;
 /* Modo TV: todos os jogadores humanos ficam no mesmo ambiente, então cada um ganha silhueta/seta com a sua cor e nome. */
-function styleMarkerTV(i,m){
- const col=tvColor(i),name=(players[i].name||'').toUpperCase().slice(0,10);
+function styleMarkerTV(i,m){styleMarkerCol(i,m,tvColor(i),(players[i].name||'').toUpperCase().slice(0,10))}
+function styleMarkerCol(i,m,col,name){
  m.outlines.forEach(o=>{
   if(!o.userData.own){o.material=o.material.clone();o.userData.own=true}
   if(o.userData.col!==col){o.userData.col=col;o.material.color.set(col)}
@@ -69,7 +69,16 @@ function updateSelfMarker(t){
   });
   return;
  }
- if(selfMarkerFor===-2){selfMarkers.forEach(m=>{if(m.tvStyled)restoreMarkerNormal(m)});selfMarkerFor=-1}
+ // offline com vários controles: cada humano ganha silhueta/seta com a cor do seu controle (P1, P2…)
+ if(typeof localPadList==='function'&&localPadList().length&&tournamentCharacterLocked&&net.role==='offline'){
+  selfMarkerFor=-3;
+  selfMarkers.forEach((m,i)=>{
+   const n=padNumOfSlot(i);m.setVisible(n>0&&isActive(i));
+   if(n>0){styleMarkerCol(i,m,padColor(n),'P'+n);m.arrow.position.y=m.baseY+Math.sin(t*4+i)*.12}
+  });
+  return;
+ }
+ if(selfMarkerFor===-2||selfMarkerFor===-3){selfMarkers.forEach(m=>{if(m.tvStyled)restoreMarkerNormal(m)});selfMarkerFor=-1}
  if(selfMarkerFor!==humanIndex){
   selfMarkers.forEach((m,i)=>m.setVisible(i===humanIndex));
   selfMarkerFor=humanIndex;

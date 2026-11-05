@@ -66,6 +66,7 @@ function renderCharacterSelection(index){
   card.classList.toggle('selected',selected);card.setAttribute('aria-pressed',String(selected));
  });
  updateFeaturedCharacterPreview(index);
+ if(typeof localPadsSync==='function')localPadsSync();
  document.getElementById('previewName').textContent=profile.name;
  document.getElementById('previewDescription').textContent=profile.description;
  document.querySelector('.character-count').textContent=String(index+1).padStart(2,'0')+' / '+String(players.length).padStart(2,'0')+' disponíveis';

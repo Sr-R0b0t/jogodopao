@@ -47,13 +47,34 @@ function localPadsSync(){
  if(net.role!=='offline'||net.tv)return;
  Object.keys(localPads).forEach(pi=>{if(localPads[pi]===humanIndex){const s=localFreeSlot(humanIndex,1);if(s<0)delete localPads[pi];else localPads[pi]=s}});
  net.humans.clear();Object.values(localPads).forEach(s=>net.humans.add(s));
+ localPadCardMarks();
 }
 const localPadSlots=()=>Object.values(localPads);
+/* Cor e número (P1, P2…) de cada controle: P1 é o principal; os extras seguem a ordem do índice do controle. */
+const PAD_COLORS=['#ffd15b','#3aa0ff','#ff5a5a','#62ff9a','#c77dff','#ff9f43','#2ee6d6','#ff7ac8'];
+const padColor=n=>PAD_COLORS[(n-1)%PAD_COLORS.length];
+function padNumOfSlot(slot){          // 0 = ninguém (bot)
+ if(slot===humanIndex)return 1;
+ const ks=Object.keys(localPads).map(Number).sort((a,b)=>a-b);
+ const k=ks.findIndex(pi=>localPads[pi]===slot);return k<0?0:k+2;
+}
+/* Etiquetas coloridas nos cartões da tela de personagens: quem está com qual controle. */
+function localPadCardMarks(){
+ document.querySelectorAll('.character-card').forEach(card=>{
+  card.classList.remove('has-pad');card.style.removeProperty('--pc');
+  const old=card.querySelector('.pad-badge');if(old)old.remove();
+  if(!localPadList().length||net.role!=='offline'||net.tv)return;
+  const n=padNumOfSlot(Number(card.dataset.character));if(!n)return;
+  card.classList.add('has-pad');card.style.setProperty('--pc',padColor(n));
+  const b=document.createElement('span');b.className='pad-badge';b.textContent='🎮 P'+n;card.appendChild(b);
+ });
+}
 function localPadMsg(){
  const n=localPadList().length;
- window.gpFlash&&window.gpFlash('🎮 '+(n?Object.keys(localPads).map((pi,k)=>'Controle '+(k+2)+' = '+players[localPads[pi]].name).join('  •  ')+'  (◀▶ troca • B sai)':'Controle extra: aperte A para entrar'),5000);
+ window.gpFlash&&window.gpFlash('🎮 '+(n?Object.keys(localPads).map((pi,k)=>'P'+(k+2)+' = '+players[localPads[pi]].name).join('  •  ')+'  (◀▶ troca • B sai)':'Controle extra: aperte A para entrar'),5000);
 }
 function localPadMenu(pi,s,E,pv){
+ if(E('sel')){gpOpenSettings();return}      // SELECT de qualquer controle abre as configurações
  if(localPads[pi]===undefined){
   if(E('a')){const f=localFreeSlot(-1,1);if(f>=0&&localPadList().length<MAX_PLAYERS-1){localPads[pi]=f;localPadsSync();localPadMsg()}}
   return;

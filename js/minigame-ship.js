@@ -176,8 +176,19 @@ let shipTeams=null;   // null = todos contra todos; senão [[a,b],[c,d]] (2 cont
 const TEAM_COLORS=['#2bff5a','#ff8a1f'],TEAM_EMOJI=['🟢','🟠'];
 const shipTeamOf=i=>shipTeams?shipTeams.findIndex(g=>g.includes(i)):-1;
 const shipSameTeam=(a,b)=>shipTeams&&shipTeamOf(a)===shipTeamOf(b)&&shipTeamOf(a)>=0;
+/* Placar do topo: nas duplas, cada dupla fica junta, com a cor do seu gol, e um espaço separa as duas. */
+function hudApplyTeams(teams){
+ hudClearTeams();if(!teams)return;
+ teams.forEach((g,k)=>g.forEach((i,j)=>{
+  const el=document.getElementById('tag'+i);if(!el)return;
+  el.style.order=String(k*10+j);el.style.borderColor=TEAM_COLORS[k];el.style.borderWidth='2px';
+  el.style.boxShadow='0 4px 0 #140c20,0 0 0 2px '+TEAM_COLORS[k]+'55';
+  if(k===1&&j===0)el.style.marginLeft='clamp(14px,4vw,40px)';
+ }));
+}
+function hudClearTeams(){players.forEach((p,i)=>{const el=document.getElementById('tag'+i);if(el){el.style.order='';el.style.borderColor='';el.style.borderWidth='';el.style.boxShadow='';el.style.marginLeft=''}})}
 function applyShipTeams(teams){
- shipTeams=teams;if(!teams)return;
+ shipTeams=teams;hudApplyTeams(teams);if(!teams)return;
  teams.forEach((g,k)=>g.forEach(i=>{const sd=shipSideOf[i];if(sd===undefined)return;const c=new THREE.Color(TEAM_COLORS[k]);const r=shipGroups[i].userData.ring.material;r.color.copy(c);r.emissive.copy(c);goalStrips[sd].userData.u.uCol.value.copy(c);goalBase[sd]=c.clone()}));
 }
 function shipTeamsAlive(){return shipTeams?shipTeams.filter(g=>g.some(i=>players[i].count>0)).length:aliveShips().length}
