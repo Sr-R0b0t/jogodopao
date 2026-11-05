@@ -5,7 +5,7 @@ const net={role:'offline',ws:null,slot:0,code:'',names:Array(specs.length).fill(
  target:null,sm:null,smb:null,buf:[],lastTs:0,off:undefined,ib:null,lastSnap:0,lastP2p:0,lastMv:0,lastMvKey:'',bwKey:'',prevTurn:-1,pref:0,hostSlot:0,prevNames:null,flash:new Set(),tv:false,vip:-1,started:false};
 const NET_TICK_MS=33;
 /* Se o jogo estiver hospedado num site estático (Netlify, GitHub Pages...), coloque aqui o endereço
-   do servidor online (ex.: 'jogodopao.onrender.com'). Deixe vazio se o servidor serve o próprio jogo. */
+   do servidor online (ex.: 'jogo-do-pao.onrender.com'). Deixe vazio se o servidor serve o próprio jogo. */
 const DEFAULT_SERVER='jogodopao.onrender.com';
 const r2=v=>Math.round(v*100)/100,clamp1=v=>Math.max(-1,Math.min(1,Number(v)||0));
 function isHumanSlot(i){return i===humanIndex||net.humans.has(i)}

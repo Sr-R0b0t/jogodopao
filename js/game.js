@@ -98,6 +98,7 @@ document.getElementById('reset').addEventListener('click',()=>{ // reinicia o me
  const info=MINIGAMES.find(m=>m.id===gameMode);runCountdown(3,'↻ '+(info?info.label:''),document.getElementById('roundLabel').textContent,undefined,info&&info.desc);
 });
 document.addEventListener('keydown',e=>{
+ if(!net.tv&&tvBrief&&tvBrief.on){if(/^(Enter|NumpadEnter|Space)$/.test(e.code)&&!/SELECT|INPUT/.test((e.target||{}).tagName||'')){e.preventDefault();if(!e.repeat)tvBriefReady(humanIndex)}return}   // offline: tela "como jogar"
  if(net.tv){if((e.code==='Enter'||e.code==='NumpadEnter')&&!/BUTTON|SELECT|INPUT/.test((e.target||{}).tagName||'')){const p=tvPrimaryAction(true);if(p)e.preventDefault()}return}
  if((e.code==='Space'||e.code==='Enter')&&running&&gameMode==='dodge'){e.preventDefault();if(!e.repeat)dodgePress();return}
  if((e.code==='Space'||e.code==='Enter')&&running&&isTurbo()){e.preventDefault();if(!e.repeat)shipBlastPress();return}
@@ -174,7 +175,7 @@ function animate(now){
  }
 
  updateBallMode(now,dt,t);
- updateTouchControls(dt);updateGamepads(now,dt);if(net.tv)tvFrame(now);
+ updateTouchControls(dt);updateGamepads(now,dt);if(net.tv)tvFrame(now);else if(tvBrief&&tvBrief.on)tvBriefTick(now);
  if(net.role!=='client'){updateSoccerMode(now,dt);updateShipMode(now,dt);updateDodgeMode(now,dt)}
  shipVisualUpdate(dt);dodgeVisualUpdate(dt);
  soccerUiUpdate();soccerAudioCue();
@@ -184,7 +185,7 @@ function animate(now){
  if(net.role==='client')netClientFrame(dt,now);else netHostFrame(now);
  breadRoot.rotation.y=Math.sin(t*.9)*.08;
  if(net.tv)tvPerfTick(now);
- if(net.tv&&tvBrief&&tvBrief.on)return   // tela "como jogar" cobre o 3D: não gasta GPU desenhando por baixo
+ if(tvBrief&&tvBrief.on)return   // tela "como jogar" cobre o 3D: não gasta GPU desenhando por baixo
  renderer.render(scene,camera);
 }
 

@@ -75,7 +75,7 @@ function startRound(){
  const label='🎲 RODADA '+roundNumber+' • '+info.label.toUpperCase();
  document.getElementById('roundLabel').textContent=label;
  document.getElementById('status').textContent='🎲 Minigame sorteado: '+info.label+'! A partida começa em instantes…';
- if(net.tv&&net.role==='host'&&typeof tvBriefStart==='function'){tvBriefStart(id,info,label);return}   // TV: antes de valer, mostra "como jogar" e espera todos darem OK
+ if(((net.tv&&net.role==='host')||net.role==='offline')&&typeof tvBriefStart==='function'){tvBriefStart(id,info,label);return}   // TV: antes de valer, mostra "como jogar" e espera todos darem OK
  runCountdown(COUNTDOWN_SECONDS,'🎲 '+info.label,'Rodada '+roundNumber,label,info.desc);
 }
 /* Instruções mostradas na TV antes de cada minigame */

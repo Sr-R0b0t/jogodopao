@@ -33,7 +33,8 @@ function gpSoccerDir(s){return s.x<-.5?-1:s.x>.5?1:Math.abs(s.y)>.5?0:undefined}
 
 /* ---- Vários controles no mesmo aparelho (offline): o 1º controle comanda o personagem escolhido;
    cada controle extra entra com A na tela de personagens e ganha o próprio personagem (◀▶ troca, B sai). ---- */
-const localPads={};            // índice do gamepad -> vaga (só offline)
+const localPads={},localConf={};   // vaga de cada controle extra; localConf = já confirmou o personagem com A
+            // índice do gamepad -> vaga (só offline)
 let localMainPad=-1;
 const localPadList=()=>Object.keys(localPads);
 function localOffline(){return net.role==='offline'&&!net.tv&&document.getElementById('screenOnline').style.display==='none'}
@@ -71,25 +72,28 @@ function padNumOfSlot(slot){          // 0 = ninguém (bot)
 /* Etiquetas coloridas nos cartões da tela de personagens: quem está com qual controle. */
 function localPadCardMarks(){
  document.querySelectorAll('.character-card').forEach(card=>{
-  card.classList.remove('has-pad');card.style.removeProperty('--pc');
+  card.classList.remove('has-pad','pad-pick');card.style.removeProperty('--pc');
   const old=card.querySelector('.pad-badge');if(old)old.remove();
   if(!localPadList().length||net.role!=='offline'||net.tv)return;
   const n=padNumOfSlot(Number(card.dataset.character));if(!n)return;
-  card.classList.add('has-pad');card.style.setProperty('--pc',padColor(n));
-  const b=document.createElement('span');b.className='pad-badge';b.textContent='🎮 P'+n;card.appendChild(b);
+  const pi=Object.keys(localPads).find(k=>localPads[k]===Number(card.dataset.character)),pick=pi!==undefined&&!localConf[pi];
+  card.classList.add('has-pad');card.classList.toggle('pad-pick',pick);card.style.setProperty('--pc',padColor(n));
+  const b=document.createElement('span');b.className='pad-badge';b.textContent='🎮 P'+n+(n===1?'':pick?' · escolhendo…':' ✓');card.appendChild(b);
  });
 }
 function localPadMsg(){
  const n=localPadList().length;
- window.gpFlash&&window.gpFlash('🎮 '+(n?Object.keys(localPads).map((pi,k)=>'P'+(k+2)+' = '+players[localPads[pi]].name).join('  •  ')+'  (◀▶ troca • B sai)':'Controle extra: aperte A para entrar'),5000);
+ window.gpFlash&&window.gpFlash('🎮 '+(n?Object.keys(localPads).map((pi,k)=>'P'+(k+2)+' '+(localConf[pi]?'✓ ':'')+players[localPads[pi]].name).join('  •  ')+'  (◀▲▼▶ move • A confirma • B volta/sai)':'Controle extra: aperte A para entrar e A de novo para confirmar'),5000);
 }
 function localPadMenu(pi,s,E,pv){
  if(E('sel')){gpOpenSettings();return}      // SELECT de qualquer controle abre as configurações
  if(localPads[pi]===undefined){
-  if(E('a')){const f=localFreeSlot(-1,1);if(f>=0&&localPadList().length<MAX_PLAYERS-1){localPads[pi]=f;localPadsSync();localPadMsg()}}
+  if(E('a')){const f=localFreeSlot(-1,1);if(f>=0&&localPadList().length<MAX_PLAYERS-1){localPads[pi]=f;localConf[pi]=false;localPadsSync();localPadMsg()}}
   return;
  }
- if(E('b')){delete localPads[pi];localPadsSync();window.gpFlash&&window.gpFlash('🎮 Controle saiu',2500);return}
+ if(E('a')){if(!localConf[pi]){localConf[pi]=true;localPadsSync();localPadMsg()}return}      // A confirma o personagem
+ if(E('b')){if(localConf[pi]){localConf[pi]=false;localPadsSync();localPadMsg()}else{delete localPads[pi];localPadsSync();window.gpFlash&&window.gpFlash('🎮 Controle saiu',2500)}return}
+ if(localConf[pi])return;                                                                      // confirmado: não anda mais
  const dx=s.x<-.5?-1:s.x>.5?1:0,dy=s.y<-.5?-1:s.y>.5?1:0,pdx=pv.x<-.5?-1:pv.x>.5?1:0,pdy=pv.y<-.5?-1:pv.y>.5?1:0;
  const now=performance.now();gpState.lpAt=gpState.lpAt||{};
  if(!dx&&!dy){gpState.lpAt[pi]=0;return}
@@ -125,6 +129,10 @@ function gpHandle(pi,s,E,now,dt,pv){
  if(gpInGame()){
   if(E('start')){gpOpenSettings();return} // START durante o jogo = menu (reiniciar, som, sair)
   if(net.tv&&tvBrief&&tvBrief.on){const sl=tvPads[pi];if(sl!==undefined&&E('a'))tvBriefReady(sl);return}   // tela "como jogar": A = entendi
+  if(!net.tv&&tvBrief&&tvBrief.on){   // offline: cada controle dá o seu OK
+   const sl=localPads[pi]!==undefined?localPads[pi]:((pi===localMainPad||localPadList().length===0||localMainPad<0)?humanIndex:undefined);
+   if(sl!==undefined&&E('a'))tvBriefReady(sl);return;
+  }
   if(net.tv){const slot=tvPads[pi];if(slot!==undefined)gpTvGame(pi,slot,s,E,dt,pv)}
   else if(localPads[pi]!==undefined&&net.role==='offline'){if(running)gpTvGame(pi,localPads[pi],s,E,dt,pv)}   // controle extra: personagem próprio
   else if(pi===localMainPad||localPadList().length===0||localMainPad<0)gpLocalGame(s,E,dt,pv);

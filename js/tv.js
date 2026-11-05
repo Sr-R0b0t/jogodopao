@@ -19,6 +19,7 @@ function tvBriefGo(){
  const {info,label}=tvBrief;tvBriefStop();
  runCountdown(3,'🎲 '+info.label,'Rodada '+roundNumber,label,info.desc);
 }
+const briefColor=i=>(!net.tv&&typeof localPadList==='function'&&localPadList().length&&padNumOfSlot(i))?padColor(padNumOfSlot(i)):tvColor(i);
 function tvBriefRender(){
  if(!tvBrief||!tvBrief.on)return;
  const H=MODE_HELP[tvBrief.id]||{demo:['🎮',''],how:'',phone:'',pad:''};
@@ -31,15 +32,19 @@ function tvBriefRender(){
  const demo=add(el,'div','br-demo');add(demo,'span','d1',H.demo[0]);add(demo,'span','d2',H.demo[1]);
  add(el,'p','br-how',H.how);
  const ctl=add(el,'div','br-ctl');
- const c1=add(ctl,'div','');add(c1,'b','','📱 No celular');add(c1,'span','',H.phone);
+ const c1=add(ctl,'div','');add(c1,'b','',net.tv?'📱 No celular':'⌨️ Teclado / toque');add(c1,'span','',H.phone);
  const c2=add(ctl,'div','');add(c2,'b','','🎮 No controle');add(c2,'span','',H.pad);
  const chips=add(el,'div','br-chips');
  activeIndices().forEach(i=>{
   const human=isHumanSlot(i),ok=!human||tvBrief.ready.has(i);
-  const c=add(chips,'div','br-chip'+(ok?' ok':''));c.style.borderColor=tvColor(i);
-  add(c,'span','',players[i].name);add(c,'em','',ok?(human?'✅':'🤖 ✅'):'⏳');
+  const c=add(chips,'div','br-chip'+(ok?' ok':''));c.style.borderColor=briefColor(i);
+  add(c,'span','',(net.tv||!localPadList().length||!padNumOfSlot(i)?'':'P'+padNumOfSlot(i)+' ')+players[i].name);add(c,'em','',ok?(human?'✅':'🤖 ✅'):'⏳');
  });
- add(el,'div','br-foot','Aperte 👍 ENTENDI! no celular (ou A no controle). Bots já estão prontos. Quando todos derem OK, a partida começa!');
+ if(net.tv)add(el,'div','br-foot','Aperte 👍 ENTENDI! no celular (ou A no controle). Bots já estão prontos. Quando todos derem OK, a partida começa!');
+ else{
+  const btn=add(el,'button','br-ok','👍 ENTENDI!');btn.type='button';btn.style.pointerEvents='auto';btn.addEventListener('click',()=>tvBriefReady(humanIndex));
+  add(el,'div','br-foot',(localPadList().length?'Cada jogador aperta A no seu controle. ':'')+'Enter/clique em ENTENDI (ou A no controle). Bots já estão prontos. Quando todos derem OK, a partida começa!');
+ }
  el.classList.add('show');
 }
 function tvBriefTick(now){
