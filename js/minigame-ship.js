@@ -8,7 +8,7 @@ const PAD_POS=[[-2.9,-2.2],[2.9,-2.2],[-2.9,2.2],[2.9,2.2]],PAD_BASE=[[-2.9,-2.2
 const SHIP={
  lives:15,half:6,goalHalf:1.9,shipR:.95,ballR:.45,
  startSpeed:5.2,maxBallSpeed:13,hitBoost:1.07,
- accel:16,botAccel:12,maxV:7.2,botMaxV:5.8,drag:3.2,
+ accel:19,botAccel:13.5,maxV:8.2,botMaxV:6.5,drag:3.2,
  maxBalls:4,addBallEverySec:18,spawnDelayMs:900
 };
 let SHIP_A=SHIP.half;
