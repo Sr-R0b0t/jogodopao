@@ -184,7 +184,7 @@ function animate(now){
  updateSelfMarker(t);updateNameTags();
  if(net.role==='client')netClientFrame(dt,now);else netHostFrame(now);
  breadRoot.rotation.y=Math.sin(t*.9)*.08;
- if(net.tv)tvPerfTick(now);
+ if(net.tv)tvPerfTick(now);else qualityTick(now);
  if(tvBrief&&tvBrief.on)return   // tela "como jogar" cobre o 3D: não gasta GPU desenhando por baixo
  renderer.render(scene,camera);
 }

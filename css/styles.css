@@ -355,3 +355,4 @@ body.tv-mode .home-orbit,body.tv-mode .preview-avatar{animation:none;filter:none
  #briefBox .br-ok{width:min(100%,360px);padding:14px 20px;font-size:1.2rem}
 }
 #bowlingMoveControls{display:none!important}   /* botões de mover/mira central removidos do boliche (usa o joystick/controle) */
+.setting-row select{background:#2a1a4a;color:#fff;border:2px solid #a78bca;border-radius:10px;padding:6px 8px;font:800 .95rem system-ui,sans-serif}

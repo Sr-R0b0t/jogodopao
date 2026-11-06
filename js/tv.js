@@ -149,6 +149,7 @@ function tvPixelRatio(on){
   key.shadow.mapSize.set(512,512);if(key.shadow.map){key.shadow.map.dispose();key.shadow.map=null}}
  else{key.castShadow=true;key.shadow.mapSize.set(LOW_POWER?512:1024,LOW_POWER?512:1024);if(key.shadow.map){key.shadow.map.dispose();key.shadow.map=null}}
  renderer.setPixelRatio(on?tvPerf.ratio:Math.min(devicePixelRatio,LOW_POWER?1.5:2));resize();
+ if(!on&&typeof applyQuality==='function')applyQuality();
 }
 function tvPerfTick(now){
  if(!tvPerf.t0){tvPerf.t0=now;tvPerf.frames=0;if(!net.tv)tvPerf.ratio=renderer.getPixelRatio();return}
