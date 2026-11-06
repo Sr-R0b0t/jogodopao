@@ -331,7 +331,9 @@ function netClientFrame(dt,now){
  if(S.sc){const b=S.sc.ball;soccerBall.position.x+=(b[0]-soccerBall.position.x)*k;soccerBall.position.y+=(b[1]-soccerBall.position.y)*k;soccerBall.position.z+=(b[2]-soccerBall.position.z)*k}
  if(S.bw){
   S.bw.pins.forEach((a,i)=>{const m=bowlingPins[i].mesh;m.position.set(a[0],a[1],a[2]);m.rotation.set(a[3],0,a[4])});
-  if(!(myTurn)){bowlingBall.position.x+=(S.bw.ball[0]-bowlingBall.position.x)*k;bowlingBall.position.y=S.bw.ball[1];bowlingBall.position.z=S.bw.ball[2]}
+  bowlingBall.position.y=S.bw.ball[1];bowlingBall.position.z=S.bw.ball[2];                // altura/profundidade sempre do anfitrião (a bola fica na mão, não atrás dos pinos)
+  if(myTurn)bowlingBall.position.x=bowlingAimValue+BOWLING.ballOffset;                      // só a mira (X) é local na minha vez
+  else bowlingBall.position.x+=(S.bw.ball[0]-bowlingBall.position.x)*k;
   if(S.bw.f)bowlingBall.rotation.x-=.3;
  }
  if((gameMode==='ball'||isShipMode()||gameMode==='dodge')&&running&&now-net.lastMv>=(p2pFresh()?16:33)){

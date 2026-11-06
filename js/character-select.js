@@ -4,7 +4,7 @@
 const characterPreviewRenderers=[]; // mantido vazio por compatibilidade
 const previewCache={};
 /* Na seleção de personagem, Fabola e Luana aparecem com as imagens PNG (os modelos 3D animados ficam só no jogo). */
-const PREVIEW_PNG={monkey:'img/macaco.png',luana:'img/luana.png',fabola:'img/fabola.png',rafa:'img/rafa.png',lorena:'img/lorena.png',ricardo:'img/ricardo.png',kika:'img/kika.png'};
+const PREVIEW_PNG={monkey:'img/macaco.png',dragon:'img/dragao.png',luana:'img/luana.png',fabola:'img/fabola.png',rafa:'img/rafa.png',lorena:'img/lorena.png',ricardo:'img/ricardo.png',kika:'img/kika.png'};
 function previewUrl(i,featured){return PREVIEW_PNG[specs[i].type]||previewCache[i+(featured?'f':'s')]||''}
 let previewsReady=false;
 function renderPreviewImages(){

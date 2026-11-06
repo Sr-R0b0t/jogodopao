@@ -1,7 +1,8 @@
 /* Conexão direta (WebRTC) entre o anfitrião e cada convidado do modo online comum: menos atraso que passar pelo servidor.
    O servidor só faz a "apresentação" (ofertas/respostas); se a conexão direta não abrir (ex.: alguns 4G), tudo continua pelo servidor.
    - 'ev' (confiável): comandos do convidado -> anfitrião. - 'sn' (sem retransmissão): fotos do jogo anfitrião -> convidado. */
-const P2P_ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'}]};
+const P2P_ICE={iceServers:[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302','stun:stun.cloudflare.com:3478']},
+ {urls:['turn:openrelay.metered.ca:80','turn:openrelay.metered.ca:443','turn:openrelay.metered.ca:443?transport=tcp'],username:'openrelayproject',credential:'openrelayproject'}],iceCandidatePoolSize:2};   // TURN público gratuito: só entra se a conexão direta falhar
 const p2pH={};                                   // anfitrião: vaga -> {pc,ev,sn,q,rd}
 const p2pC={pc:null,ev:null,sn:null,q:[],rd:false,lastSnap:0,opened:0};
 /* ---------- ANFITRIÃO ---------- */

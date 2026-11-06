@@ -194,8 +194,10 @@ function updateDodgeMode(now,dt){
   if(b.st===0&&Math.abs(b.z)<.5&&Math.hypot(b.vx,b.vz)<1.5){const to=av[0]<=av[1]?-1:1;b.vz=to*2.6}   // parada no meio: rola para o lado que precisa
   // paredes
   const W=DODGE.W-DODGE.ballR,Z=DODGE.D-DODGE.ballR;
-  if(b.x>W){b.x=W;b.vx=-Math.abs(b.vx)*.7}else if(b.x<-W){b.x=-W;b.vx=Math.abs(b.vx)*.7}
-  if(b.z>Z){b.z=Z;b.vz=-Math.abs(b.vz)*.7}else if(b.z<-Z){b.z=-Z;b.vz=Math.abs(b.vz)*.7}
+  let wall=false;
+  if(b.x>W){b.x=W;b.vx=-Math.abs(b.vx)*.7;wall=true}else if(b.x<-W){b.x=-W;b.vx=Math.abs(b.vx)*.7;wall=true}
+  if(b.z>Z){b.z=Z;b.vz=-Math.abs(b.vz)*.7;wall=true}else if(b.z<-Z){b.z=-Z;b.vz=Math.abs(b.vz)*.7;wall=true}
+  if(wall&&b.st===2){b.st=0;b.team=-1;b.y=DODGE.ballR}      // bateu na parede: não queima mais (só vale a bola direta)
  });
  // pegar bolas
  act.forEach(i=>{

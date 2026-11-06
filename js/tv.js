@@ -70,7 +70,8 @@ function tvSetCount(n){
 function tvCtl(d){if(d.a==='cnt')tvSetCount(Number(d.n));else tvPrimaryAction(true)}
 /* ---- Conexão direta celular <-> TV (WebRTC). O servidor só faz a "apresentação"; os comandos passam direto pela rede local
    (bem menos atraso). Se não conectar, tudo segue pelo servidor como antes. ---- */
-const TV_ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'}]};
+const TV_ICE={iceServers:[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302','stun:stun.cloudflare.com:3478']},
+ {urls:['turn:openrelay.metered.ca:80','turn:openrelay.metered.ca:443','turn:openrelay.metered.ca:443?transport=tcp'],username:'openrelayproject',credential:'openrelayproject'}],iceCandidatePoolSize:2};   // TURN público gratuito: só entra se a conexão direta falhar
 const tvPeers={};
 function tvClosePeer(slot){const P=tvPeers[slot];if(P){try{P.pc.close()}catch(e){}delete tvPeers[slot]}}
 function tvRtc(slot,d){
