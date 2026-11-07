@@ -343,14 +343,14 @@ function updateShipMode(now,dt){
  for(const i of act){
   const p=players[i],v=shipVel[i],human=isHumanSlot(i);
   const inp=human?(i===humanIndex?humanMoveVector():(net.mv[i]||{x:0,y:0})):(isTurbo()?shipBotTurbo(i,now):shipBotVector(i,now));
-  const T=isTurbo(),acc=human?(T?TURBO.accel:SHIP.accel):(T?TURBO.botAcc:SHIP.botAccel),maxV=human?(T?TURBO.maxV:SHIP.maxV):(T?TURBO.botV:SHIP.botMaxV);
+  const T=isTurbo(),acc=human?(T?TURBO.accel:SHIP.accel):(T?TURBO.botAcc:SHIP.botAccel)*diffK(),maxV=human?(T?TURBO.maxV:SHIP.maxV):(T?TURBO.botV:SHIP.botMaxV)*diffK();
   if(isTurbo()){                                                  // nave presa ao trilho do próprio lado
    const sd=SIDES[shipSideOf[i]],lat=(p.root.position.x-sd.gx)*sd.ax+(p.root.position.z-sd.gz)*sd.az;
    v.l=(v.l||0)+(inp.x*sd.ax+inp.y*sd.az)*acc*dt;v.l*=Math.exp(-SHIP.drag*dt);v.l=Math.max(-maxV,Math.min(maxV,v.l));
    let nl=lat+v.l*dt;if(Math.abs(nl)>TURBO.railLim){nl=Math.sign(nl)*TURBO.railLim;v.l=0}
    p.root.position.x=sd.gx+sd.nx*TURBO.rail+sd.ax*nl;p.root.position.z=sd.gz+sd.nz*TURBO.rail+sd.az*nl;
    v.x=sd.ax*v.l;v.z=sd.az*v.l;p.root.rotation.y=Math.atan2(sd.nx,sd.nz);
-   if(!human&&now>=ship.cd[i]&&Math.random()<dt*2.2){            // bot dá a rajada quando a bola está perto e indo para o gol
+   if(!human&&now>=ship.cd[i]&&Math.random()<dt*2.2*diffK()){            // bot dá a rajada quando a bola está perto e indo para o gol
     for(const b of ship.balls){const dx=b.x-p.root.position.x,dz=b.z-p.root.position.z;if(Math.hypot(dx,dz)<TURBO.blastR*.85&&(b.vx*sd.nx+b.vz*sd.nz)<0){shipBlast(i,now);break}}
    }
    continue;

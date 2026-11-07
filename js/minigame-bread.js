@@ -89,5 +89,5 @@ function botTick(p){
  if(p.count>=100){finish(p);return}
  beginLastPlayerTimer();
  const variation=Math.floor(Math.random()*100)-40;
- botTimers.push(setTimeout(()=>botTick(p),Math.max(100,p.delay+variation)));
+ botTimers.push(setTimeout(()=>botTick(p),Math.max(90,(p.delay+variation)/diffK())));
 }

@@ -357,3 +357,17 @@ body.tv-mode .home-orbit,body.tv-mode .preview-avatar{animation:none;filter:none
 #bowlingMoveControls{display:none!important}   /* botões de mover/mira central removidos do boliche (usa o joystick/controle) */
 .setting-row select{background:#2a1a4a;color:#fff;border:2px solid #a78bca;border-radius:10px;padding:6px 8px;font:800 .95rem system-ui,sans-serif}
 .tag.turn{outline:2px solid #62ff9a;background:#2c5d47e6}
+/* mapas e dificuldade */
+.maps-panel{max-width:760px;margin:10px auto 0;padding:18px;border:1px solid #65517e;border-radius:22px;background:linear-gradient(160deg,#3a2a52e6,#241735e6);box-shadow:0 10px 30px #0006}
+.maps-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0}
+.map-card{display:flex;flex-direction:column;align-items:center;gap:4px;padding:16px 8px 12px;border:2px solid #65517e;border-radius:18px;background:linear-gradient(155deg,#48335f,#29203d);color:#f9efff;font:inherit;text-align:center;box-shadow:0 4px 0 #170f24;cursor:pointer}
+.map-card.active{border-color:#ffd15b;box-shadow:0 0 0 3px #ffd15b66,0 4px 0 #170f24}
+.map-card.locked{opacity:.55;cursor:default;filter:grayscale(.6)}
+.map-emoji{font-size:2.6rem;line-height:1.1}.map-name{font-weight:1000;font-size:.95rem}.map-sub{font-size:.72rem;color:#d9c7ee;min-height:1.8em}
+.map-trophies{display:flex;gap:6px;font-size:1.3rem;margin-top:4px}.map-trophies .no{filter:grayscale(1);opacity:.28}.map-trophies .got{filter:drop-shadow(0 0 6px #ffd15b)}
+.diff-box{margin:6px 0 14px;text-align:center}.diff-title{font-weight:1000;color:#d9c2f4;margin-bottom:8px}
+.diff-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.diff-btn{display:flex;align-items:center;gap:6px;padding:10px 20px;border:2px solid #65517e;border-radius:14px;background:#2a1a4a;color:#fff;font:1000 1rem system-ui,sans-serif;cursor:pointer;box-shadow:0 4px 0 #170f24}
+.diff-btn.active{border-color:#62ff9a;background:#2c5d47;box-shadow:0 0 0 3px #62ff9a55,0 4px 0 #170f24}
+.diff-desc{margin-top:10px;font-size:.85rem;color:#e8dcf5;min-height:2.4em}
+@media(max-width:520px){.maps-grid{gap:8px}.map-card{padding:12px 4px 10px}.map-emoji{font-size:2rem}.map-name{font-size:.78rem}.map-sub{font-size:.62rem}.diff-btn{padding:9px 12px;font-size:.9rem}}

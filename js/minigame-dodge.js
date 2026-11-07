@@ -83,8 +83,8 @@ function dodgeThrow(i,fromBot){
  const b=dodge.balls[bi],tgt=dodgeNearestEnemy(i);if(!b||tgt<0)return false;
  const p=players[i].root.position,q=players[tgt].root.position,v=dodge.vel[tgt]||{x:0,z:0};
  const dist=Math.hypot(q.x-p.x,q.z-p.z),tt=dist/DODGE.throwV;
- let tx=q.x+v.x*tt*(fromBot?.3:.8),tz=q.z+v.z*tt*(fromBot?.3:.8);
- let ang=Math.atan2(tz-p.z,tx-p.x)+(Math.random()-.5)*(fromBot?.5:.1);
+ const dk=diffK();let tx=q.x+v.x*tt*(fromBot?.3+(dk-1)*.5:.8),tz=q.z+v.z*tt*(fromBot?.3+(dk-1)*.5:.8);
+ let ang=Math.atan2(tz-p.z,tx-p.x)+(Math.random()-.5)*(fromBot?.5/(dk*dk):.1);
  b.st=2;b.team=dodgeTeamOf(i);b.hold=-1;b.vx=Math.cos(ang)*DODGE.throwV;b.vz=Math.sin(ang)*DODGE.throwV;b.x=p.x;b.z=p.z;b.y=1.15;b.owner=i;
  delete dodge.hold[i];dodge.throws++;dodge.lastThrow[i]=performance.now();
  players[i].root.rotation.y=Math.atan2(Math.cos(ang),Math.sin(ang));
@@ -109,7 +109,7 @@ function dodgeBotVector(i,now){
   if(along<0||d>7.5)continue;
   const perp=Math.abs(rx*b.vz-rz*b.vx)/sp;
   if(perp<1.35){
-   if(!B.react)B.react=now+DODGE.botReact*1000*(.6+Math.random()*.9);
+   if(!B.react)B.react=now+DODGE.botReact*1000*(.6+Math.random()*.9)/(diffK()*diffK());
    if(now<B.react)continue;
    danger=true;const side=(rx*b.vz-rz*b.vx)>=0?1:-1;dx+=-b.vz/sp*side;dz+=b.vx/sp*side;
   }
@@ -117,7 +117,7 @@ function dodgeBotVector(i,now){
  if(!danger)B.react=0;
  if(danger){const l=Math.hypot(dx,dz)||1;return {x:dx/l,y:dz/l}}
  if(dodge.hold[i]!==undefined){                 // com bola: vai para perto da linha e arremessa
-  if(!B.throwAt)B.throwAt=now+500+Math.random()*1200;
+  if(!B.throwAt)B.throwAt=now+(500+Math.random()*1200)/diffK();
   if(now>B.throwAt){B.throwAt=0;dodgeThrow(i,true)}
   const gx=B.home-pos.x,gz=sz*2.2-pos.z,l=Math.hypot(gx,gz);
   return l>.3?{x:gx/l,y:gz/l}:{x:0,y:0};
@@ -147,8 +147,8 @@ function updateDodgeMode(now,dt){
    else inp=dodgeBotVector(i,now);
   }
   const l=Math.hypot(inp.x,inp.y);if(l>1){inp={x:inp.x/l,y:inp.y/l}}
-  const k=Math.min(1,dt*DODGE.accel/DODGE.speed);
-  v.x+=(inp.x*DODGE.speed-v.x)*k;v.z+=(inp.y*DODGE.speed-v.z)*k;
+  const spd=DODGE.speed*(isHumanSlot(i)?1:diffK()),k=Math.min(1,dt*DODGE.accel/spd);
+  v.x+=(inp.x*spd-v.x)*k;v.z+=(inp.y*spd-v.z)*k;
   p.position.x+=v.x*dt;p.position.z+=v.z*dt;
   const sz=dodgeSideZ(t),zmin=sz<0?-DODGE.D+DODGE.r:.3+DODGE.r*.8,zmax=sz<0?-.3-DODGE.r*.8:DODGE.D-DODGE.r;
   p.position.x=Math.max(-DODGE.W+DODGE.r,Math.min(DODGE.W-DODGE.r,p.position.x));

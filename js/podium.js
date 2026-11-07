@@ -117,7 +117,13 @@ function showPodium(order,scores,remote){
  // interface
  const champ=players[order[0]];
  podiumUI.querySelector('.pd-title').textContent='🏆 CAMPEÃO: '+champ.name.toUpperCase()+'!';
- podiumUI.querySelector('.pd-sub').textContent='Todos os minigames foram jogados';
+ let podSub='Todos os minigames foram jogados';
+ if(!remote&&net.role==='offline'&&!net.tv&&typeof DIFFICULTIES!=='undefined'){       // troféu do mapa/dificuldade (só offline)
+  const d=DIFFICULTIES[gameDifficulty],humans=[humanIndex,...(typeof localPadSlots==='function'?localPadSlots():[])];
+  if(humans.includes(order[0])){const isNew=awardTrophy(currentMap,gameDifficulty);podSub=d.medal+' Troféu de '+d.trophy+' — Mapa '+currentMap+' · '+d.name+(isNew?' (NOVO!)':' (já conquistado)')}
+  else podSub='Sem troféu desta vez ('+d.name+'). Tente de novo!';
+ }
+ podiumUI.querySelector('.pd-sub').textContent=podSub;
  podiumUI.querySelector('.pd-list').innerHTML=order.map((idx,k)=>k<3?'':'<span class="pd-chip'+(idx===humanIndex?' me':'')+'">'+(k+1)+'º '+players[idx].name+' <b>'+(scores[idx]||0)+'</b></span>').join('');
  const act=podiumUI.querySelector('.pd-actions');
  if(net.role==='client')act.innerHTML='<span class="pd-wait">⏳ Aguardando o anfitrião iniciar um novo campeonato…</span>';

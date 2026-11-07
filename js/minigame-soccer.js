@@ -44,6 +44,15 @@ loadSoccerModel('models/gol.glb',m=>{
 /* ---------- Estado ---------- */
 let soccer=null,soccerSentShot=-1; // convidados guardam aqui uma cópia do estado enviado pelo anfitrião
 const rndDir=()=>Math.floor(Math.random()*3)-1;
+/* Escolha do bot: o goleiro bot fica mais esperto no Difícil (às vezes "lê" o batedor) e mais bobo no Fácil. */
+function botPick(s,slot){
+ const k=diffK();
+ if(slot===s.g&&s.choice[s.k]!==undefined&&k!==1){
+  if(k>1&&Math.random()<(k-1)*1.6)return s.choice[s.k];
+  if(k<1&&Math.random()<(1-k)*1.3)return [-1,0,1].filter(d=>d!==s.choice[s.k])[Math.floor(Math.random()*2)];
+ }
+ return rndDir();
+}
 function setupSoccer(){soccer=null;soccerSentShot=-1;soccerBall.position.set(0,.3,BALL_Z);soccerBall.rotation.set(0,0,0);applySoccerVisibility()}
 function applySoccerVisibility(){
  if(gameMode!=='soccer')return;
@@ -108,7 +117,7 @@ function updateSoccerMode(now,dt){
   const els=now-s.t0;
   for(const slot of [s.k,s.g]){
    if(s.choice[slot]!==undefined)continue;
-   if((!isHumanSlot(slot)&&now>=s.botAt[slot])||els>SOCCER.pickSec*1000)s.choice[slot]=rndDir();
+   if((!isHumanSlot(slot)&&now>=s.botAt[slot])||els>SOCCER.pickSec*1000)s.choice[slot]=botPick(s,slot);
   }
   s.need=[s.k,s.g].filter(x=>isHumanSlot(x)&&s.choice[x]===undefined);
   s.left=Math.max(0,Math.ceil(SOCCER.pickSec-els/1000));

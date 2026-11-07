@@ -121,7 +121,7 @@ document.getElementById('bowlingRight').addEventListener('click',()=>moveBowlerA
 /* Coloca o lançador na cabeceira da pista, de frente para os pinos (humano no centro; bots variam). */
 function placeBowler(idx){
  const p=players[idx];
- p.root.position.set(isHumanSlot(idx)?0:(Math.random()-.5)*1.8,0,BOWLING.startZ+.05);
+ p.root.position.set(isHumanSlot(idx)?0:(Math.random()-.5)*Math.min(2.6,1.8/(diffK()*diffK())),0,BOWLING.startZ+.05);
  p.root.rotation.set(0,Math.PI,0);p.rig.rotation.set(0,0,0);p.rig.position.y=0;
  p.arms.forEach((a,j)=>{a.rotation.x=-.78;a.rotation.z=(j===0?-.24:.24)});
  p.legs.forEach(leg=>{leg.rotation.x=0});
@@ -187,7 +187,7 @@ function calculateBowlingShot(lineX,power,start,duration){
 function throwBowlingBall(playerIndex,opts){
  if(!running||gameMode!=='bowling'||bowlingBallState||bowlingTurn>=bowlingOrder.length||bowlingOrder[bowlingTurn]!==playerIndex)return;
  const lineX=players[playerIndex].root.position.x;
- const power=playerIndex===humanIndex?bowlingPowerValue/100:(opts&&opts.power!=null?opts.power:(.5+Math.random()*.5));
+ const power=playerIndex===humanIndex?bowlingPowerValue/100:(opts&&opts.power!=null?opts.power:Math.max(.2,Math.min(1,(.5+Math.random()*.5)+(diffK()-1)*.45)));
  const duration=1550+(1-power)*450,start=performance.now();
  const knocked=calculateBowlingShot(lineX,power,start,duration);
  bowlingBall.position.set(lineX+BOWLING.ballOffset,1.02,BOWLING.startZ);bowlingBall.rotation.set(0,0,0);
