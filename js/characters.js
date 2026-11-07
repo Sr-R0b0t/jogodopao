@@ -230,7 +230,7 @@ function makeCharacter(type,color,accent){
 }
 const specs=[
  {name:'ASTRONAUTA',team:'#ffffff',type:'astronaut',color:'#efe9df',accent:'#f1ece2',angle:-Math.PI/2},
- {name:'RAPOSA',team:'#ff8a1f',type:'fox',color:'#f4721f',accent:'#ffe6bf',angle:-Math.PI/2+Math.PI*2/8},
+ {name:'GUI',team:'#ff8a1f',type:'fox',color:'#f4721f',accent:'#ffe6bf',angle:-Math.PI/2+Math.PI*2/8},
  {name:'SAPO',team:'#7dff3a',type:'frog',color:'#55bd3f',accent:'#f7e2b0',angle:-Math.PI/2+Math.PI*4/8},
  {name:'PANDA',team:'#a24dff',type:'panda',color:'#26222c',accent:'#fbf8f2',angle:-Math.PI/2+Math.PI*6/8},
  {name:'MACACO',team:'#c47a3a',type:'monkey',color:'#a8683f',accent:'#ffe0ad',angle:-Math.PI/2+Math.PI*8/8},
