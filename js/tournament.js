@@ -1,6 +1,7 @@
 /* Placar do campeonato (vitória = 3 pontos) e botões do overlay de resultado. */
 const tournamentScores=new Array(16).fill(0); // sobra espaço para novos personagens
 let roundsPlayed=0;
+const matchHistory=[];   // resultado de cada rodada (mostrado no pódio): {label,headline,lead,gains,detail,duel?}
 let tournamentCharacterLocked=false;
 /* Atraso entre o fim da partida e a exibição do placar (ms). */
 const SCORE_DELAY_MS=5000;
@@ -18,6 +19,7 @@ function pointsForRanking(ranking){
 /* Soma os pontos no campeonato e monta a tabela. gains={índice:pontosGanhosNaRodada}, detail={índice:texto}. */
 function buildScoreboard(gains,detail,modeLabel,subtitle){
  roundsPlayed++;
+ matchHistory.push({label:modeLabel,headline:(document.getElementById('scoreOverlayTitle')||{}).textContent||'',lead:(document.getElementById('scoreOverlayLead')||{}).textContent||'',gains:Object.assign({},gains),detail:Object.assign({},detail||{})});
  Object.keys(gains).forEach(i=>{tournamentScores[i]+=gains[i]});
  const order=players.map((p,i)=>({name:p.name,index:i,score:tournamentScores[i],isUser:i===humanIndex})).filter(o=>isActive(o.index)).sort((a,b)=>b.score-a.score||Number(b.isUser)-Number(a.isUser)||a.index-b.index);
  const sub=subtitle||'1º 5 pts • 2º 3 pts • 3º 2 pts • demais 1 pt';
@@ -53,7 +55,7 @@ function wireScoreboardActions(){
  const clear=document.getElementById('resetTournament');
  if(clear)clear.addEventListener('click',()=>{
   netBroadcast({k:'ovhide'});
-  tournamentScores.fill(0);roundsPlayed=0;document.getElementById('scoreOverlay').classList.remove('show');
+  tournamentScores.fill(0);roundsPlayed=0;matchHistory.length=0;document.getElementById('scoreOverlay').classList.remove('show');
   document.getElementById('result').classList.remove('show');document.getElementById('result').innerHTML='';
   resetMinigameBag();startRound();
  });

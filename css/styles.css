@@ -371,3 +371,28 @@ body.tv-mode .home-orbit,body.tv-mode .preview-avatar{animation:none;filter:none
 .diff-btn.active{border-color:#62ff9a;background:#2c5d47;box-shadow:0 0 0 3px #62ff9a55,0 4px 0 #170f24}
 .diff-desc{margin-top:10px;font-size:.85rem;color:#e8dcf5;min-height:2.4em}
 @media(max-width:520px){.maps-grid{gap:8px}.map-card{padding:12px 4px 10px}.map-emoji{font-size:2rem}.map-name{font-size:.78rem}.map-sub{font-size:.62rem}.diff-btn{padding:9px 12px;font-size:.9rem}}
+
+/* Histórico da partida (pódio) */
+#podiumUI .pd-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+#podiumUI .pd-actions button.pd-hist-btn{background:linear-gradient(#6b4a9a,#47306f);color:#fff;box-shadow:0 5px #2a1b45}
+.hist-card{width:min(760px,100%)!important;max-height:92vh;max-height:92dvh;text-align:left}
+.hist-scroll{overflow:auto;max-height:68vh;max-height:68dvh;-webkit-overflow-scrolling:touch}
+.hist-table{border-collapse:collapse;width:100%;font-size:.82rem}
+.hist-table th,.hist-table td{padding:5px 7px;border-bottom:1px solid #ffffff22;text-align:center;white-space:nowrap}
+.hist-table th{position:sticky;top:0;background:#2a1b45;color:#ffdf79;font-weight:900;z-index:1}
+.hist-table th span{display:block}.hist-table th small{display:block;font-size:.58rem;font-weight:700;color:#cdb6ea;max-width:74px;overflow:hidden;text-overflow:ellipsis;margin:0 auto}
+.hist-table td.hist-name{text-align:left;font-weight:800;position:sticky;left:0;background:#2e2046}
+.hist-table td.hist-name em{font-style:normal;color:#8af0b3;font-size:.7rem}
+.hist-table tr.champ td{background:#4a3a1c55}.hist-table tr.champ td.hist-name{background:#4a3a1c}
+.hist-table .hist-total{font-weight:1000;color:#ffdf79;font-size:.95rem}
+.hist-cell.p5{color:#ffdf79;font-weight:1000}.hist-cell.p3{color:#e3e9ef;font-weight:900}.hist-cell.p2{color:#e6a56b;font-weight:900}.hist-cell.p1{color:#bba9d6}.hist-cell.p0{color:#ffffff66}
+.hist-rounds{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.hist-rounds details{background:#ffffff0f;border-radius:12px;padding:6px 10px}
+.hist-rounds summary{cursor:pointer;display:flex;flex-direction:column;gap:2px;font-size:.88rem;list-style:none}
+.hist-rounds summary::-webkit-details-marker{display:none}
+.hist-rounds summary small{font-weight:600;color:#cdb6ea;font-size:.74rem}
+.hist-rounds ul{list-style:none;margin:6px 0 2px;padding:0;display:flex;flex-direction:column;gap:3px}
+.hist-rounds li{display:grid;grid-template-columns:minmax(80px,1fr) auto;gap:2px 8px;font-size:.8rem;align-items:baseline}
+.hist-rounds li small{grid-column:1/-1;color:#bba9d6;font-size:.7rem}
+.hist-rounds .hn{font-weight:800}.hist-rounds .hp{font-weight:1000}
+.hist-rounds .hp.p5{color:#ffdf79}.hist-rounds .hp.p3{color:#e3e9ef}.hist-rounds .hp.p2{color:#e6a56b}.hist-rounds .hp.p1{color:#bba9d6}.hist-rounds .hp.p0{color:#ffffff66}

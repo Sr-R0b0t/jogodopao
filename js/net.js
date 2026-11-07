@@ -230,7 +230,7 @@ function netClientMsg(d){
    document.getElementById('gameMode').value=d.mode;reset();running=true;ended=false;net.bwKey='';net.prevTurn=-1;netClientUI();break;
   case 'cd':showRoundBanner(d.title,d.sub,d.n>0?String(d.n):'VAI!',d.desc);if(d.label)document.getElementById('roundLabel').textContent=d.label;cdBeep(d.n);if(d.n<=0)setTimeout(hideRoundBanner,700);break;
   case 'draw':runDrawAnim(d.o);if(d.teams)applyShipTeams(d.teams);if(d.dodgeTeams)applyDodgeTeams(d.dodgeTeams);break;
-  case 'podium':podiumRemoteNote=d.note||'';showPodium(d.order,d.scores,true);break;
+  case 'podium':podiumRemoteNote=d.note||'';matchHistory.length=0;(d.hist||[]).forEach(h=>matchHistory.push(h));showPodium(d.order,d.scores,true);break;
   case 'podiumhide':hidePodium();break;
   case 'pins':{const c=d.n;setTimeout(()=>{if(audioEnabled)sfxPins(c)},d.delay||0);break}
   case 'ovhide':document.getElementById('scoreOverlay').classList.remove('show');break;

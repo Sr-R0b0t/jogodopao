@@ -24,7 +24,7 @@
  });
  restart.addEventListener('click',()=>{close();document.getElementById('reset').click()});
  leave.addEventListener('click',()=>{
-  close();netLeave();tournamentScores.fill(0);roundsPlayed=0;tournamentCharacterLocked=false;resetMinigameBag();
+  close();netLeave();tournamentScores.fill(0);roundsPlayed=0;matchHistory.length=0;tournamentCharacterLocked=false;resetMinigameBag();
   document.getElementById('scoreOverlay').classList.remove('show');reset();showFlowScreen('screenHome');
  });
 })();

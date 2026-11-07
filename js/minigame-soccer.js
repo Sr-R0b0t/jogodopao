@@ -116,6 +116,7 @@ function finishSoccer(){
   const [a,b]=s.duel,ga=s.goalsBy[a]||0,gb=s.goalsBy[b]||0,w=ga>gb?a:b,l=w===a?b:a;
   setStatus('🏆 '+players[w].name+' venceu o desempate por '+Math.max(ga,gb)+' x '+Math.min(ga,gb)+'!');
   showRoundBanner('🏆 '+players[w].name+' VENCEU!','Desempate nos pênaltis • '+Math.max(ga,gb)+' x '+Math.min(ga,gb));
+  matchHistory.push({label:'⚔️ Desempate (Pênaltis)',headline:'Duelo de pênaltis',lead:players[w].name+' venceu '+players[l].name+' por '+Math.max(ga,gb)+' x '+Math.min(ga,gb)+'.',gains:{},detail:{[w]:'🏆 venceu o duelo por '+Math.max(ga,gb)+' x '+Math.min(ga,gb),[l]:'perdeu o duelo'},duel:{w,l}});
   scheduleScoreOverlay(()=>{hideRoundBanner();soccerDuel=null;tieDuelDone(w,l)},3200);
   return;
  }

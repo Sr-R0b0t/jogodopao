@@ -201,6 +201,7 @@ function gpTvGame(pi,slot,s,E,dt,pv){
 /* ---- Menus: navegação por foco com o direcional ---- */
 function gpMenuRoot(){
  const osk=document.getElementById('osk');if(osk&&osk.classList.contains('show'))return osk;
+ const hm=document.getElementById('historyModal');if(hm&&hm.classList.contains('show'))return hm;
  const modal=document.getElementById('settingsModal');
  if(modal.classList.contains('show'))return modal;
  if(document.getElementById('scoreOverlay').classList.contains('show'))return document.getElementById('scoreOverlay');
@@ -213,14 +214,14 @@ function gpFocusables(root){
 function gpMenu(s,E,now){
  const root=gpMenuRoot(),items=gpFocusables(root);
  if(!items.length)return;
- if(E('b')&&root.id!=='osk'){const back=[...root.querySelectorAll('.back-flow-button,#closeSettings')].find(gpVisible);if(back){back.click();return}}
+ if(E('b')&&root.id!=='osk'){const back=[...root.querySelectorAll('.back-flow-button,#closeSettings,#closeHistory')].find(gpVisible);if(back){back.click();return}}
  let cur=document.activeElement;
  if(!items.includes(cur)){
   if(s.x||s.y||E('a')||E('b')){const pref=root.id==='settingsModal'?items[0]:(items.find(e=>e.classList.contains('primary-flow-button'))||items[0]);pref.focus();pref.scrollIntoView({block:'nearest'})}
   return;
  }
  if(E('a')){if(cur.tagName==='BUTTON'||cur.type==='checkbox')cur.click();else if(cur.tagName==='INPUT'&&(cur.type==='text'||!cur.type))gpOskOpen(cur);return}
- if(E('b')&&root.id!=='osk'){const back=[...root.querySelectorAll('.back-flow-button,#closeSettings')].find(gpVisible);if(back)back.click();return}
+ if(E('b')&&root.id!=='osk'){const back=[...root.querySelectorAll('.back-flow-button,#closeSettings,#closeHistory')].find(gpVisible);if(back)back.click();return}
  const dx=s.x<-.5?-1:s.x>.5?1:0,dy=s.y<-.5?-1:s.y>.5?1:0;
  const nk=gpState.cur;gpState.navs=gpState.navs||{};
  if(!dx&&!dy){gpState.navs[nk]=0;return}

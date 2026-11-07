@@ -129,12 +129,13 @@ function showPodium(order,scores,remote){
  const act=podiumUI.querySelector('.pd-actions');
  if(net.role==='client')act.innerHTML='<span class="pd-wait">⏳ Aguardando o anfitrião iniciar um novo campeonato…</span>';
  else{act.innerHTML='<button id="podiumAgain">🔁 NOVO CAMPEONATO</button>';document.getElementById('podiumAgain').addEventListener('click',podiumPlayAgain)}
+ if(matchHistory.length){const hb=document.createElement('button');hb.id='podiumHist';hb.className='pd-hist-btn';hb.textContent='📜 HISTÓRICO';hb.addEventListener('click',openHistory);act.appendChild(hb)}
  podiumUI.classList.add('show');confettiCanvas.classList.add('show');confetti=[];
  applyCameraPose();if(!sfxPodiumSequence())sfxFanfare();
 }
 function hidePodium(){
  if(!podiumActive)return;
- podiumActive=false;stopPodiumSound();podiumRoot.visible=false;if(podiumTrophy)podiumTrophy.visible=false;
+ podiumActive=false;if(typeof closeHistory==='function')closeHistory();stopPodiumSound();podiumRoot.visible=false;if(podiumTrophy)podiumTrophy.visible=false;
  podiumLabels.forEach(s=>{podiumRoot.remove(s);s.material.map.dispose();s.material.dispose()});podiumLabels=[];
  players.forEach(p=>{p.podiumState=null;p.root.scale.setScalar(1);p.rig.position.y=0});
  podiumUI.classList.remove('show');confettiCanvas.classList.remove('show');confetti=[];
@@ -145,13 +146,13 @@ function hidePodium(){
 function startPodium(forced){
  const order=forced||players.map((p,i)=>i).filter(isActive).sort((a,b)=>tournamentScores[b]-tournamentScores[a]||Number(b===humanIndex)-Number(a===humanIndex)||a-b);
  const scores=players.map((p,i)=>tournamentScores[i]||0);
- netBroadcast({k:'podium',order,scores,note:podiumNote});
+ netBroadcast({k:'podium',order,scores,note:podiumNote,hist:matchHistory});
  showPodium(order,scores,false);
 }
 function podiumPlayAgain(){
  if(net.role==='client')return;
  hidePodium();netBroadcast({k:'podiumhide'});
- tournamentScores.fill(0);roundsPlayed=0;resetMinigameBag();startRound();
+ tournamentScores.fill(0);roundsPlayed=0;matchHistory.length=0;resetMinigameBag();startRound();
 }
 /* chamado a cada frame pelo game.js */
 function podiumUpdate(t,dt){
@@ -168,4 +169,35 @@ function podiumUpdate(t,dt){
  });
  podiumLabels.forEach((s,k)=>{s.position.y+=Math.sin(el*3+k)*.0015});
  confettiFrame(dt);
+}
+
+/* ---------- Histórico da partida: como cada um se saiu em cada minigame ---------- */
+const historyModal=document.createElement('div');historyModal.id='historyModal';historyModal.className='modal';historyModal.setAttribute('role','dialog');historyModal.setAttribute('aria-modal','true');
+historyModal.innerHTML='<div class="modal-card hist-card"><h2>📜 Histórico da partida</h2><div class="hist-scroll"></div><button id="closeHistory" class="primary-flow-button">FECHAR</button><small class="pad-hint">🎮 Controle: O/B fecha</small></div>';
+document.body.appendChild(historyModal);
+document.getElementById('closeHistory').addEventListener('click',closeHistory);
+historyModal.addEventListener('pointerdown',e=>{if(e.target===historyModal)closeHistory()});
+function closeHistory(){historyModal.classList.remove('show')}
+function histPtsClass(g){return g>=5?'p5':g>=3?'p3':g>=2?'p2':g>=1?'p1':'p0'}
+function openHistory(){
+ const order=podiumState.order.length?podiumState.order:players.map((p,i)=>i).filter(isActive),esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ const total=i=>podiumState.scores[i]||0,rounds=matchHistory;
+ let h='<table class="hist-table"><thead><tr><th>Jogador</th>'+rounds.map((r,k)=>'<th title="'+esc(r.label)+'"><span>'+(r.duel?'⚔️':(k+1))+'</span><small>'+esc(r.label.replace(/\s*\(.*\)/,''))+'</small></th>').join('')+'<th>Total</th></tr></thead><tbody>';
+ order.forEach((i,pos)=>{
+  h+='<tr'+(pos===0?' class="champ"':'')+'><td class="hist-name">'+(pos===0?'🏆 ':(pos+1)+'º ')+esc(players[i].name)+(i===humanIndex?' <em>(você)</em>':'')+'</td>';
+  rounds.forEach(r=>{
+   if(r.duel){h+='<td class="hist-cell">'+(r.duel.w===i?'🏆':r.duel.l===i?'✖':'–')+'</td>';return}
+   const g=r.gains[i];h+='<td class="hist-cell '+histPtsClass(g||0)+'">'+(g===undefined?'–':'+'+g)+'</td>';
+  });
+  h+='<td class="hist-total">'+total(i)+'</td></tr>';
+ });
+ h+='</tbody></table><div class="hist-rounds">';
+ rounds.forEach((r,k)=>{
+  const ids=order.filter(i=>r.gains[i]!==undefined||r.detail[i]!==undefined).sort((a,b)=>(r.gains[b]||0)-(r.gains[a]||0));
+  h+='<details'+(k===rounds.length-1?'':'')+'><summary><b>'+(r.duel?'⚔️':'Rodada '+(k+1))+' • '+esc(r.label.replace(/^⚔️\s*/,''))+'</b>'+(r.lead?'<small>'+esc(r.lead)+'</small>':'')+'</summary><ul>'+ids.map(i=>'<li><span class="hn">'+esc(players[i].name)+'</span>'+(r.gains[i]!==undefined?'<span class="hp '+histPtsClass(r.gains[i])+'">+'+r.gains[i]+'</span>':'')+'<small>'+esc(r.detail[i]||'')+'</small></li>').join('')+'</ul></details>';
+ });
+ h+='</div>';
+ historyModal.querySelector('.hist-scroll').innerHTML=rounds.length?h:'<p style="text-align:center">Nenhuma rodada registrada.</p>';
+ historyModal.classList.add('show');
+ try{document.getElementById('closeHistory').focus()}catch(e){}
 }
