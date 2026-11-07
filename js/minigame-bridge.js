@@ -145,6 +145,7 @@ function bridgeChoose(opt){
  if(net.role==='client')netSendInput({k:'bc',c:opt});else bridgeSetChoice(humanIndex,opt);
  bridgeSentRound=B.n;if(audioEnabled)sfxClick();
 }
+let bridgeHudSig='';
 function bridgeDistOf(i){const B=bridgeView();return B?((B.d?B.d[i]:B.dist&&B.dist[i])||0):0}
 function bridgeView(){return net.role==='client'?bridgeClient:bridge}
 function bridgeUiUpdate(){
@@ -153,6 +154,7 @@ function bridgeUiUpdate(){
  hud.classList.toggle('show',on);
  if(!on){panel.classList.remove('show');return}
  const act=activeIndices();
+ const sig=act.map(i=>bridgeDistOf(i)).join(',');if(sig!==bridgeHudSig){bridgeHudSig=sig;if(typeof updateHud==='function')updateHud()}
  hud.textContent='🌉 '+(B.n?'Rodada '+Math.min(B.n,BRIDGE.maxRounds)+'/'+BRIDGE.maxRounds:'Preparando…')+' • Meta: '+BRIDGE.goal+' pedras'+(B.ph==='pick'?' • ⏱ '+B.left+'s':'')+'  |  '+act.map(i=>players[i].name+' '+Math.min(BRIDGE.goal,(B.d?B.d[i]:B.dist[i])||0)).join(' • ');
  const mine=B.ph==='pick'&&!!B.need&&B.need.includes(humanIndex)&&bridgeSentRound!==B.n;
  panel.classList.toggle('show',mine);

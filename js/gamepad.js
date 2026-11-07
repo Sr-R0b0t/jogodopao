@@ -218,6 +218,12 @@ function gpMenu(s,E,now){
  const root=gpMenuRoot(),items=gpFocusables(root);
  if(!items.length)return;
  if(E('b')&&root.id!=='osk'){const back=[...root.querySelectorAll('.back-flow-button,#closeSettings,#closeHistory')].find(gpVisible);if(back){back.click();return}}
+ if(root.id==='historyModal'){
+  const sc=root.querySelector('.hist-scroll');
+  if(E('a')){const c=root.querySelector('#closeHistory');if(c)c.click();return}
+  if(sc){const now2=performance.now(),dt=Math.min(60,now2-(gpState.hsT||now2));gpState.hsT=now2;sc.scrollLeft+=(Math.abs(s.x)>.25?s.x:0)*dt*.9;sc.scrollTop+=(Math.abs(s.y)>.25?s.y:0)*dt*.9}
+  return;
+ }
  let cur=document.activeElement;
  if(!items.includes(cur)){
   if(s.x||s.y||E('a')||E('b')){const pref=root.id==='settingsModal'?items[0]:(items.find(e=>e.classList.contains('primary-flow-button'))||items[0]);pref.focus();pref.scrollIntoView({block:'nearest'})}
