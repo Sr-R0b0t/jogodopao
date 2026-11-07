@@ -7,7 +7,7 @@ let running=false,ended=false,botTimers=[],lastTime=performance.now(),celebrateS
 function clearBots(){botTimers.forEach(clearTimeout);botTimers=[]}
 
 function updateHud(){
- players.forEach((p,i)=>{const b=balls[i];document.getElementById('tag'+i).classList.toggle('me',i===humanIndex);document.querySelector(`#tag${i} b`).textContent=gameMode==='ball'?(b.alive?'NA ARENA':(b.falling?'CAINDO!':'FORA!')):isShipMode()?'❤ '+p.count:gameMode==='dodge'?(p.count>0?'EM JOGO':'QUEIMADO'):`${p.count} / 100`});
+ players.forEach((p,i)=>{const b=balls[i];document.getElementById('tag'+i).classList.toggle('me',i===humanIndex);document.querySelector(`#tag${i} b`).textContent=gameMode==='ball'?(b.alive?'NA ARENA':(b.falling?'CAINDO!':'FORA!')):isShipMode()?'❤ '+p.count:gameMode==='bowling'?'🎳 '+(bowlingScores[i]||0):gameMode==='dodge'?(p.count>0?'EM JOGO':'QUEIMADO'):`${p.count} / 100`});
  document.getElementById('tap').textContent=gameMode==='ball'?'🎯 EMPURRÃO!':gameMode==='bowling'?'🎳 LANÇAR BOLA!':'👆 CLICAR!';
 }
 function applyMode(){
@@ -22,7 +22,7 @@ function applyMode(){
  dodgeRoot.visible=dodgeMode;breadRoot.visible=!ballMode&&!bowlingMode&&!soccerMode&&!shipMode&&!dodgeMode;soccerRoot.visible=soccerMode;shipRoot.visible=shipMode;
  floor.visible=rimMesh.visible=inner.visible=!shipMode&&!dodgeMode;arenaDots.forEach(d=>d.visible=!shipMode&&!dodgeMode);arenaRing.visible=ballMode;bowlingRoot.visible=bowlingMode;balls.forEach((b,i)=>b.mesh.visible=ballMode&&isActive(i));
  if(bowlingMode){updateBowlingHud();applyBowlingVisibility()}
- else{document.getElementById('bowlingTopScore').classList.remove('show');document.getElementById('bowlingHud').classList.remove('show');document.getElementById('bowlingControls').classList.remove('show');players.forEach(p=>{p.root.visible=p.active!==false});refreshTags()}
+ else{document.querySelectorAll('.tag.turn').forEach(x=>x.classList.remove('turn'));document.getElementById('bowlingTopScore').classList.remove('show');document.getElementById('bowlingHud').classList.remove('show');document.getElementById('bowlingControls').classList.remove('show');players.forEach(p=>{p.root.visible=p.active!==false});refreshTags()}
  if(shipMode){
   document.querySelector('main > p').textContent='Pilote a nave e defenda o seu gol das bolas metálicas! Cada gol sofrido tira 1 vida; quem zera sai e o gol vira barreira.';
   document.getElementById('gameNote').textContent='Controles: WASD, setas ou o analógico. Bata nas bolas para mandá-las no gol dos rivais. Vence o último na arena.';

@@ -15,11 +15,12 @@ function bowlingPortraitSvg(name){
  if(name==='PANDA')return `<svg viewBox="0 0 100 82" aria-hidden="true"><circle cx="24" cy="22" r="13" fill="#1d1822"/><circle cx="76" cy="22" r="13" fill="#1d1822"/><ellipse cx="50" cy="45" rx="35" ry="34" fill="#fbf8f2" stroke="#c9c3c0" stroke-width="3"/><ellipse cx="34" cy="43" rx="9.5" ry="13" transform="rotate(25 34 43)" fill="#1d1822"/><ellipse cx="66" cy="43" rx="9.5" ry="13" transform="rotate(-25 66 43)" fill="#1d1822"/><circle cx="36" cy="42" r="5" fill="#fff"/><circle cx="64" cy="42" r="5" fill="#fff"/><circle cx="37" cy="43" r="2.6" fill="#14101a"/><circle cx="63" cy="43" r="2.6" fill="#14101a"/><ellipse cx="50" cy="55" rx="6.5" ry="4.5" fill="#1d1822"/><path d="M43 62q7 6 14 0" fill="none" stroke="#7a4a52" stroke-width="3" stroke-linecap="round"/></svg>`;
  return `<svg viewBox="0 0 100 82" aria-hidden="true"><circle cx="21" cy="42" r="15" fill="#a8683f" stroke="#6e4126" stroke-width="3"/><circle cx="21" cy="42" r="9" fill="#ffd9a0"/><circle cx="79" cy="42" r="15" fill="#a8683f" stroke="#6e4126" stroke-width="3"/><circle cx="79" cy="42" r="9" fill="#ffd9a0"/><ellipse cx="50" cy="42" rx="33" ry="33" fill="#a8683f" stroke="#6e4126" stroke-width="3"/><path d="M50 32C37 24 25 33 27 47C29 62 40 74 50 74C60 74 71 62 73 47C75 33 63 24 50 32Z" fill="#ffe3b3"/><ellipse cx="39" cy="47" rx="5.2" ry="7" fill="#1a1018"/><ellipse cx="61" cy="47" rx="5.2" ry="7" fill="#1a1018"/><circle cx="41" cy="44" r="2.2" fill="#fff"/><circle cx="63" cy="44" r="2.2" fill="#fff"/><path d="M44 62q6 6 12 0" fill="none" stroke="#6e4126" stroke-width="3" stroke-linecap="round"/></svg>`;
 }
+/* O placar do boliche usa o mesmo painel do topo dos outros jogos (.tag); aqui só marcamos de quem é a vez. */
 function updateBowlingTopScore(){
- const el=document.getElementById('bowlingTopScore');if(!el)return;
- if(gameMode!=='bowling'){el.classList.remove('show');return}
- el.innerHTML=players.map((p,i)=>!isActive(i)?'':`<div class="bowling-score-chip ${bowlingTurn<bowlingOrder.length&&bowlingOrder[bowlingTurn]===i?'active':''}"><span class="bowling-face" aria-label="Rosto de ${p.name}">${bowlingPortraitSvg(specs[i].name)}</span><span class="bowling-player-name">${p.name}${i===humanIndex?' · VOCÊ':''}</span><b>${bowlingScores[i]||0}</b></div>`).join('');
- el.classList.add('show');
+ const old=document.getElementById('bowlingTopScore');if(old)old.classList.remove('show');
+ const cur=gameMode==='bowling'&&bowlingTurn<bowlingOrder.length?bowlingOrder[bowlingTurn]:-1;
+ players.forEach((p,i)=>{const tag=document.getElementById('tag'+i);if(tag)tag.classList.toggle('turn',i===cur&&gameMode==='bowling')});
+ if(typeof updateHud==='function')updateHud();
 }
 function showBowlingArrowHint(){
  const el=document.getElementById('bowlingArrowHint');if(!el)return;
