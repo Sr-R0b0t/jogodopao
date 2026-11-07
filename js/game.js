@@ -136,7 +136,7 @@ function animate(now){
  if(gameMode==='bowling')animateFallenPins(now);
 
  players.forEach((p,i)=>{
-  const moving=running&&!p.finished&&gameMode!=='bowling'&&gameMode!=='soccer'&&gameMode!=='dodge'&&!isShipMode();
+  const moving=running&&!p.finished&&gameMode!=='bowling'&&gameMode!=='soccer'&&gameMode!=='dodge'&&!isShipMode()&&!(gameMode==='lava'&&p.count<=0);
   const idleBob=Math.sin(t*2.1+p.phase)*.035;
   const gait=t*11.5+p.phase;
   p.rig.position.y=moving?Math.abs(Math.sin(gait))*.12+Math.sin(gait*2)*.018:idleBob;
@@ -146,7 +146,7 @@ function animate(now){
   if(moving){
    p.arms.forEach((a,j)=>{const swing=Math.sin(gait+j*Math.PI);a.rotation.x=-.12+swing*.72;a.rotation.z=(j===0?-.22:.22)+swing*.08});
    p.legs.forEach((leg,j)=>{leg.rotation.x=Math.sin(gait+j*Math.PI)*.65});
-   p.root.position.x=Math.cos(p.angle)*5.2+Math.sin(gait*.5+p.phase)*.035;
+   if(gameMode!=='lava')p.root.position.x=Math.cos(p.angle)*5.2+Math.sin(gait*.5+p.phase)*.035;   // (a Arena de Lava tem movimento livre)
   }else if(!p.biting&&!p.finished){
    p.arms.forEach((a,j)=>{if(gameMode==='bowling'&&running&&bowlingOrder[bowlingTurn]===i){a.rotation.x=-.78;a.rotation.z=(j===0?-.24:.24)}else{a.rotation.x=Math.sin(t*1.6+p.phase+j)*.035;a.rotation.z=(j===0?-.05:.05)+Math.sin(t*1.2+p.phase+j)*.02}});
    p.legs.forEach((leg,j)=>{leg.rotation.x=Math.sin(t*1.5+p.phase+j*Math.PI)*.025});
