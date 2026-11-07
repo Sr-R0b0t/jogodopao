@@ -5,11 +5,11 @@
    Vence quem ficar vivo; se acabar o tempo, quem sobrou divide o 1º lugar (os demais pela ordem em que queimaram).
    O anfitrião (ou o modo offline) roda tudo; os convidados só recebem posições + facho/punhos (S.lv no snapshot). */
 const LAVA={
- R:7,pillarR:.95,speed:5.1,accel:26,playerR:.34,
+ R:8.6,pillarR:.85,speed:6.6,accel:80,playerR:.34,
  time:45,startDelay:900,grace:1300,                       // duração da rodada (s) e pausa antes do facho começar
- w0:1.25,w1:2.35,wAcc:2.2,flipMin:4200,flipMax:7600,   // velocidade do facho (rad/s) no começo/fim, aceleração, intervalo entre inversões
- beamHalf:.36,beamLen:7.7,
- jumpMs:650,jumpH:1.1,safeY:.42,jumpCool:140,airControl:.85,
+ w0:1.0,w1:1.9,wAcc:2.2,flipMin:4200,flipMax:7600,   // velocidade do facho (rad/s) no começo/fim, aceleração, intervalo entre inversões
+ beamHalf:.36,beamLen:9.3,
+ jumpMs:650,jumpH:1.1,safeY:.42,jumpCool:140,airControl:1,
  slamR:1.55,warnMs:1300,holdMs:750,riseMs:500,
  firstFist:4500,fistEvery0:3300,fistEvery1:1500
 };
@@ -54,7 +54,7 @@ const lavaGrateTex=lavaCanvasTexture((g,S)=>{
  // raios (divisões) e anéis no chão, como grade de metal
  const barM=mat('#1d1a1a',.5,.5);
  for(let k=0;k<8;k++){const b=new THREE.Mesh(new THREE.BoxGeometry(LAVA.R-.9,.05,.16),barM);const a=k/8*Math.PI*2;b.position.set(Math.cos(a)*(LAVA.R/2+.45),.03,Math.sin(a)*(LAVA.R/2+.45));b.rotation.y=-a;lavaRoot.add(b)}
- [2.3,4.6].forEach(r=>{const t=new THREE.Mesh(new THREE.TorusGeometry(r,.07,6,64),barM);t.rotation.x=Math.PI/2;t.position.y=.04;lavaRoot.add(t)});
+ [2.9,5.8].forEach(r=>{const t=new THREE.Mesh(new THREE.TorusGeometry(r,.07,6,64),barM);t.rotation.x=Math.PI/2;t.position.y=.04;lavaRoot.add(t)});
  // pilar central
  const pil=new THREE.Mesh(new THREE.CylinderGeometry(.72,.88,1.15,24),mat('#b9772c',.35,.7));pil.position.y=.55;pil.castShadow=true;lavaRoot.add(pil);
  const dome=new THREE.Mesh(new THREE.SphereGeometry(.7,24,12,0,Math.PI*2,0,Math.PI/2),mat('#e0a040',.3,.8));dome.position.y=1.12;lavaRoot.add(dome);
@@ -90,7 +90,7 @@ const lavaSeen={hit:0,sl:0,jm:0};
 function lavaSetup(){
  lava=null;lavaClient=null;lavaSeen.hit=lavaSeen.sl=lavaSeen.jm=0;
  const act=activeIndices();
- act.forEach((i,k)=>{const p=players[i],a=k/act.length*Math.PI*2+.4;p.count=1;p.root.position.set(Math.cos(a)*4.8,0,Math.sin(a)*4.8);p.root.rotation.set(0,Math.atan2(-Math.cos(a),-Math.sin(a)),0);p.root.scale.setScalar(1);p.root.visible=true});
+ act.forEach((i,k)=>{const p=players[i],a=k/act.length*Math.PI*2+.4;p.count=1;p.root.position.set(Math.cos(a)*5.8,0,Math.sin(a)*5.8);p.root.rotation.set(0,Math.atan2(-Math.cos(a),-Math.sin(a)),0);p.root.scale.setScalar(1);p.root.visible=true});
 }
 function startLava(){
  const now=performance.now(),act=activeIndices();
@@ -98,7 +98,7 @@ function startLava(){
   out:{},outAt:{},knock:{},vel:{},jump:{},cool:{},bot:{},end:0,hits:0,slams:0,jumps:0};
  act.forEach((i,k)=>{
   const p=players[i],a=k/act.length*Math.PI*2+.4;
-  p.count=1;p.root.visible=true;p.root.scale.setScalar(1);p.root.position.set(Math.cos(a)*4.8,0,Math.sin(a)*4.8);p.root.rotation.set(0,Math.atan2(-Math.cos(a),-Math.sin(a)),0);lava.vel[i]={x:0,z:0};
+  p.count=1;p.root.visible=true;p.root.scale.setScalar(1);p.root.position.set(Math.cos(a)*5.8,0,Math.sin(a)*5.8);p.root.rotation.set(0,Math.atan2(-Math.cos(a),-Math.sin(a)),0);lava.vel[i]={x:0,z:0};
  });
  document.getElementById('status').textContent='🔥 Pule o facho de fogo e fuja dos círculos vermelhos! Último vivo vence.';
 }
@@ -163,7 +163,7 @@ function lavaBotVector(i,now){
  if(!inRange)B.react=0;
  if(hold)return {x:0,y:0};
  // sem perigo: passeia devagar pela plataforma, longe do pilar e da borda
- if(now>B.wander){B.wander=now+1500+Math.random()*2000;const a=Math.random()*Math.PI*2,rr=2.2+Math.random()*3.4;B.wx=Math.cos(a)*rr;B.wz=Math.sin(a)*rr}
+ if(now>B.wander){B.wander=now+1500+Math.random()*2000;const a=Math.random()*Math.PI*2,rr=2.4+Math.random()*(LAVA.R-4.4);B.wx=Math.cos(a)*rr;B.wz=Math.sin(a)*rr}
  const gx=B.wx-p.x,gz=B.wz-p.z,l=Math.hypot(gx,gz);return l>.5?{x:gx/l*.55,y:gz/l*.55}:{x:0,y:0};
 }
 /* ---------- atualização (anfitrião / offline) ---------- */
@@ -211,10 +211,10 @@ function updateLavaMode(now,dt){
    else inp=lavaBotVector(i,now);
   }
   const l=Math.hypot(inp.x,inp.y);if(l>1)inp={x:inp.x/l,y:inp.y/l};
-  const jmp=L.jump[i],spd=LAVA.speed*(isHumanSlot(i)?1:Math.min(1.15,diffK()))*(jmp?LAVA.airControl:1),k=Math.min(1,dt*LAVA.accel/spd);
+  const jmp=L.jump[i],spd=LAVA.speed*(isHumanSlot(i)?1:Math.min(1.1,diffK()))*(jmp?LAVA.airControl:1),k=Math.min(1,dt*LAVA.accel/spd);
   v.x+=(inp.x*spd-v.x)*k;v.z+=(inp.y*spd-v.z)*k;
   p.position.x+=v.x*dt;p.position.z+=v.z*dt;
-  let r=Math.hypot(p.position.x,p.position.z);const rmax=LAVA.R-.45,rmin=LAVA.pillarR+LAVA.playerR;
+  let r=Math.hypot(p.position.x,p.position.z);const rmax=LAVA.R-.4,rmin=LAVA.pillarR+LAVA.playerR;
   if(r>rmax){p.position.x*=rmax/r;p.position.z*=rmax/r}else if(r<rmin){const a=Math.atan2(p.position.z,p.position.x);p.position.x=Math.cos(a)*rmin;p.position.z=Math.sin(a)*rmin}
   // pulo
   if(jmp){const u=(now-jmp.t0)/LAVA.jumpMs;if(u>=1){delete L.jump[i];L.cool[i]=now+LAVA.jumpCool;p.position.y=0}else p.position.y=LAVA.jumpH*4*u*(1-u)}
