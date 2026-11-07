@@ -3,7 +3,7 @@
    • vidro firme: o personagem avança uma fileira;  • vidro fraco: quebra, o personagem cai e volta ao início;
    • o vidro quebrado VOLTA INTEIRO no turno seguinte — é preciso MEMORIZAR onde estavam os fracos!
    Vence quem atravessar primeiro. O anfitrião (ou o offline) roda tudo e NUNCA envia quais vidros são fracos aos convidados. */
-const GLASS={rows:10,step:1.6,x0:-8,xStart:-9.9,xEnd:10.1,laneZ:1.05,pickSec:5,introMs:1400,jumpMs:450,fallMs:800,landMs:400,failHoldMs:1300,crossMs:650,endMs:1700,perPlayer:30};
+const GLASS={rows:8,step:1.8,x0:-7.2,xStart:-9.3,xEnd:9.5,laneZ:1.05,pickSec:5,introMs:1400,jumpMs:450,fallMs:800,landMs:400,failHoldMs:1300,crossMs:650,endMs:1700,perPlayer:30};
 const GLASS_NAME=['DE CIMA','DE BAIXO'],GLASS_ARROW=['⬆','⬇'];
 const glassRoot=new THREE.Group();scene.add(glassRoot);glassRoot.visible=false;
 
@@ -13,10 +13,10 @@ const glassPanes=[]; // glassPanes[r-1][l]={m,e,mat}
  const lavaMat=new THREE.MeshStandardMaterial({map:lavaFloorTex,emissiveMap:lavaFloorTex,emissive:'#ffffff',emissiveIntensity:.85,color:'#ffb066',roughness:.7});
  const lf=new THREE.Mesh(new THREE.PlaneGeometry(70,46),lavaMat);lf.rotation.x=-Math.PI/2;lf.position.y=-1.1;glassRoot.add(lf);
  const stone=mat('#5a4a44',.85,.05),dark=mat('#3a2e2c',.9,.05),span=6.6;
- [-10.2,10.2].forEach(x=>{const b=new THREE.Mesh(new THREE.BoxGeometry(3.6,.9,span),stone);b.position.set(x,-.45,0);b.receiveShadow=true;glassRoot.add(b)});
- for(let k=0;k<4;k++){const st=new THREE.Mesh(new THREE.BoxGeometry(1.0,.28*(k+1),span*.5),dark);st.position.set(11.1+k*.34,-.9+.14*(k+1)+.45,0);glassRoot.add(st)}
+ [-9.6,9.6].forEach(x=>{const b=new THREE.Mesh(new THREE.BoxGeometry(3.6,.9,span),stone);b.position.set(x,-.45,0);b.receiveShadow=true;glassRoot.add(b)});
+ for(let k=0;k<4;k++){const st=new THREE.Mesh(new THREE.BoxGeometry(1.0,.28*(k+1),span*.5),dark);st.position.set(10.5+k*.34,-.9+.14*(k+1)+.45,0);glassRoot.add(st)}
  const flame=new THREE.MeshBasicMaterial({color:'#ffb21a'});
- [[-11.0,-span/2+.4],[-11.0,span/2-.4],[9.4,-span/2+.4],[9.4,span/2-.4]].forEach(([x,z])=>{
+ [[-10.4,-span/2+.4],[-10.4,span/2-.4],[8.8,-span/2+.4],[8.8,span/2-.4]].forEach(([x,z])=>{
   const t=new THREE.Mesh(new THREE.CylinderGeometry(.22,.3,1.1,10),dark);t.position.set(x,.55,z);glassRoot.add(t);
   const f=new THREE.Mesh(new THREE.SphereGeometry(.3,10,8),flame);f.position.set(x,1.3,z);glassRoot.add(f);
  });

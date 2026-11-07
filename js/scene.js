@@ -34,7 +34,7 @@ function applyCameraPose(){
   const d=Math.max(12.4,14.3/aspect);camera.position.set(0,4.3+(d-12.4)*.15,d);camera.lookAt(0,2.7,0);return;
  }
  if(typeof gameMode!=='undefined'&&(isShipMode()||gameMode==='dodge'||gameMode==='lava'||gameMode==='bridge'||gameMode==='glass')){ // visão de cima, de frente para a arena quadrada
-  const mob=document.body.classList.contains('touch-ui')?(gameMode==='glass'?(aspect<1?1.5:1.2):1.1):1,z=((typeof isTurbo==='function'&&isTurbo())?1.07:gameMode==='dodge'?1.38:gameMode==='lava'?1.3:gameMode==='bridge'?1.2:gameMode==='glass'?1.08:1)*mob,tgt=[0,0,.8*z],base=[0,15*z,12.8*z],s=Math.max(1,13*z/(15.4*aspect));
+  const mob=document.body.classList.contains('touch-ui')?(gameMode==='glass'?(aspect<1?1.2:1.08):1.1):1,z=((typeof isTurbo==='function'&&isTurbo())?1.07:gameMode==='dodge'?1.38:gameMode==='lava'?1.3:gameMode==='bridge'?1.2:gameMode==='glass'?1.08:1)*mob,tgt=[0,0,.8*z],base=[0,15*z,12.8*z],s=Math.max(1,13*z/(15.4*aspect));
   camera.position.set(0,tgt[1]+(base[1]-tgt[1])*s,tgt[2]+(base[2]-tgt[2])*s);camera.lookAt(...tgt);return;
  }
  if(typeof gameMode!=='undefined'&&gameMode==='soccer'){ // atrás do batedor, olhando para o gol
