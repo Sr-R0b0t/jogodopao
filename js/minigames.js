@@ -8,6 +8,7 @@ const MINIGAMES=[
  {id:'soccer',label:'Pênaltis (Futebol)',desc:'Um goleiro contra os batedores: escolha esquerda, meio ou direita. O goleiro ganha 2 pontos por defesa; os batedores vencem se marcarem mais gols.'},
  {id:'ship',label:'Arena das Naves',min:2,max:4,desc:'Pilote sua nave e defenda seu gol das bolas de metal. Cada gol sofrido tira 1 das 15 vidas. Vence o último na arena!'},   // só com 2 a 4 jogadores
  {id:'dodge',label:'Queimada',min:2,max:8,even:true,desc:'Dois times, uma linha no meio da quadra que ninguém pode cruzar. Pegue uma bola do seu lado e arremesse nos rivais: quem for acertado sai! Vence o time que eliminar todos.'},
+ {id:'lava',label:'Arena de Lava',min:2,max:8,desc:'Sobreviva na plataforma sobre a lava! Pule o facho de fogo que gira, fuja dos círculos vermelhos onde os punhos de magma vão cair. Vence o último vivo!'},
  {id:'turbo',label:'Arena Turbo',min:2,max:4,desc:'Sua nave desliza só pelo seu lado. Defenda o gol, aproveite os pads verdes para acelerar a bola e use o ESPECIAL para empurrá-la. Vence o último na arena!'}
 ];
 let minigameBag=[],lastMinigame=null,roundNumber=0,roundTimer=null;
@@ -94,6 +95,7 @@ const MODE_HELP={
  soccer:{demo:['⚽','🧤'],how:'Um goleiro contra os batedores. Cada um escolhe ESQUERDA, MEIO ou DIREITA ao mesmo tempo. Se o goleiro escolher o mesmo lado do chute, defende! 3 defesas ou mais defesas que gols e o goleiro vence.',phone:'Toque em ESQUERDA, MEIO ou DIREITA',pad:'◀ esquerda, ▲ meio, ▶ direita'},
  ship:{demo:['🚀','⚪'],how:'Pilote sua nave na frente do seu gol e rebata as bolas de metal. Cada gol sofrido tira 1 das 15 vidas. Às vezes o jogo sorteia duplas 2 contra 2!',phone:'Arraste o joystick para mover a nave',pad:'Analógico ou direcional movem a nave'},
  dodge:{demo:['🏐','🎯'],how:'Dois times de lados opostos da quadra — ninguém cruza a linha do meio! Chegue perto de uma bola do SEU lado para pegar e arremesse nos rivais: quem for acertado DIRETO sai (bola que bate na parede não queima). Desvie das bolas deles! Vence o time que eliminar todos.',phone:'Joystick move • botão ARREMESSAR joga a bola',pad:'Analógico move • A arremessa'},
+ lava:{demo:['🔥','🦘'],how:'Sobreviva na plataforma sobre a lava! O facho de fogo gira e acelera: PULE por cima dele. Punhos de magma caem nos círculos vermelhos: saia de lá antes! Vence o último vivo (45 segundos).',phone:'Joystick move • botão PULAR salta o facho',pad:'Analógico move • A pula'},
  turbo:{demo:['⚡','🚀'],how:'Sua nave desliza só pelo seu lado. Defenda o gol, use os pads verdes para acelerar a bola e o ESPECIAL para empurrá-la. Às vezes o jogo sorteia duplas 2 contra 2!',phone:'Joystick move • botão ESPECIAL empurra a bola',pad:'Analógico move • A usa o ESPECIAL'}
 };
 

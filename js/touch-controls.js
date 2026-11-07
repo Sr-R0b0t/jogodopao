@@ -46,7 +46,7 @@ function updateTouchControls(dt){
  if(!document.body.classList.contains('touch-ui'))return;
  const action=document.getElementById('touchAction');
  action.disabled=document.getElementById('tap').disabled;
- const label=gameMode==='dodge'?'🏐 ARREMESSAR':isTurbo()?turboBtnLabel:gameMode==='ball'?'💨 EMPURRÃO':gameMode==='bowling'?'🎳 LANÇAR':'👆 CLICAR';
+ const label=gameMode==='lava'?'🦘 PULAR':gameMode==='dodge'?'🏐 ARREMESSAR':isTurbo()?turboBtnLabel:gameMode==='ball'?'💨 EMPURRÃO':gameMode==='bowling'?'🎳 LANÇAR':'👆 CLICAR';
  if(label!==touchActionLabel){touchActionLabel=label;action.textContent=label}
  // Boliche: analógico move o jogador para os lados.
  if(gameMode==='bowling'&&joystick.active&&Math.abs(joystick.x)>.15)nudgeBowlerAim(joystick.x*dt*2.4);

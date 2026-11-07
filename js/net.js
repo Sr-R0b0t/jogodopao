@@ -173,6 +173,7 @@ function netHostInput(slot,d){
   else if(gameMode==='bowling'&&bowlingOrder[bowlingTurn]===slot)remoteBowlThrow(slot,d.aim,d.pow);
   else if(isTurbo()&&ship)shipBlast(slot,performance.now());
   else if(gameMode==='dodge')dodgeThrow(slot);
+  else if(gameMode==='lava')lavaJump(slot);
  }else if(d.k==='sc')soccerSetChoice(slot,d.dir);
  else if(d.k==='mv')net.mv[slot]={x:clamp1(d.x),y:clamp1(d.y)};
  else if(d.k==='aim')remoteBowlAim(slot,d.v);
@@ -193,6 +194,7 @@ function netSnapshot(){
  if(gameMode==='soccer'&&soccer)S.sc={ph:soccer.ph,g:soccer.g,k:soccer.k,sh:soccer.sh,tot:soccer.tot,goals:soccer.goals,saves:soccer.saves,need:soccer.need,left:soccer.left,res:soccer.res,duel:soccer.duel||0,dg:soccer.duel?[soccer.goalsBy[soccer.duel[0]]||0,soccer.goalsBy[soccer.duel[1]]||0]:0,ball:[r2(soccerBall.position.x),r2(soccerBall.position.y),r2(soccerBall.position.z)]};
  if(isShipMode()&&ship)S.ar={b:ship.balls.map(b=>[r2(b.x),r2(b.z),Math.min(1,(performance.now()-b.born)/400)]),goals:ship.goals,ls:ship.lastSide,imp:ship.imp,pm:padMaskNow(),sp:ship.spawns,pc:ship.lastPod,bc:ship.bl,cd:ship.cd.map(c=>Math.max(0,Math.round(c-performance.now())))};
  if(gameMode==='dodge'){const dq=dodgeSnapshot();if(dq)S.dq=dq}
+ if(gameMode==='lava'){const lv=lavaSnapshot();if(lv)S.lv=lv}
  if(gameMode==='ball')S.b=balls.map(b=>[r2(b.mesh.position.x),r2(b.mesh.position.y),r2(b.mesh.position.z),b.alive?1:0,b.falling?1:0,b.mesh.visible?1:0]);
  if(gameMode==='bowling')S.bw={o:bowlingOrder,t:bowlingTurn,s:bowlingScores,f:bowlingBallState?1:0,
   ball:[r2(bowlingBall.position.x),r2(bowlingBall.position.y),r2(bowlingBall.position.z)],
@@ -272,6 +274,7 @@ function netApplySnap(S){
  if(S.bi>=0&&!players[S.bi].biting){const p=players[S.bi];p.biting=true;p.biteAt=performance.now()}
  if(S.ar)shipClient=S.ar;
  if(S.dq)dodgeClient=S.dq;
+ if(S.lv){lavaClient=S.lv;lavaClient.rt=performance.now()}
  if(S.sc){soccer=S.sc;applySoccerVisibility()}else if(gameMode!=='soccer')soccer=null;
  if(S.b)balls.forEach((b,i)=>{b.alive=!!S.b[i][3];b.falling=!!S.b[i][4];b.mesh.visible=!!S.b[i][5]});
  if(S.bw){
@@ -336,7 +339,7 @@ function netClientFrame(dt,now){
   else bowlingBall.position.x+=(S.bw.ball[0]-bowlingBall.position.x)*k;
   if(S.bw.f)bowlingBall.rotation.x-=.3;
  }
- if((gameMode==='ball'||isShipMode()||gameMode==='dodge')&&running&&now-net.lastMv>=(p2pFresh()?16:33)){
+ if((gameMode==='ball'||isShipMode()||gameMode==='dodge'||gameMode==='lava')&&running&&now-net.lastMv>=(p2pFresh()?16:33)){
   const v=humanMoveVector(),key=r2(v.x)+','+r2(v.y);
   if(key!==net.lastMvKey||now-net.lastMv>400){net.lastMvKey=key;net.lastMv=now;netSendInput({k:'mv',x:r2(v.x),y:r2(v.y)})}
  }

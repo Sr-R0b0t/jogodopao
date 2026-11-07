@@ -99,6 +99,7 @@ function animateGlbPlayer(p,i,dt){
  else if(p.finished)state='dance';                                                   // terminou a corrida do pão
  else if(gameMode==='bread'&&running)state='run';                               // clicando = correndo
  else if((gameMode==='ball'&&running&&balls[i].alive||isShipMode()&&running&&p.count>0||gameMode==='dodge'&&running&&p.count>0)&&g.speed>.6)state='walk';  // equilibrando na bola
+ else if(gameMode==='lava'){state=ended?(p.count>0?'dance':'idle'):(p.count>0&&pos.y>.15?'jump':(running&&p.count>0&&g.speed>.6?'walk':'idle'))}   // arena de lava
  else if(gameMode==='dodge'&&ended&&p.count>0&&typeof dodgeTeams!=='undefined'&&dodgeTeams&&dodgeAlive(dodgeTeamOf(i))>0&&dodgeAlive(1-dodgeTeamOf(i))===0)state='dance';
  else if(gameMode==='ball'&&ended&&balls[i].alive)state='dance';                // venceu a batalha
  else if(gameMode==='bowling'&&bowlingBallState&&bowlingOrder[bowlingTurn]===i)state='jump'; // lançou a bola

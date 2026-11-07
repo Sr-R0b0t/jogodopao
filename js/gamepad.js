@@ -166,7 +166,7 @@ function gpHandle(pi,s,E,now,dt,pv){
 
 /* ---- Jogo: controle do jogador deste aparelho (offline ou convidado) ---- */
 function gpLocalGame(s,E,dt,pv){
- if(gameMode==='ball'||isShipMode()||gameMode==='dodge'){gpMove.x=s.x;gpMove.y=s.y;gpMove.active=!!(s.x||s.y)}
+ if(gameMode==='ball'||isShipMode()||gameMode==='dodge'||gameMode==='lava'){gpMove.x=s.x;gpMove.y=s.y;gpMove.active=!!(s.x||s.y)}
  if(gameMode==='bowling'){
   if(s.x)nudgeBowlerAim(s.x*dt*2.4);
   if(s.y&&bowlingOrder[bowlingTurn]===humanIndex&&!bowlingBallState){
@@ -181,7 +181,7 @@ function gpLocalGame(s,E,dt,pv){
 
 /* ---- Jogo na TV: cada controle comanda o próprio personagem ---- */
 function gpTvGame(pi,slot,s,E,dt,pv){
- if(gameMode==='ball'||isShipMode()||gameMode==='dodge')net.mv[slot]={x:s.x,y:s.y};
+ if(gameMode==='ball'||isShipMode()||gameMode==='dodge'||gameMode==='lava')net.mv[slot]={x:s.x,y:s.y};
  if(gameMode==='bowling'){
   const myTurn=running&&bowlingOrder[bowlingTurn]===slot&&!bowlingBallState;
   const st=tvPadBowl[slot]||(tvPadBowl[slot]={aim:0,pow:70,turn:-1});
