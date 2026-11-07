@@ -35,7 +35,7 @@ function sfxClick(){tone(620,.045,'square',.035,0,390)}
 function sfxCream(){noisePop(.25,.18,1500);tone(220,.28,'sawtooth',.08,0,90);tone(520,.12,'sine',.06,.04,250)}
 function sfxFinish(){[523,659,784].forEach((f,i)=>tone(f,.18,'triangle',.11,i*.09))}
 /* ---- Sons gravados (pasta audio/). Carregam depois do 1º toque; se faltarem, usa os sons sintetizados. ---- */
-const SAMPLE_URLS={whistle:'audio/apito.mp3',kick:'audio/chute.mp3',bite:'audio/mordida.mp3',metalHit:'audio/metal-impacto.mp3',metalRoll:'audio/metal-rolando.wav',metalGoal:'audio/metal-gol.mp3',pins:'audio/pino-boliche.mp3',victory:'audio/som-vitoria.mp3',winner:'audio/som-vencedor.mp3'};
+const SAMPLE_URLS={whistle:'audio/apito.mp3',kick:'audio/chute.mp3',bite:'audio/mordida.mp3',metalHit:'audio/metal-impacto.mp3',metalRoll:'audio/metal-rolando.wav',metalGoal:'audio/metal-gol.mp3',pins:'audio/pino-boliche.mp3',victory:'audio/som-vitoria.mp3',winner:'audio/som-vencedor.mp3',countdown:'audio/contagem.mp3'};
 const sampleBuffers={},sampleLoading={};
 function loadSample(name){
  if(sampleBuffers[name]||sampleLoading[name])return;
