@@ -6,7 +6,7 @@ const $=id=>document.getElementById(id);
 const qs=new URLSearchParams(location.search);
 let ws=null,joined=false,closedByTv=false,retrying=false,tries=0;
 let me=-1,names=[],vip=-1,ui=null,myName='',code=(qs.get('sala')||'').toUpperCase().slice(0,5);
-let sentSh=-1,cdEnd=0,throwSent=false,lastTurnKey='';
+let sentBr=-1,sentSh=-1,cdEnd=0,throwSent=false,lastTurnKey='';
 
 try{$('name').value=localStorage.getItem('jogoDoPao.name')||''}catch(e){}
 $('code').value=code;
@@ -108,7 +108,7 @@ function renderGrid(){
 }
 
 /* ---- Painéis ---- */
-const panels=['padStick','padBread','padBowl','padSoccer','padWait'];
+const panels=['padStick','padBread','padBowl','padSoccer','padBridge','padWait'];
 function showPanel(id){panels.forEach(p=>$(p).style.display=p===id?'flex':'none')}
 function render(){
  if(!joined)return;
@@ -147,6 +147,10 @@ function render(){
   stopStick();
   if(ui.sc&&sentSh!==ui.sh){showPanel('padSoccer');$('scTitle').textContent=ui.sc===1?'⚽ Onde você vai CHUTAR?':'🧤 Onde você vai DEFENDER?'}
   else{showPanel('padWait');$('waitTxt').textContent=ui.sc?'Escolha enviada! ✅':'Olhe para a TV…'}
+ }else if(mode==='bridge'){
+  stopStick();
+  if(ui.bg&&sentBr!==ui.br){showPanel('padBridge');$('brTitle').textContent='🌉 Escolha seu caminho!';document.querySelectorAll('#padBridge button').forEach((b,k)=>{b.querySelector('i').textContent='🟨'.repeat((ui.bo||[])[k]||1)})}
+  else{showPanel('padWait');$('waitTxt').textContent=ui.bw?'Escolha enviada! ✅':'Olhe para a TV…'}
  }else{showPanel('padWait');$('waitTxt').textContent='Olhe para a TV…'}
  if(mode!=='turbo'&&mode!=='ball'&&mode!=='ship'&&mode!=='dodge'&&mode!=='lava')stopStick();
 }
@@ -212,6 +216,11 @@ $('throwBtn').addEventListener('click',()=>{
 /* ---- Pênalti ---- */
 document.querySelectorAll('.sc button').forEach(b=>b.addEventListener('click',()=>{
  if(!ui||!ui.sc)return;buzz(20);sentSh=ui.sh;relay({k:'sc',dir:Number(b.dataset.d)});render();
+}));
+
+/* ---- Ponte de Pedras ---- */
+document.querySelectorAll('#padBridge button').forEach(b=>b.addEventListener('click',()=>{
+ if(!ui||!ui.bg)return;buzz(20);sentBr=ui.br;relay({k:'bc',c:Number(b.dataset.c)});render();
 }));
 
 /* Evita rolagem/zoom acidentais */

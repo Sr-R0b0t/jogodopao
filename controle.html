@@ -53,6 +53,11 @@ input[type=text]{width:100%;padding:14px;border-radius:14px;border:2px solid #a7
 .sc button{border:0;border-radius:18px;padding:26px 4px;font-size:2.2rem;font-weight:1000;background:linear-gradient(#cfa9ff,#8b5dff);color:#fff;box-shadow:0 6px 0 #4c2fb0}
 .sc button small{display:block;font-size:.7rem;margin-top:6px}
 .sc button:active{transform:translateY(4px);box-shadow:0 2px 0 #4c2fb0}
+.brp{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%}
+.brp button{border:0;border-radius:18px;padding:22px 4px;font-size:2rem;font-weight:1000;background:linear-gradient(#ffe69a,#ffb92f);color:#40250c;box-shadow:0 6px 0 #b96f24}
+.brp button i{display:block;font-style:normal;font-size:1rem;margin-top:4px}
+.brp button small{display:block;font-size:.7rem;margin-top:4px}
+.brp button:active{transform:translateY(4px);box-shadow:0 2px 0 #b96f24}
 .cnt{display:none;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px;padding:8px 12px;border-radius:14px;background:#2a1b43;border:2px solid #a78bca;font-weight:900;font-size:.85rem}
 .cnt small{opacity:.7;font-weight:700}
 .cnt div{display:flex;align-items:center;gap:12px}
@@ -95,6 +100,8 @@ input[type=text]{width:100%;padding:14px;border-radius:14px;border:2px solid #a7
   </div></div>
   <div class="pad single" id="padSoccer"><div style="width:100%"><div class="msg" id="scTitle" style="text-align:center;margin-bottom:14px"></div>
     <div class="sc"><button data-d="-1">⬅<small>ESQUERDA</small></button><button data-d="0">⬆<small>MEIO</small></button><button data-d="1">➡<small>DIREITA</small></button></div></div></div>
+  <div class="pad single" id="padBridge"><div style="width:100%"><div class="msg" id="brTitle" style="text-align:center;margin-bottom:14px"></div>
+    <div class="brp"><button data-c="0">⬅<i></i><small>ESQUERDA</small></button><button data-c="1">⬆<i></i><small>CIMA</small></button><button data-c="2">⬇<i></i><small>BAIXO</small></button><button data-c="3">➡<i></i><small>DIREITA</small></button></div></div></div>
   <div class="center" id="padWait"><div class="big">⏳</div><div class="msg" id="waitTxt">Aguarde…</div></div>
 </section>
 

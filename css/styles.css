@@ -268,7 +268,7 @@ body.tv-mode .tv-box:not([hidden]){display:flex;gap:30px;align-items:center;just
 body.tv-mode #netJoinBox,body.tv-mode .online-card>label,body.tv-mode .net-code,body.tv-mode .online-adv,body.tv-mode #netWait{display:none!important}
 body.tv-mode{padding:0}
 body.tv-mode main{width:100vw;max-width:none}
-body.tv-mode .game-kicker,body.tv-mode .game-title,body.tv-mode .game-description,body.tv-mode #gameNote,body.tv-mode #screenMinigames .controls,body.tv-mode #touchControls,body.tv-mode #bowlingControls,body.tv-mode #bowlingMoveControls,body.tv-mode #soccerPick,body.tv-mode #bowlingArrowHint,body.tv-mode #result{display:none!important}
+body.tv-mode .game-kicker,body.tv-mode .game-title,body.tv-mode .game-description,body.tv-mode #gameNote,body.tv-mode #screenMinigames .controls,body.tv-mode #touchControls,body.tv-mode #bowlingControls,body.tv-mode #bowlingMoveControls,body.tv-mode #soccerPick,body.tv-mode #bridgePick,body.tv-mode #bowlingArrowHint,body.tv-mode #result{display:none!important}
 body.tv-mode #scene{height:calc(100vh - 78px);min-height:0;border-radius:0;border-width:0 0 3px}
 body.tv-mode #screenMinigames .flow-top{padding:2px 0;min-height:0}
 body.tv-mode .status{margin:4px 0;font-size:clamp(.9rem,1.5vw,1.3rem)}
@@ -396,3 +396,11 @@ body.tv-mode .home-orbit,body.tv-mode .preview-avatar{animation:none;filter:none
 .hist-rounds li small{grid-column:1/-1;color:#bba9d6;font-size:.7rem}
 .hist-rounds .hn{font-weight:800}.hist-rounds .hp{font-weight:1000}
 .hist-rounds .hp.p5{color:#ffdf79}.hist-rounds .hp.p3{color:#e3e9ef}.hist-rounds .hp.p2{color:#e6a56b}.hist-rounds .hp.p1{color:#bba9d6}.hist-rounds .hp.p0{color:#ffffff66}
+
+/* Ponte de Pedras */
+#bridgePick{display:none;position:absolute;z-index:42;left:0;right:0;bottom:8px;text-align:center;padding:0 8px}
+#bridgePick.show{display:block}
+#bridgePickTitle{display:inline-block;margin-bottom:8px;padding:6px 14px;border-radius:12px;background:#10091dcc;border:1px solid #c5a1ec;color:#ffdf79;font-weight:1000;font-size:.95rem}
+#bridgePick .sp-btns button{max-width:130px;font-size:1.4rem}
+#bridgePick .sp-btns i{display:block;font-style:normal;font-size:.8rem;letter-spacing:-.05em;margin:2px 0 1px}
+#touchControls[data-mode="bridge"] .joy,#touchControls[data-mode="bridge"] .touch-action,#touchControls[data-mode="bridge"] .tpower{display:none}

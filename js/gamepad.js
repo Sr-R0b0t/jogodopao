@@ -29,6 +29,7 @@ function gpInGame(){
  return document.getElementById('screenMinigames').style.display!=='none'&&!document.getElementById('scoreOverlay').classList.contains('show')&&!podiumActive&&!document.getElementById('settingsModal').classList.contains('show');
 }
 /* Direção do pênalti a partir do controle: ◀ = -1, ▲/▼ = 0, ▶ = 1 (ou undefined se solto). */
+function gpBridgeDir(s){if(Math.abs(s.x)<.5&&Math.abs(s.y)<.5)return undefined;return Math.abs(s.x)>=Math.abs(s.y)?(s.x<0?0:3):(s.y<0?1:2)}
 function gpSoccerDir(s){return s.x<-.5?-1:s.x>.5?1:Math.abs(s.y)>.5?0:undefined}
 
 /* ---- Vários controles no mesmo aparelho (offline): o 1º controle comanda o personagem escolhido;
@@ -176,6 +177,7 @@ function gpLocalGame(s,E,dt,pv){
   }
  }
  if(gameMode==='soccer'){const d=gpSoccerDir(s),p=gpSoccerDir(pv.x===undefined?{x:0,y:0}:pv);if(d!==undefined&&p===undefined)soccerChoose(d)}
+ if(gameMode==='bridge'){const d=gpBridgeDir(s),p=gpBridgeDir({x:pv.x||0,y:pv.y||0});if(d!==undefined&&p===undefined)bridgeChoose(d);return}
  if(E('a')&&!document.getElementById('tap').disabled)pressTap();
 }
 
@@ -195,6 +197,7 @@ function gpTvGame(pi,slot,s,E,dt,pv){
   return;
  }
  if(gameMode==='soccer'){const d=gpSoccerDir(s),p=gpSoccerDir({x:pv.x||0,y:pv.y||0});if(d!==undefined&&p===undefined)soccerSetChoice(slot,d);return}
+ if(gameMode==='bridge'){const d=gpBridgeDir(s),p=gpBridgeDir({x:pv.x||0,y:pv.y||0});if(d!==undefined&&p===undefined)bridgeSetChoice(slot,d);return}
  if(E('a'))netHostInput(slot,{k:'tap'});
 }
 
