@@ -64,7 +64,7 @@ function runCountdown(sec,title,sub,label,desc){
 /* Sorteia o próximo minigame, mostra o aviso e a contagem e começa sozinho (só o anfitrião/offline sorteia). */
 function startRound(){
  if(net.role==='client')return;
- cancelCountdown();
+ cancelCountdown();soccerDuel=null;tieState=null;podiumNote='';
  const id=drawMinigame(),info=MINIGAMES.find(m=>m.id===id);
  finalRound=minigameBag.length===0&&eligibleMinigames().length>1;
  roundNumber++;

@@ -190,7 +190,7 @@ function netSnapshot(){
   p:players.map(p=>[r2(p.root.position.x),r2(p.root.position.y),r2(p.root.position.z),r2(p.root.rotation.y),r2(p.root.rotation.x),p.root.visible?1:0,p.count,p.finished?1:0,r2(p.root.rotation.z)]),
   bi:players.findIndex(p=>p.biting)};
  const lt=document.getElementById('lastPlayerTimer');S.lt=lt.classList.contains('show')?lt.innerHTML:'';
- if(gameMode==='soccer'&&soccer)S.sc={ph:soccer.ph,g:soccer.g,k:soccer.k,sh:soccer.sh,tot:soccer.tot,goals:soccer.goals,saves:soccer.saves,need:soccer.need,left:soccer.left,res:soccer.res,ball:[r2(soccerBall.position.x),r2(soccerBall.position.y),r2(soccerBall.position.z)]};
+ if(gameMode==='soccer'&&soccer)S.sc={ph:soccer.ph,g:soccer.g,k:soccer.k,sh:soccer.sh,tot:soccer.tot,goals:soccer.goals,saves:soccer.saves,need:soccer.need,left:soccer.left,res:soccer.res,duel:soccer.duel||0,dg:soccer.duel?[soccer.goalsBy[soccer.duel[0]]||0,soccer.goalsBy[soccer.duel[1]]||0]:0,ball:[r2(soccerBall.position.x),r2(soccerBall.position.y),r2(soccerBall.position.z)]};
  if(isShipMode()&&ship)S.ar={b:ship.balls.map(b=>[r2(b.x),r2(b.z),Math.min(1,(performance.now()-b.born)/400)]),goals:ship.goals,ls:ship.lastSide,imp:ship.imp,pm:padMaskNow(),sp:ship.spawns,pc:ship.lastPod,bc:ship.bl,cd:ship.cd.map(c=>Math.max(0,Math.round(c-performance.now())))};
  if(gameMode==='dodge'){const dq=dodgeSnapshot();if(dq)S.dq=dq}
  if(gameMode==='ball')S.b=balls.map(b=>[r2(b.mesh.position.x),r2(b.mesh.position.y),r2(b.mesh.position.z),b.alive?1:0,b.falling?1:0,b.mesh.visible?1:0]);
@@ -228,7 +228,7 @@ function netClientMsg(d){
    document.getElementById('gameMode').value=d.mode;reset();running=true;ended=false;net.bwKey='';net.prevTurn=-1;netClientUI();break;
   case 'cd':showRoundBanner(d.title,d.sub,d.n>0?String(d.n):'VAI!',d.desc);if(d.label)document.getElementById('roundLabel').textContent=d.label;cdBeep(d.n);if(d.n<=0)setTimeout(hideRoundBanner,700);break;
   case 'draw':runDrawAnim(d.o);if(d.teams)applyShipTeams(d.teams);if(d.dodgeTeams)applyDodgeTeams(d.dodgeTeams);break;
-  case 'podium':showPodium(d.order,d.scores,true);break;
+  case 'podium':podiumRemoteNote=d.note||'';showPodium(d.order,d.scores,true);break;
   case 'podiumhide':hidePodium();break;
   case 'pins':{const c=d.n;setTimeout(()=>{if(audioEnabled)sfxPins(c)},d.delay||0);break}
   case 'ovhide':document.getElementById('scoreOverlay').classList.remove('show');break;

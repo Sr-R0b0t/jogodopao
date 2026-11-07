@@ -6,7 +6,7 @@ let tournamentCharacterLocked=false;
 const SCORE_DELAY_MS=5000;
 let scoreOverlayTimer=null;
 function cancelScoreOverlay(){if(scoreOverlayTimer){clearTimeout(scoreOverlayTimer);scoreOverlayTimer=null}}
-function scheduleScoreOverlay(fn){cancelScoreOverlay();scoreOverlayTimer=setTimeout(()=>{scoreOverlayTimer=null;fn()},SCORE_DELAY_MS)}
+function scheduleScoreOverlay(fn,ms){cancelScoreOverlay();scoreOverlayTimer=setTimeout(()=>{scoreOverlayTimer=null;fn()},ms||SCORE_DELAY_MS)}
 /* PONTUAÇÃO POR RODADA: 1º lugar 5 pts, 2º 3 pts, 3º 2 pts, todos os demais 1 pt. */
 const RANK_POINTS=[5,3,2],REST_POINTS=1;
 /* `ranking` = lista de grupos em ordem de colocação; empatados ficam no mesmo grupo, ex.: [[3],[1,2],[0]]. */
@@ -48,7 +48,7 @@ function wireScoreboardActions(){
   document.getElementById('scoreOverlay').classList.remove('show');
   document.getElementById('result').classList.remove('show');document.getElementById('result').innerHTML='';
   netBroadcast({k:'ovhide'});
-  startPodium();
+  startPodiumOrTieBreak();
  });
  const clear=document.getElementById('resetTournament');
  if(clear)clear.addEventListener('click',()=>{
@@ -57,4 +57,36 @@ function wireScoreboardActions(){
   document.getElementById('result').classList.remove('show');document.getElementById('result').innerHTML='';
   resetMinigameBag();startRound();
  });
+}
+
+/* ---- DESEMPATE: se mais de um personagem terminar empatado no topo, eles se enfrentam nos pênaltis
+   (3 chutes cada, alternando batedor/goleiro; empate = morte súbita). Com 3+ empatados vira mata-mata: o vencedor enfrenta o próximo. ---- */
+let tieState=null,podiumNote='';
+function podiumBaseOrder(){return players.map((p,i)=>i).filter(isActive).sort((a,b)=>tournamentScores[b]-tournamentScores[a]||Number(b===humanIndex)-Number(a===humanIndex)||a-b)}
+function startPodiumOrTieBreak(){
+ const base=podiumBaseOrder(),top=tournamentScores[base[0]]||0,tied=base.filter(i=>(tournamentScores[i]||0)===top);
+ podiumNote='';
+ if(tied.length<2||net.role==='client'){startPodium();return}
+ tieState={champ:null,rest:tied.sort(()=>Math.random()-.5),losers:[]};
+ tieNextDuel();
+}
+function tieNextDuel(){
+ const ts=tieState,a=ts.champ===null?ts.rest.shift():ts.champ,b=ts.rest.shift();
+ soccerDuel={a,b};
+ cancelCountdown();
+ document.getElementById('gameMode').value='soccer';gameMode='soccer';
+ applyMode();reset();showFlowScreen('screenMinigames');
+ document.getElementById('gameMode').disabled=true;
+ const label='⚔️ DESEMPATE • PÊNALTIS';
+ document.getElementById('roundLabel').textContent=label;
+ document.getElementById('status').textContent='⚔️ Empate no topo! '+players[a].name+' x '+players[b].name+' decidem nos pênaltis.';
+ runCountdown(COUNTDOWN_SECONDS,'⚔️ DESEMPATE: '+players[a].name+' x '+players[b].name,'Pênaltis • 3 chutes cada',label,'Um chuta enquanto o outro defende, depois trocam. Quem fizer mais gols vence o campeonato! Se empatar, morte súbita.');
+}
+function tieDuelDone(w,l){
+ const ts=tieState;if(!ts)return;
+ ts.champ=w;ts.losers.push(l);
+ if(ts.rest.length){tieNextDuel();return}
+ const base=podiumBaseOrder(),order=[w,...ts.losers.slice().reverse(),...base.filter(i=>i!==w&&!ts.losers.includes(i))];
+ podiumNote='⚔️ Vitória no desempate por pênaltis!';tieState=null;
+ startPodium(order);
 }

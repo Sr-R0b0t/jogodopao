@@ -42,6 +42,7 @@ loadSoccerModel('models/gol.glb',m=>{
 });
 
 /* ---------- Estado ---------- */
+let soccerDuel=null;   // {a,b}: desempate por pênaltis entre 2 finalistas (3 chutes cada, alternando batedor/goleiro)
 let soccer=null,soccerSentShot=-1; // convidados guardam aqui uma cópia do estado enviado pelo anfitrião
 const rndDir=()=>Math.floor(Math.random()*3)-1;
 /* Escolha do bot: o goleiro bot fica mais esperto no Difícil (às vezes "lê" o batedor) e mais bobo no Fácil. */
@@ -66,6 +67,14 @@ function soccerPlace(){
 }
 const setStatus=t=>{document.getElementById('status').textContent=t};
 function startSoccer(){
+ if(soccerDuel){   // DESEMPATE: só os 2 finalistas, 3 chutes cada; um chuta enquanto o outro defende, e depois trocam
+  const {a,b}=soccerDuel,queue=[];
+  for(let r=0;r<3;r++)queue.push({k:a,g:b},{k:b,g:a});
+  soccer={ph:'intro',g:a,k:-1,sh:0,tot:queue.length,goals:0,saves:0,need:[],left:0,queue,kickers:[a,b],choice:{},botAt:{},t0:performance.now()-DRAW_MS-SOCCER.introMs+700,res:'',kickDir:0,diveDir:0,goalsBy:{},duel:[a,b]};
+  soccerPlace();applySoccerVisibility();
+  setStatus('⚔️ DESEMPATE! '+players[a].name+' x '+players[b].name+': 3 chutes cada, um chuta e o outro defende.');
+  return;
+ }
  const act=activeIndices(),goalie=act[Math.floor(Math.random()*act.length)];
  const kickers=act.filter(i=>i!==goalie).sort(()=>Math.random()-.5);
  const per=Math.max(1,Math.ceil(SOCCER.minShots/Math.max(1,kickers.length))),queue=[];
@@ -76,13 +85,19 @@ function startSoccer(){
  setStatus('🧤 '+players[goalie].name+' é o GOLEIRO! Os outros vão chutar, um de cada vez.');
 }
 function soccerNextShot(now){
- const s=soccer;players[s.g].root.rotation.z=0;
+ const s=soccer;players[s.g].root.rotation.z=0;players[s.g].root.position.y=0;
  s.sh++;
+ if(s.duel&&s.sh>s.tot){   // empatou nos 3 chutes cada: morte súbita (mais um chute para cada, até desempatar)
+  const [a,b]=s.duel;
+  if((s.goalsBy[a]||0)===(s.goalsBy[b]||0)){s.queue.push({k:a,g:b},{k:b,g:a});s.tot+=2}
+ }
  if(s.sh>s.tot){finishSoccer();return}
- s.k=s.queue[s.sh-1];s.ph='pick';s.t0=now;s.choice={};s.res='';
+ if(s.duel){const q=s.queue[s.sh-1];s.k=q.k;s.g=q.g}else s.k=s.queue[s.sh-1];
+ s.ph='pick';s.t0=now;s.choice={};s.res='';
  s.botAt={[s.k]:now+800+Math.random()*1400,[s.g]:now+900+Math.random()*1600};
  soccerPlace();
- setStatus('⚽ Chute '+s.sh+'/'+s.tot+': '+players[s.k].name+' vai chutar contra o goleiro '+players[s.g].name+'!');
+ if(s.duel)setStatus((s.tot>6&&s.sh>6?'⚡ MORTE SÚBITA! ':'⚔️ DESEMPATE • ')+'Chute '+s.sh+'/'+s.tot+': '+players[s.k].name+' chuta e '+players[s.g].name+' defende!');
+ else setStatus('⚽ Chute '+s.sh+'/'+s.tot+': '+players[s.k].name+' vai chutar contra o goleiro '+players[s.g].name+'!');
 }
 /* Escolha de direção (dir: -1 esquerda, 0 meio, 1 direita) — batedor ou goleiro. */
 function soccerSetChoice(slot,dir){
@@ -97,6 +112,13 @@ function soccerResult(now){
 }
 function finishSoccer(){
  const s=soccer;s.ph='done';ended=true;running=false;clearBots();
+ if(s.duel){   // fim do desempate: ninguém pontua, o vencedor segue (próximo duelo ou pódio)
+  const [a,b]=s.duel,ga=s.goalsBy[a]||0,gb=s.goalsBy[b]||0,w=ga>gb?a:b,l=w===a?b:a;
+  setStatus('🏆 '+players[w].name+' venceu o desempate por '+Math.max(ga,gb)+' x '+Math.min(ga,gb)+'!');
+  showRoundBanner('🏆 '+players[w].name+' VENCEU!','Desempate nos pênaltis • '+Math.max(ga,gb)+' x '+Math.min(ga,gb));
+  scheduleScoreOverlay(()=>{hideRoundBanner();soccerDuel=null;tieDuelDone(w,l)},3200);
+  return;
+ }
  const goalieWins=s.saves>s.goals||s.saves>=3,gains={},detail={},gn=players[s.g].name;
  activeIndices().forEach(i=>{
   if(i===s.g){gains[i]=Math.max(SOCCER.loseEach,SOCCER.goalieBase+SOCCER.goalieEachSave*s.saves);detail[i]='🧤 Goleiro • '+s.saves+' defesa'+(s.saves===1?'':'s')+' x '+s.goals+' gol'+(s.goals===1?'':'s')+' sofrido'+(s.goals===1?'':'s')}
@@ -152,7 +174,10 @@ function soccerUiUpdate(){
  const panel=document.getElementById('soccerPick'),hud=document.getElementById('soccerHud');if(!panel||!hud)return;
  const on=gameMode==='soccer'&&!!soccer;
  hud.classList.toggle('show',on);
- if(on)hud.textContent='⚽ Chute '+Math.min(soccer.sh,soccer.tot)+'/'+soccer.tot+' • Gols '+soccer.goals+' • 🧤 Defesas '+soccer.saves+' • Goleiro: '+players[soccer.g].name+(soccer.ph==='pick'?' • ⏱ '+soccer.left+'s':'');
+ if(on&&soccer.duel){
+  const dg=soccer.goalsBy?[soccer.goalsBy[soccer.duel[0]]||0,soccer.goalsBy[soccer.duel[1]]||0]:(soccer.dg||[0,0]),sd=soccer.tot>6&&soccer.sh>6;
+  hud.textContent=(soccer.ph==='done'?'🏆 ':'⚔️ ')+players[soccer.duel[0]].name+' '+dg[0]+' x '+dg[1]+' '+players[soccer.duel[1]].name+' • '+(sd?'⚡ Morte súbita':'Chute '+Math.min(soccer.sh,soccer.tot)+'/'+soccer.tot)+(soccer.ph==='pick'?' • ⏱ '+soccer.left+'s':'');
+ }else if(on)hud.textContent='⚽ Chute '+Math.min(soccer.sh,soccer.tot)+'/'+soccer.tot+' • Gols '+soccer.goals+' • 🧤 Defesas '+soccer.saves+' • Goleiro: '+players[soccer.g].name+(soccer.ph==='pick'?' • ⏱ '+soccer.left+'s':'');
  const mine=on&&soccer.ph==='pick'&&!!soccer.need&&soccer.need.includes(humanIndex)&&soccerSentShot!==soccer.sh;
  panel.classList.toggle('show',mine);
  if(mine)document.getElementById('soccerPickTitle').textContent=(humanIndex===soccer.k?'⚽ Onde você vai CHUTAR?':'🧤 Onde você vai DEFENDER?')+'  ('+soccer.left+'s)';

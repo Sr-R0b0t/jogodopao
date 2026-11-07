@@ -89,6 +89,7 @@ function podiumSprite(name,pts,color){
  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false,toneMapped:false}));sp.scale.set(2.8,.7,1);sp.renderOrder=10;return sp;
 }
 /* order = índices dos personagens do 1º ao último; scores = pontos de cada personagem (por índice). */
+let podiumRemoteNote='';
 function showPodium(order,scores,remote){
  podiumState={order:order.slice(),scores:scores.slice(),remote:!!remote};
  podiumActive=true;podiumT0=performance.now();gameMode='podium';running=false;ended=true;
@@ -117,11 +118,11 @@ function showPodium(order,scores,remote){
  // interface
  const champ=players[order[0]];
  podiumUI.querySelector('.pd-title').textContent='🏆 CAMPEÃO: '+champ.name.toUpperCase()+'!';
- let podSub='Todos os minigames foram jogados';
+ let podSub=(remote?podiumRemoteNote:podiumNote)||'Todos os minigames foram jogados';
  if(!remote&&net.role==='offline'&&!net.tv&&typeof DIFFICULTIES!=='undefined'){       // troféu do mapa/dificuldade (só offline)
   const d=DIFFICULTIES[gameDifficulty],humans=[humanIndex,...(typeof localPadSlots==='function'?localPadSlots():[])];
-  if(humans.includes(order[0])){const isNew=awardTrophy(currentMap,gameDifficulty);podSub=d.medal+' Troféu de '+d.trophy+' — Mapa '+currentMap+' · '+d.name+(isNew?' (NOVO!)':' (já conquistado)')}
-  else podSub='Sem troféu desta vez ('+d.name+'). Tente de novo!';
+  if(humans.includes(order[0])){const isNew=awardTrophy(currentMap,gameDifficulty);podSub=(podiumNote?podiumNote+' ':'')+d.medal+' Troféu de '+d.trophy+' — Mapa '+currentMap+' · '+d.name+(isNew?' (NOVO!)':' (já conquistado)')}
+  else podSub=(podiumNote?podiumNote+' ':'')+'Sem troféu desta vez ('+d.name+'). Tente de novo!';
  }
  podiumUI.querySelector('.pd-sub').textContent=podSub;
  podiumUI.querySelector('.pd-list').innerHTML=order.map((idx,k)=>k<3?'':'<span class="pd-chip'+(idx===humanIndex?' me':'')+'">'+(k+1)+'º '+players[idx].name+' <b>'+(scores[idx]||0)+'</b></span>').join('');
@@ -141,10 +142,10 @@ function hidePodium(){
  ['touchControls','tap','soccerPick','bowlingTopScore'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=''});
 }
 /* Anfitrião/offline: calcula a classificação final do campeonato e mostra o pódio (convidados recebem o mesmo). */
-function startPodium(){
- const order=players.map((p,i)=>i).filter(isActive).sort((a,b)=>tournamentScores[b]-tournamentScores[a]||Number(b===humanIndex)-Number(a===humanIndex)||a-b);
+function startPodium(forced){
+ const order=forced||players.map((p,i)=>i).filter(isActive).sort((a,b)=>tournamentScores[b]-tournamentScores[a]||Number(b===humanIndex)-Number(a===humanIndex)||a-b);
  const scores=players.map((p,i)=>tournamentScores[i]||0);
- netBroadcast({k:'podium',order,scores});
+ netBroadcast({k:'podium',order,scores,note:podiumNote});
  showPodium(order,scores,false);
 }
 function podiumPlayAgain(){
