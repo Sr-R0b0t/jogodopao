@@ -44,6 +44,16 @@ function loadSample(name){
   .then(b=>new Promise((ok,err)=>audioCtx.decodeAudioData(b,ok,err)))
   .then(buf=>{sampleBuffers[name]=buf}).catch(e=>console.warn('som não carregou:',name,e));
 }
+let cdVoiceSrc=null;
+function stopCountdownVoice(){if(cdVoiceSrc){try{cdVoiceSrc.stop()}catch(e){}cdVoiceSrc=null}}
+/* Voz da contagem: offset 0 = começa no "5"; offset 2 = começa no "3" (cada número dura ~1 s). */
+function playCountdownVoice(offset){
+ if(!audioEnabled)return true;
+ ensureAudio();const buf=sampleBuffers.countdown;
+ if(!buf){loadSample('countdown');return false}
+ stopCountdownVoice();
+ const src=audioCtx.createBufferSource(),gain=audioCtx.createGain();src.buffer=buf;gain.gain.value=1;src.connect(gain);gain.connect(masterGain);src.start(0,offset);cdVoiceSrc=src;return true;
+}
 function playSample(name,volume=1){
  if(!audioEnabled)return true;               // efeitos desligados: não toca nada
  ensureAudio();const buf=sampleBuffers[name];

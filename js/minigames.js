@@ -40,18 +40,19 @@ function showRoundBanner(title,sub,count,desc){
  el.classList.add('show');
 }
 function hideRoundBanner(){const el=document.getElementById('roundBanner');if(el)el.classList.remove('show')}
-/* a voz gravada só cobre contagens que começaram em 5 (as de 3 s do botão reiniciar usam os bips) */
+/* A voz gravada (5…1) começa no "5" nas contagens de 5 s e no "3" nas de 3 s; o resto da contagem usa a mesma gravação. */
 let cdVoiceT=0;
-function cdVoiceOn(n){return performance.now()-cdVoiceT<5200}
+function cdVoiceOn(){return performance.now()-cdVoiceT<5200}
 function cdBeep(n){ // bip a cada segundo; som mais alto no "VAI!"
  if(n>0){
-  if(n===COUNTDOWN_SECONDS&&playSample('countdown',1)){cdVoiceT=performance.now();return}   // voz "5, 4, 3, 2, 1" (audio/contagem.mp3, ~1 s por número): toca inteira ao começar a contagem
-  if(n<COUNTDOWN_SECONDS&&sampleBuffers.countdown&&audioEnabled&&cdVoiceOn(n))return;   // números seguintes já estão na gravação
+  if(n===COUNTDOWN_SECONDS&&playCountdownVoice(0)){cdVoiceT=performance.now();return}
+  if(n===3&&!cdVoiceOn()&&playCountdownVoice(2)){cdVoiceT=performance.now()-2000;return}   // contagem de 3 s: começa no "3" da gravação
+  if(sampleBuffers.countdown&&audioEnabled&&cdVoiceOn())return;   // números seguintes já estão na gravação
   tone(n<=2?700:520,.12,'square',.07);
  }
  else{tone(784,.2,'triangle',.12);tone(1046,.35,'triangle',.11,.14)}
 }
-function cancelCountdown(){if(typeof tvBriefStop==='function')tvBriefStop();clearInterval(cdTimer);cdTimer=null;clearTimeout(roundTimer);hideRoundBanner()}
+function cancelCountdown(){stopCountdownVoice();if(typeof tvBriefStop==='function')tvBriefStop();clearInterval(cdTimer);cdTimer=null;clearTimeout(roundTimer);hideRoundBanner()}
 /* 5…4…3…2…1…VAI! e então começa a partida (o anfitrião manda a contagem para todos). */
 function runCountdown(sec,title,sub,label,desc){
  cancelCountdown();
