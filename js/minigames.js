@@ -10,6 +10,7 @@ const MINIGAMES=[
  {id:'dodge',label:'Queimada',min:2,max:8,even:true,desc:'Dois times, uma linha no meio da quadra que ninguém pode cruzar. Pegue uma bola do seu lado e arremesse nos rivais: quem for acertado sai! Vence o time que eliminar todos.'},
  {id:'lava',label:'Arena de Lava',min:2,max:8,desc:'Sobreviva na plataforma sobre a lava! Pule o facho de fogo que gira, fuja dos círculos vermelhos onde os punhos de magma vão cair. Vence o último vivo!'},
  {id:'bridge',label:'Ponte de Pedras',min:2,max:4,desc:'Escolha um dos 4 caminhos para construir sua ponte sobre a lava. Se mais alguém escolher o mesmo caminho, ninguém avança! Vence quem atravessar primeiro.'},
+ {id:'glass',label:'Ponte de Vidro',min:2,max:8,desc:'Um vidro de cada par é fraco! Cada jogador escolhe o seu na vez (5 segundos). Quem cai volta ao início, mas revela o vidro quebrado — ele volta inteiro no turno seguinte, então memorize! Vence quem atravessar primeiro.'},
  {id:'turbo',label:'Arena Turbo',min:2,max:4,desc:'Sua nave desliza só pelo seu lado. Defenda o gol, aproveite os pads verdes para acelerar a bola e use o ESPECIAL para empurrá-la. Vence o último na arena!'}
 ];
 let minigameBag=[],lastMinigame=null,roundNumber=0,roundTimer=null;
@@ -98,6 +99,7 @@ const MODE_HELP={
  dodge:{demo:['🏐','🎯'],how:'Dois times de lados opostos da quadra — ninguém cruza a linha do meio! Chegue perto de uma bola do SEU lado para pegar e arremesse nos rivais: quem for acertado DIRETO sai (bola que bate na parede não queima). Desvie das bolas deles! Vence o time que eliminar todos.',phone:'Joystick move • botão ARREMESSAR joga a bola',pad:'Analógico move • A arremessa'},
  lava:{demo:['🔥','🦘'],how:'Sobreviva na plataforma sobre a lava! O facho de fogo gira e acelera: PULE por cima dele. Punhos de magma caem nos círculos vermelhos: saia de lá antes! Vence o último vivo (45 segundos).',phone:'Joystick move • botão PULAR salta o facho',pad:'Analógico move • A pula'},
  bridge:{demo:['🌉','👣'],how:'Todos escolhem ao mesmo tempo um dos 4 caminhos (⬅ ⬆ ⬇ ➡), cada um com um tamanho de ponte. Se você for o único a escolher o seu caminho, a ponte cresce e você avança; se outro jogador escolher o mesmo, NINGUÉM avança. Vence quem atravessar a lava primeiro!',phone:'Toque num dos 4 caminhos',pad:'◀ ▲ ▼ ▶ escolhe o caminho'},
+ glass:{demo:['🔷','🧠'],how:'Em cada fileira há 2 vidros e um deles é FRACO. A ordem é sorteada e cada um joga na sua vez, com 5 segundos para escolher (⬆ cima / ⬇ baixo). Se o vidro quebrar, você cai e volta ao início — mas todos viram qual era o fraco. O vidro volta inteiro no próximo turno: MEMORIZE! Vence quem atravessar primeiro.',phone:'Na sua vez, toque no vidro de cima ou de baixo',pad:'▲ ▼ escolhe o vidro'},
  turbo:{demo:['⚡','🚀'],how:'Sua nave desliza só pelo seu lado. Defenda o gol, use os pads verdes para acelerar a bola e o ESPECIAL para empurrá-la. Às vezes o jogo sorteia duplas 2 contra 2!',phone:'Joystick move • botão ESPECIAL empurra a bola',pad:'Analógico move • A usa o ESPECIAL'}
 };
 

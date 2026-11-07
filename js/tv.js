@@ -210,6 +210,7 @@ function tvFrame(now){
    }
    if(gameMode==='soccer'&&soccer&&soccer.ph==='pick'&&soccer.need&&soccer.need.includes(slot)){st.sc=slot===soccer.k?1:2;st.sh=soccer.sh}
    if(gameMode==='bridge'&&bridge&&bridge.ph==='pick'){if(bridge.need&&bridge.need.includes(slot)){st.bg=1;st.br=bridge.n;st.bo=bridge.opts}else if(isActive(slot))st.bw=1}
+   if(gameMode==='glass'&&glass&&glass.ph==='turn'){if(glass.need&&glass.need.includes(slot)){st.gg=1;st.gr=glass.n}else if(isActive(slot))st.gw=1}
    if(isTurbo()&&ship&&ship.cd)st.cdT=ship.cd[slot];
    if(tvBrief&&tvBrief.on){st.brief=1;st.rdy=tvBrief.ready.has(slot)?1:0;st.bt=tvBrief.info.label;st.bh=(MODE_HELP[tvBrief.id]||{}).phone||''}
   }

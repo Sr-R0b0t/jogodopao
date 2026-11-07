@@ -97,7 +97,7 @@ function showPodium(order,scores,remote){
  document.getElementById('scoreOverlay').classList.remove('show');
  showFlowScreen('screenMinigames');
  // esconde os cenários dos minigames e mostra só o palco
- breadRoot.visible=soccerRoot.visible=shipRoot.visible=bowlingRoot.visible=dodgeRoot.visible=lavaRoot.visible=bridgeRoot.visible=false;
+ breadRoot.visible=soccerRoot.visible=shipRoot.visible=bowlingRoot.visible=dodgeRoot.visible=lavaRoot.visible=bridgeRoot.visible=glassRoot.visible=false;
  balls.forEach(b=>b.mesh.visible=false);arenaRing.visible=false;
  floor.visible=rimMesh.visible=inner.visible=true;arenaDots.forEach(d=>d.visible=true);
  const hud=host.querySelector('.hud');if(hud)hud.style.display='none';

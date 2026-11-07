@@ -7,26 +7,30 @@ let running=false,ended=false,botTimers=[],lastTime=performance.now(),celebrateS
 function clearBots(){botTimers.forEach(clearTimeout);botTimers=[]}
 
 function updateHud(){
- players.forEach((p,i)=>{const b=balls[i];document.getElementById('tag'+i).classList.toggle('me',i===humanIndex);document.querySelector(`#tag${i} b`).textContent=gameMode==='ball'?(b.alive?'NA ARENA':(b.falling?'CAINDO!':'FORA!')):isShipMode()?'❤ '+p.count:gameMode==='bowling'?'🎳 '+(bowlingScores[i]||0):gameMode==='dodge'?(p.count>0?'EM JOGO':'QUEIMADO'):gameMode==='lava'?(p.count>0?'VIVO':'QUEIMADO'):gameMode==='bridge'?'👣 '+Math.min(BRIDGE.goal,bridgeDistOf(i))+' / '+BRIDGE.goal:`${p.count} / 100`});
+ players.forEach((p,i)=>{const b=balls[i];document.getElementById('tag'+i).classList.toggle('me',i===humanIndex);document.querySelector(`#tag${i} b`).textContent=gameMode==='ball'?(b.alive?'NA ARENA':(b.falling?'CAINDO!':'FORA!')):isShipMode()?'❤ '+p.count:gameMode==='bowling'?'🎳 '+(bowlingScores[i]||0):gameMode==='dodge'?(p.count>0?'EM JOGO':'QUEIMADO'):gameMode==='lava'?(p.count>0?'VIVO':'QUEIMADO'):gameMode==='bridge'?'👣 '+Math.min(BRIDGE.goal,bridgeDistOf(i))+' / '+BRIDGE.goal:gameMode==='glass'?'🔷 '+Math.min(GLASS.rows,p.count)+' / '+GLASS.rows:`${p.count} / 100`});
  document.getElementById('tap').textContent=gameMode==='ball'?'🎯 EMPURRÃO!':gameMode==='bowling'?'🎳 LANÇAR BOLA!':'👆 CLICAR!';
 }
 function applyMode(){
  gameMode=document.getElementById('gameMode').value;
- const dodgeMode=gameMode==='dodge',ballMode=gameMode==='ball',bowlingMode=gameMode==='bowling',soccerMode=gameMode==='soccer',lavaMode=gameMode==='lava',bridgeMode=gameMode==='bridge',shipMode=isShipMode();
+ const dodgeMode=gameMode==='dodge',ballMode=gameMode==='ball',bowlingMode=gameMode==='bowling',soccerMode=gameMode==='soccer',lavaMode=gameMode==='lava',bridgeMode=gameMode==='bridge',glassMode=gameMode==='glass',shipMode=isShipMode();
  document.getElementById('tap').disabled=!running;
- document.getElementById('tap').style.display=ballMode||soccerMode||bridgeMode||(shipMode&&!isTurbo())?'none':'';
+ document.getElementById('tap').style.display=ballMode||soccerMode||bridgeMode||glassMode||(shipMode&&!isTurbo())?'none':'';
  document.getElementById('tap').textContent=dodgeMode?'🏐 ARREMESSAR!':document.getElementById('tap').textContent;
  document.getElementById('tap').textContent=ballMode?'🎯 EMPURRÃO!':bowlingMode?'🎳 JOGAR BOLA!':lavaMode?'🦘 PULAR!':'👆 CLICAR!';
  document.querySelector('main > p').textContent=ballMode?'Fique em cima da sua bola e derrube todos os rivais da arena! Último personagem em pé vence. Pegue velocidade e bata nos rivais!':bowlingMode?'Cada personagem tem um lançamento pela ladeira. Derrube o máximo de pinos; quem derrubar mais vence!':'Chegue a 100 cliques! Quem terminar primeiro joga creme no pão. Quem terminar por último... vai ter que dar a mordida final! 😂';
  document.getElementById('gameNote').textContent=ballMode?'Controles: WASD, setas ou o analógico. Quanto mais distância você pega, mais rápido fica — e mais forte é a batida!':bowlingMode?'Boliche: use as setas (ou os botões) para se posicionar, escolha a força e lance. Acertar nos cantos também derruba pinos.':'Corrida: chegue a 100 cliques. É necessária conexão à internet para carregar a biblioteca 3D.';
- dodgeRoot.visible=dodgeMode;lavaRoot.visible=lavaMode;bridgeRoot.visible=bridgeMode;breadRoot.visible=!ballMode&&!bowlingMode&&!soccerMode&&!shipMode&&!dodgeMode&&!lavaMode&&!bridgeMode;soccerRoot.visible=soccerMode;shipRoot.visible=shipMode;
- floor.visible=rimMesh.visible=inner.visible=!shipMode&&!dodgeMode&&!lavaMode&&!bridgeMode;arenaDots.forEach(d=>d.visible=!shipMode&&!dodgeMode&&!lavaMode&&!bridgeMode);arenaRing.visible=ballMode;bowlingRoot.visible=bowlingMode;balls.forEach((b,i)=>b.mesh.visible=ballMode&&isActive(i));
+ dodgeRoot.visible=dodgeMode;lavaRoot.visible=lavaMode;bridgeRoot.visible=bridgeMode;glassRoot.visible=glassMode;breadRoot.visible=!ballMode&&!bowlingMode&&!soccerMode&&!shipMode&&!dodgeMode&&!lavaMode&&!bridgeMode&&!glassMode;soccerRoot.visible=soccerMode;shipRoot.visible=shipMode;
+ floor.visible=rimMesh.visible=inner.visible=!shipMode&&!dodgeMode&&!lavaMode&&!bridgeMode&&!glassMode;arenaDots.forEach(d=>d.visible=!shipMode&&!dodgeMode&&!lavaMode&&!bridgeMode&&!glassMode);arenaRing.visible=ballMode;bowlingRoot.visible=bowlingMode;balls.forEach((b,i)=>b.mesh.visible=ballMode&&isActive(i));
  if(bowlingMode){updateBowlingHud();applyBowlingVisibility()}
  else{document.querySelectorAll('.tag.turn').forEach(x=>x.classList.remove('turn'));document.getElementById('bowlingTopScore').classList.remove('show');document.getElementById('bowlingHud').classList.remove('show');document.getElementById('bowlingControls').classList.remove('show');players.forEach(p=>{p.root.visible=p.active!==false});refreshTags()}
  if(shipMode){
   document.querySelector('main > p').textContent='Pilote a nave e defenda o seu gol das bolas metálicas! Cada gol sofrido tira 1 vida; quem zera sai e o gol vira barreira.';
   document.getElementById('gameNote').textContent='Controles: WASD, setas ou o analógico. Bata nas bolas para mandá-las no gol dos rivais. Vence o último na arena.';
   if(isTurbo()){document.querySelector('main > p').textContent='Arena Turbo: sua nave desliza só pelo seu lado. Defenda o gol das bolas que saem das cápsulas dos cantos!';document.getElementById('gameNote').textContent='Controles: setas/WASD ou o analógico (esquerda-direita nas naves de baixo e de cima; cima-baixo nas dos lados). Os pads verdes aceleram a bola. Vence o último na arena.'}
+ }
+ if(glassMode){
+  document.querySelector('main > p').textContent='Ponte de Vidro: um vidro de cada par é fraco! Cada um joga na sua vez (5 segundos). Memorize os vidros que quebrarem — eles voltam inteiros no turno seguinte.';
+  document.getElementById('gameNote').textContent='Controles: ⬆/W escolhe o vidro de cima, ⬇/S o de baixo (ou toque nos botões). Quem cai volta ao início. Chegue primeiro ao outro lado.';
  }
  if(bridgeMode){
   document.querySelector('main > p').textContent='Ponte de Pedras: escolha um caminho (⬅ ⬆ ⬇ ➡). Quem escolher sozinho avança; escolha repetida = ninguém avança!';
@@ -65,6 +69,7 @@ function reset(){
  if(gameMode==='dodge')setupDodge();
  if(gameMode==='lava')lavaSetup();
  if(gameMode==='bridge')setupBridge();
+ if(gameMode==='glass')setupGlass();
  document.getElementById('result').className='';document.getElementById('result').textContent='';
  document.getElementById('start').disabled=false;document.getElementById('tap').disabled=true;
  document.getElementById('characterChoice').disabled=tournamentCharacterLocked;document.getElementById('gameMode').disabled=false;
@@ -83,6 +88,7 @@ function start(){
  else if(gameMode==='dodge')startDodge();
  else if(gameMode==='lava')startLava();
  else if(gameMode==='bridge')startBridge();
+ else if(gameMode==='glass')startGlass();
  else players.filter((p,i)=>!isHumanSlot(i)&&isActive(i)).forEach((p,i)=>botTimers.push(setTimeout(()=>botTick(p),p.delay+i*45)));
 }
 
@@ -97,7 +103,7 @@ document.getElementById('tap').addEventListener('click',e=>{
  if(isTurbo()){shipBlastPress();return}
  if(gameMode==='dodge'){dodgePress();return}
  if(gameMode==='lava'){lavaPress();return}
- if(gameMode==='bridge')return;
+ if(gameMode==='bridge'||gameMode==='glass')return;
  if(gameMode==='ball')return; // Batalha das Bolas: só direção (sem botão de empurrão)
  if(net.role==='client'){sfxClick();netSendInput({k:'tap',aim:r2(bowlingAimValue),pow:bowlingPowerValue});return}
  if(gameMode==='bowling'){throwBowlingBall(humanIndex);return}
@@ -117,7 +123,7 @@ document.addEventListener('keydown',e=>{
  if((e.code==='Space'||e.code==='Enter')&&running&&gameMode==='dodge'){e.preventDefault();if(!e.repeat)dodgePress();return}
  if((e.code==='Space'||e.code==='Enter')&&running&&gameMode==='lava'){e.preventDefault();if(!e.repeat)lavaPress();return}
  if((e.code==='Space'||e.code==='Enter')&&running&&isTurbo()){e.preventDefault();if(!e.repeat)shipBlastPress();return}
- if((e.code==='Space'||e.code==='Enter')&&running&&gameMode!=='ball'&&gameMode!=='soccer'&&gameMode!=='dodge'&&gameMode!=='lava'&&gameMode!=='bridge'&&!isShipMode()){
+ if((e.code==='Space'||e.code==='Enter')&&running&&gameMode!=='ball'&&gameMode!=='soccer'&&gameMode!=='dodge'&&gameMode!=='lava'&&gameMode!=='bridge'&&gameMode!=='glass'&&!isShipMode()){
   e.preventDefault();
   if(e.repeat)return;            // tecla segurada = não conta de novo
   pressTap();
@@ -143,7 +149,7 @@ function animate(now){
  if(gameMode==='bowling')animateFallenPins(now);
 
  players.forEach((p,i)=>{
-  const moving=running&&!p.finished&&gameMode!=='bowling'&&gameMode!=='soccer'&&gameMode!=='dodge'&&gameMode!=='bridge'&&!isShipMode()&&!(gameMode==='lava'&&p.count<=0);
+  const moving=running&&!p.finished&&gameMode!=='bowling'&&gameMode!=='soccer'&&gameMode!=='dodge'&&gameMode!=='bridge'&&gameMode!=='glass'&&!isShipMode()&&!(gameMode==='lava'&&p.count<=0);
   const idleBob=Math.sin(t*2.1+p.phase)*.035;
   const gait=t*11.5+p.phase;
   p.rig.position.y=moving?Math.abs(Math.sin(gait))*.12+Math.sin(gait*2)*.018:idleBob;
@@ -191,9 +197,9 @@ function animate(now){
 
  updateBallMode(now,dt,t);
  updateTouchControls(dt);updateGamepads(now,dt);if(net.tv)tvFrame(now);else if(tvBrief&&tvBrief.on)tvBriefTick(now);
- if(net.role!=='client'){updateSoccerMode(now,dt);updateShipMode(now,dt);updateDodgeMode(now,dt);updateLavaMode(now,dt);updateBridgeMode(now,dt)}
- shipVisualUpdate(dt);dodgeVisualUpdate(dt);lavaVisualUpdate(dt);bridgeVisualUpdate(dt);
- soccerUiUpdate();soccerAudioCue();bridgeUiUpdate();bridgeAudioCue();
+ if(net.role!=='client'){updateSoccerMode(now,dt);updateShipMode(now,dt);updateDodgeMode(now,dt);updateLavaMode(now,dt);updateBridgeMode(now,dt);updateGlassMode(now,dt)}
+ shipVisualUpdate(dt);dodgeVisualUpdate(dt);lavaVisualUpdate(dt);bridgeVisualUpdate(dt);glassVisualUpdate(dt);
+ soccerUiUpdate();soccerAudioCue();bridgeUiUpdate();bridgeAudioCue();glassUiUpdate();glassAudioCue();
  players.forEach((p,i)=>{if(p.glb&&p.root.visible&&isActive(i))animateGlbPlayer(p,i,dt)});   // não anima quem não está em cena (poupa CPU no celular)
  podiumUpdate(t,dt);
  updateSelfMarker(t);updateNameTags();
