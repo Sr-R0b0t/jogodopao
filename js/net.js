@@ -236,6 +236,7 @@ function netClientMsg(d){
   case 'draw':runDrawAnim(d.o);if(d.teams)applyShipTeams(d.teams);if(d.dodgeTeams)applyDodgeTeams(d.dodgeTeams);break;
   case 'podium':podiumRemoteNote=d.note||'';matchHistory.length=0;(d.hist||[]).forEach(h=>matchHistory.push(h));showPodium(d.order,d.scores,true);break;
   case 'podiumhide':hidePodium();break;
+  case 'sfx':fxRemote(d);break;
   case 'pins':{const c=d.n;setTimeout(()=>{if(audioEnabled)sfxPins(c)},d.delay||0);break}
   case 'ovhide':document.getElementById('scoreOverlay').classList.remove('show');break;
   case 'overlay':netShowOverlay(d);break;

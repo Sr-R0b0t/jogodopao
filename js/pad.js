@@ -1,6 +1,6 @@
 /* Celular como controle do Jogo do Pão (modo TV). Página leve: sem 3D. Fala direto com o servidor de salas. */
 (function(){
-const CH=[['ASTRONAUTA','#efe9df'],['GUI','#f4721f'],['SAPO','#55bd3f'],['PANDA','#8a8a96'],['MACACO','#a8683f'],['DRAGÃO','#14e0a0'],['FABOLA','#19e6ff'],['LUANA','#ff2f3f'],['RAFA','#4a3dff'],['LORENA','#ff8fc8'],['RICARDO','#2e86ff'],['KIKA','#ffd21f']];
+const CH=[['PIPOCA','#d6a15c'],['GUI','#f4721f'],['SAPO','#55bd3f'],['PANDA','#8a8a96'],['MACACO','#a8683f'],['DRAGÃO','#14e0a0'],['FABOLA','#19e6ff'],['LUANA','#ff2f3f'],['RAFA','#4a3dff'],['LORENA','#ff8fc8'],['RICARDO','#2e86ff'],['KIKA','#ffd21f']];
 const MAX_LINE_X=1.7,BLAST_CD=4000;
 const $=id=>document.getElementById(id);
 const qs=new URLSearchParams(location.search);

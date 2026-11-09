@@ -48,7 +48,7 @@ function finishAll(){
  ended=true;running=false;clearBots();stopLastPlayerTimer();
  const ap=activePlayers(),loser=ap.reduce((a,p)=>p.throwAt>a.throwAt?p:a,ap[0]);
  document.getElementById('status').textContent='O perdedor vai dar a mordida final! 😬';
- if(audioEnabled){[784,659,523,392].forEach((f,i)=>tone(f,.22,'triangle',.09,i*.12));setTimeout(()=>{if(audioEnabled)sfxBite()},650)}
+ fx('jingle');fx('bite',0,650);
  const winnerIndex=players.reduce((best,p,i)=>p.throwAt>0&&(best<0||p.throwAt<players[best].throwAt)?i:best,-1);
  loser.biteAt=performance.now();loser.biting=true;celebrateStart=performance.now();
  document.getElementById('start').disabled=true;document.getElementById('tap').disabled=true;
@@ -67,7 +67,7 @@ function beginLastPlayerTimer(){
  lastPlayerInterval=setInterval(()=>{
   const remain=Math.max(0,Math.ceil((lastPlayerDeadline-Date.now())/1000));
   if(el){el.innerHTML=`⏳ ${last.name}, termine a prova!<strong>${remain}</strong> segundos restantes`;el.classList.toggle('urgent',remain<=10)}
-  if(remain!==lastPlayerBeep&&remain<=10&&remain>0){lastPlayerBeep=remain;try{if(audioEnabled)tone(remain<=3?900:640,.09,'square',.07)}catch(e){}}
+  if(remain!==lastPlayerBeep&&remain<=10&&remain>0){lastPlayerBeep=remain;fx('beep',remain<=3?900:640)}
  },200);
  lastPlayerTimerId=setTimeout(()=>{
   stopLastPlayerTimer();
@@ -75,7 +75,7 @@ function beginLastPlayerTimer(){
   ended=true;running=false;clearBots();
   last.biteAt=performance.now();last.biting=true;celebrateStart=performance.now(); // quem não terminou dá a mordida final
   document.getElementById('status').textContent='⏱️ '+last.name+' não terminou a tempo e vai dar a mordida final! 😬';
-  if(audioEnabled)setTimeout(()=>sfxBite(),650);
+  fx('bite',0,650);
   document.getElementById('start').disabled=true;document.getElementById('tap').disabled=true;
   document.getElementById('characterChoice').disabled=true;document.getElementById('gameMode').disabled=true;
   const winnerIndex=players.reduce((best,p,i)=>p.count>=100&&(best<0||p.throwAt<players[best].throwAt)?i:best,-1);

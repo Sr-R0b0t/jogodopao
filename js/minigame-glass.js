@@ -105,11 +105,11 @@ function updateGlassMode(now,dt){
     B.pos[J.i]=J.r;B.best[J.i]=Math.max(B.best[J.i],J.r);players[J.i].count=J.r;
     if(J.r>=GLASS.rows){B.ph='cross';B.t0=now;document.getElementById('status').textContent='🔷 '+players[J.i].name+' chegou à última fileira!'}
     else{B.ph='land';B.t0=now;document.getElementById('status').textContent='✅ '+players[J.i].name+' acertou! Fileira '+J.r+' de '+GLASS.rows+'.'}
-    if(audioEnabled)sfxClick();
+    fx('click');
    }else{
     B.brk=[J.r,J.l];B.brkAt=now;B.seen[J.r]=J.l;B.falls[J.i]++;B.ph='fall';B.t0=now;
     document.getElementById('status').textContent='💥 O vidro '+GLASS_NAME[J.l]+' da fileira '+J.r+' quebrou! '+players[J.i].name+' caiu — memorize!';
-    if(audioEnabled){noisePop(.35,.22,2600);tone(1500,.22,'triangle',.08,0,500)}
+    fx('glassbreak');
    }
   }
  }else if(B.ph==='fall'){
@@ -121,7 +121,7 @@ function updateGlassMode(now,dt){
  else if(B.ph==='cross'){
   const J=B.jump,u=Math.min(1,(now-B.t0)/GLASS.crossMs),r=players[J.i].root,e=glassStartPosEnd(J.i);
   r.position.x=J.tx+(e.x-J.tx)*u;r.position.z=J.tz+(e.z-J.tz)*u;r.position.y=Math.abs(Math.sin(u*Math.PI*2))*.25;r.rotation.y=Math.PI/2;
-  if(u>=1){r.position.y=0;B.win=J.i;B.pos[J.i]=GLASS.rows+1;players[J.i].count=GLASS.rows+1;B.ph='done';B.t0=now;document.getElementById('status').textContent='🏆 '+players[J.i].name+' atravessou a Ponte de Vidro!';if(audioEnabled)sfxFinish()}
+  if(u>=1){r.position.y=0;B.win=J.i;B.pos[J.i]=GLASS.rows+1;players[J.i].count=GLASS.rows+1;B.ph='done';B.t0=now;document.getElementById('status').textContent='🏆 '+players[J.i].name+' atravessou a Ponte de Vidro!';fx('finish')}
  }else if(B.ph==='done'){if(now-B.t0>GLASS.endMs)glassFinish()}
 }
 function glassStartPosEnd(i){const act=activeIndices(),k=Math.max(0,act.indexOf(i)),n=act.length;return {x:GLASS.xEnd,z:(k-(n-1)/2)*.8}}

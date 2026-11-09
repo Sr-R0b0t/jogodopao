@@ -111,3 +111,23 @@ document.addEventListener('pointerdown',unlockAudioOnce);
 document.addEventListener('keydown',unlockAudioOnce);
 // Pausa a música quando a aba/app vai para segundo plano.
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopMusic();else if(musicEnabled&&audioCtx)startMusic()});
+
+/* Sons gerados só pelo anfitrião (simulação) — tocam nele e são enviados aos convidados (evento 'sfx'). */
+const FX_LIB={
+ cream:()=>sfxCream(),finish:()=>sfxFinish(),bite:()=>sfxBite(),click:()=>sfxClick(),
+ jingle:()=>[784,659,523,392].forEach((f,i)=>tone(f,.22,'triangle',.09,i*.12)),
+ beep:a=>tone(a||640,.09,'square',.07),
+ glassbreak:()=>{noisePop(.35,.22,2600);tone(1500,.22,'triangle',.08,0,500)}
+};
+const fxLast={};
+function fxPlayLocal(name,arg,delay){
+ const go=()=>{if(audioEnabled&&FX_LIB[name]){try{FX_LIB[name](arg)}catch(e){}}};
+ if(delay>0)setTimeout(go,delay);else go();
+}
+function fx(name,arg,delay){           // anfitrião/offline
+ const now=performance.now();if(!delay&&now-(fxLast[name]||0)<110)return;fxLast[name]=now;fxPlayLocal(name,arg,delay||0);
+ if(typeof net!=='undefined'&&net.role==='host')netBroadcast({k:'sfx',n:name,a:arg,d:delay||0});
+}
+function fxRemote(d){                  // convidado: ignora se já tocou o mesmo som agora há pouco (ex.: pelo próprio snapshot)
+ const t=performance.now();if(t-(fxLast[d.n]||0)<250)return;fxLast[d.n]=t;fxPlayLocal(d.n,d.a,d.d||0);
+}

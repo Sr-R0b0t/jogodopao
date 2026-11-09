@@ -27,6 +27,8 @@ const GLB_CHARACTERS={
  ricardo:{url:'models/ricardo.glb',height:2.3,modelHeight:1.7,
   clips:{idle:'Idle_9',walk:'Walking',run:'Running',dance:'Joyful_Dance_with_Hand_Sway',jump:'Jump_Over_Obstacle_2',kick:'Kick_a_Soccer_Ball',hop:'Jump_with_Arms_Open'},
   once:['jump','kick'],markY:2.8},
+ pipoca:{url:'models/pipoca.glb',dog:true,height:1.65,modelHeight:.002129,center:[1.214e-4,5.806e-4],
+  clips:{walk:'Armature|Unreal Take|baselayer'},once:[],markY:2.2},
  kika:{url:'models/kika.glb',height:2.3,modelHeight:1.7,
   clips:{idle:'Idle_9',walk:'Walking',run:'Running',dance:'jazz_danc',jump:'Jump_Over_Obstacle_2',kick:'Kick_a_Soccer_Ball',hop:'Jump_with_Arms_Open'},
   once:['jump','kick'],markY:2.8}
@@ -36,8 +38,30 @@ glbOutlineMat.onBeforeCompile=sh=>{ // engorda o contorno ao longo das normais (
  sh.vertexShader=sh.vertexShader.replace('#include <skinning_vertex>','#include <skinning_vertex>\n transformed += normalize(objectNormal)*0.03;');
 };
 
+/* Pipoca (cachorrinha): só tem a animação de andar. Parada = pose do 1º quadro; correr/comemorar = andar mais rápido
+   + pulinhos/giro feitos por código (dogProc). */
+const DOG_SPEED={walk:1,run:1.7,dance:1.9,jump:1.3,hop:1.5,kick:1.4};
+function dogState(g,state){
+ if(g.state===state)return;g.state=state;const a=g.actions.walk;
+ if(state==='idle'){a.paused=true;a.time=0}else{a.paused=false;a.timeScale=DOG_SPEED[state]||1}
+}
+function dogProc(p,state,dt){
+ const g=p.glb,m=g.model,t=performance.now()/1000;g.pt=(g.pt||0)+dt;
+ let y=0,ry=0;
+ if(state==='dance'){y=Math.abs(Math.sin(g.pt*9))*.24;ry=g.pt*5}
+ else if(state==='hop'){y=Math.abs(Math.sin(g.pt*11))*.16}
+ else if(state==='kick'){y=Math.abs(Math.sin(g.pt*14))*.08}
+ else if(state==='idle'){m.scale.y=g.sy*(1+Math.sin(t*2.2)*.012)}
+ if(state!=='idle')m.scale.y=g.sy;
+ m.position.y=y;m.rotation.y+=((state==='dance'?ry:0)-m.rotation.y)*(state==='dance'?1:Math.min(1,dt*8));
+}
+const glbOutlineMatDog=new THREE.MeshBasicMaterial({color:0x62ff9a,side:THREE.BackSide,toneMapped:false});
+glbOutlineMatDog.onBeforeCompile=sh=>{ // modelo da Pipoca é minúsculo em unidades próprias (escala ~650x): contorno proporcional
+ sh.vertexShader=sh.vertexShader.replace('#include <skinning_vertex>','#include <skinning_vertex>\n transformed += normalize(objectNormal)*0.000047;');
+};
 function setGlbState(p,state){
- const g=p.glb;if(!g||g.state===state||!g.actions[state])return;
+ const g=p.glb;if(g&&g.dog){dogState(g,state);return}
+ if(!g||g.state===state||!g.actions[state])return;
  const next=g.actions[state],prev=g.actions[g.state];
  next.reset().play();
  if(prev)prev.crossFadeTo(next,.25,false);
@@ -60,19 +84,21 @@ function loadGlbCharacter(i){
      if(/Hips\.position$/.test(t.name)){const v=t.values;for(let k=0;k<v.length;k+=3){v[k]=v[0];v[k+2]=v[2]}}
     }));
     p.rig.visible=false;               // esconde o modelo simples de esferas
+    if(cfg.center){const k=cfg.height/cfg.modelHeight;model.position.set(-cfg.center[0]*k,0,-cfg.center[1]*k)}   // centraliza o corpo no eixo do personagem
     p.root.add(model);
     const mixer=new THREE.AnimationMixer(model),actions={};
-    for(const [state,name] of Object.entries(cfg.clips)){
+    if(cfg.dog){const a=mixer.clipAction(gltf.animations.find(c=>c.name===cfg.clips.walk)||gltf.animations[0]);a.play();actions.walk=a}
+    else for(const [state,name] of Object.entries(cfg.clips)){
      const clip=gltf.animations.find(c=>c.name===name);if(!clip)continue;
      const a=mixer.clipAction(clip);
      if(cfg.once.includes(state)){a.setLoop(THREE.LoopOnce,1);a.clampWhenFinished=true}
      actions[state]=a;
     }
-    p.glb={model,mixer,actions,state:'',lastX:0,lastZ:0,speed:0};
+    p.glb={model,mixer,actions,state:'',lastX:0,lastZ:0,speed:0,dog:!!cfg.dog,sy:model.scale.y};
     setGlbState(p,'idle');
     // silhueta verde "VOCÊ"
     if(skinned){
-     const om=new THREE.SkinnedMesh(skinned.geometry,glbOutlineMat);
+     const om=new THREE.SkinnedMesh(skinned.geometry,cfg.dog?glbOutlineMatDog:glbOutlineMat);
      om.bind(skinned.skeleton,skinned.bindMatrix);om.frustumCulled=false;om.userData.isOutline=true;
      skinned.parent.add(om);
      const m=typeof selfMarkers!=='undefined'?selfMarkers[i]:null;
@@ -108,5 +134,6 @@ function animateGlbPlayer(p,i,dt){
  if(typeof podiumActive!=='undefined'&&podiumActive&&p.podiumState)state=p.podiumState;   // pódio final
  setGlbState(p,state);
  g.mixer.update(dt);
+ if(g.dog)dogProc(p,state,dt);
 }
 if(typeof GLTFLoader!=='undefined')specs.forEach((s,i)=>{if(GLB_CHARACTERS[s.type])loadGlbCharacter(i)});

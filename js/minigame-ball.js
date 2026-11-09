@@ -61,7 +61,7 @@ function updateBallMode(now,dt,t){
    b.mesh.position.x+=b.vx*dt;b.mesh.position.z+=b.vz*dt;p.root.position.x=b.mesh.position.x;p.root.position.z=b.mesh.position.z;p.root.position.y=1.15+Math.min(.08,speed*.008);b.mesh.position.y=.72-Math.min(.08,speed*.02);
    p.rig.rotation.z=Math.max(-.10,Math.min(.10,-b.vx*.018));p.rig.rotation.x=Math.max(-.10,Math.min(.10,b.vz*.018));p.rig.position.y=Math.abs(Math.sin(t*8+i))*Math.min(.06,speed*.01);
    const radius=Math.hypot(p.root.position.x,p.root.position.z);
-   if(radius>ARENA_EDGE-.2){b.alive=false;b.falling=true;b.fallAt=now;b.outAt=now;b.fallVx=b.vx*.45+p.root.position.x*.35;b.fallVz=b.vz*.45+p.root.position.z*.35;b.vx=0;b.vz=0;sfxCream();document.getElementById('status').textContent=p.name+' foi derrubado da arena!';updateHud()}
+   if(radius>ARENA_EDGE-.2){b.alive=false;b.falling=true;b.fallAt=now;b.outAt=now;b.fallVx=b.vx*.45+p.root.position.x*.35;b.fallVz=b.vz*.45+p.root.position.z*.35;b.vx=0;b.vz=0;fx('cream');document.getElementById('status').textContent=p.name+' foi derrubado da arena!';updateHud()}
   }
   // Colisões entre bolas.
   for(let i=0;i<players.length;i++)for(let j=i+1;j<players.length;j++){
@@ -79,7 +79,7 @@ function updateBallMode(now,dt,t){
      const wi=1.25-.7*fastI,wj=1.25-.7*(1-fastI);
      bi.vx-=nx*imp*wi;bi.vz-=nz*imp*wi;bj.vx+=nx*imp*wj;bj.vz+=nz*imp*wj;
      bi.stun=bj.stun=.5;
-     if(closing>5){sfxCream()}else if(i===humanIndex||j===humanIndex)sfxClick(); // batida forte soa mais alto
+     if(closing>5){fx('cream')}else fx('click'); // batida forte soa mais alto
     }
     const overlap=(1.55-d)*.35;a.x-=nx*overlap;a.z-=nz*overlap;b.x+=nx*overlap;b.z+=nz*overlap;
    }
@@ -97,7 +97,7 @@ function updateBallMode(now,dt,t){
    const detail={};ranking.forEach((g,k)=>detail[g[0]]=k===0&&winnerIndex>=0?'último em pé':(k+1)+'º a ficar na arena');
    showScoreScreen(ranking,'Batalha das Bolas','🏆 Fim da rodada!','Vencedor: '+(winner?winner.name:'Ninguém')+'!',detail);
    document.getElementById('start').disabled=true;document.getElementById('tap').disabled=true;document.getElementById('characterChoice').disabled=true;document.getElementById('gameMode').disabled=true;
-   if(winner){winner.arms.forEach(a=>a.rotation.x=-1.5);sfxFinish()}
+   if(winner){winner.arms.forEach(a=>a.rotation.x=-1.5);fx('finish')}
   }
  }
 }
