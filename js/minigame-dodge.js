@@ -213,7 +213,7 @@ function updateDodgeMode(now,dt){
  // fim
  const left=Math.max(0,D.t0+DODGE.time*1000-now);
  const lt=document.getElementById('lastPlayerTimer');
- if(started&&left<=20000&&!D.end){lt.innerHTML='⏱ Tempo da queimada<strong>'+Math.ceil(left/1000)+'</strong>segundos';lt.classList.add('show');lt.classList.toggle('urgent',left<=10000)}
+ if(started&&left<=20000&&!D.end){lt.innerHTML='<strong>'+Math.ceil(left/1000)+'</strong><small>Tempo da queimada</small>';lt.classList.add('show');lt.classList.toggle('urgent',left<=10000)}
  else if(!D.end){lt.classList.remove('show','urgent')}
  if(D.end&&now>=D.end||started&&left<=0){lt.classList.remove('show','urgent');finishDodge()}
 }

@@ -229,7 +229,7 @@ function updateLavaMode(now,dt){
  });
  // fim
  const left=Math.max(0,L.t0+LAVA.time*1000-now),lt=document.getElementById('lastPlayerTimer');
- if(started&&!L.end){lt.innerHTML='⏱ Sobreviva<strong>'+Math.ceil(left/1000)+'</strong>segundos';lt.classList.add('show');lt.classList.toggle('urgent',left<=10000)}
+ if(started&&!L.end){lt.innerHTML='<strong>'+Math.ceil(left/1000)+'</strong><small>Sobreviva!</small>';lt.classList.add('show');lt.classList.toggle('urgent',left<=10000)}
  if(L.end&&now>=L.end||started&&left<=0){lt.classList.remove('show','urgent');finishLava()}
 }
 function finishLava(){

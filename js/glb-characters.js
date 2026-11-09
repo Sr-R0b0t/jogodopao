@@ -126,6 +126,7 @@ function animateGlbPlayer(p,i,dt){
  else if(p.finished)state='dance';                                                   // terminou a corrida do pão
  else if(gameMode==='bread'&&running)state='run';                               // clicando = correndo
  else if((gameMode==='ball'&&running&&balls[i].alive||isShipMode()&&running&&p.count>0||gameMode==='dodge'&&running&&p.count>0)&&g.speed>.6)state='walk';  // equilibrando na bola
+ else if(gameMode==='hammer'){state=(ended||(typeof hammerView==='function'&&hammerView()&&hammerView().ph==='result'&&hammerView().rv&&!hammerView().rv.caught&&hmHid(hammerView())===i))?'dance':'idle'}
  else if(gameMode==='glass'){state=(ended||(typeof glassView==='function'&&glassView()&&glassView().ph==='done'))&&p.count>GLASS.rows?'dance':(pos.y>.2?'jump':(running&&g.speed>.3?'walk':'idle'))}   // ponte de vidro
  else if(gameMode==='bridge'){state=(typeof bridgeView==='function'&&bridgeView()&&bridgeView().ph==='done'&&p.count>=BRIDGE.goal)||(ended&&p.count>=BRIDGE.goal)?'dance':(running&&g.speed>.3?'walk':'idle')}   // ponte de pedras
  else if(gameMode==='lava'){state=ended?(p.count>0?'dance':'idle'):(p.count>0&&pos.y>.15?'jump':(running&&p.count>0&&g.speed>.6?'walk':'idle'))}   // arena de lava

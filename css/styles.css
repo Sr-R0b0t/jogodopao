@@ -269,7 +269,7 @@ body.tv-mode .tv-box:not([hidden]){display:flex;gap:30px;align-items:center;just
 body.tv-mode #netJoinBox,body.tv-mode .online-card>label,body.tv-mode .net-code,body.tv-mode .online-adv,body.tv-mode #netWait{display:none!important}
 body.tv-mode{padding:0}
 body.tv-mode main{width:100vw;max-width:none}
-body.tv-mode .game-kicker,body.tv-mode .game-title,body.tv-mode .game-description,body.tv-mode #gameNote,body.tv-mode #screenMinigames .controls,body.tv-mode #touchControls,body.tv-mode #bowlingControls,body.tv-mode #bowlingMoveControls,body.tv-mode #soccerPick,body.tv-mode #glassPick,body.tv-mode #bridgePick,body.tv-mode #bowlingArrowHint,body.tv-mode #result{display:none!important}
+body.tv-mode .game-kicker,body.tv-mode .game-title,body.tv-mode .game-description,body.tv-mode #gameNote,body.tv-mode #screenMinigames .controls,body.tv-mode #touchControls,body.tv-mode #bowlingControls,body.tv-mode #bowlingMoveControls,body.tv-mode #hammerPick,body.tv-mode #soccerPick,body.tv-mode #glassPick,body.tv-mode #bridgePick,body.tv-mode #bowlingArrowHint,body.tv-mode #result{display:none!important}
 body.tv-mode #scene{height:calc(100vh - 78px);min-height:0;border-radius:0;border-width:0 0 3px}
 body.tv-mode #screenMinigames .flow-top{padding:2px 0;min-height:0}
 body.tv-mode .status{margin:4px 0;font-size:clamp(.9rem,1.5vw,1.3rem)}
@@ -422,3 +422,39 @@ body.tv-mode .home-orbit,body.tv-mode .preview-avatar{animation:none;filter:none
 .character-preview:before{width:184px;height:184px;top:16px}
 .preview-avatar{width:132px;height:184px;margin-top:0;filter:drop-shadow(0 8px 5px #10091d70)}
 .preview-name{margin-top:14px}
+
+/* cronômetro direto na tela do jogo (pílula escura no topo, como nos jogos de festa) */
+#lastPlayerTimer,#lastPlayerTimer.show{margin:0;padding:0;max-width:none;border:0;border-radius:0;background:none;box-shadow:none;animation:none}
+#lastPlayerTimer.show{display:flex;flex-direction:column;align-items:center;gap:4px;position:absolute;top:64px;left:50%;transform:translateX(-50%);z-index:46;pointer-events:none}
+#lastPlayerTimer strong{display:inline-flex;align-items:center;gap:8px;padding:2px 24px 2px 16px;border-radius:999px;background:#0c0716ea;border:2px solid #ffffff2e;box-shadow:0 6px 18px #0008;color:#fff;font-size:2.1rem;line-height:1.2;font-weight:1000;font-variant-numeric:tabular-nums}
+#lastPlayerTimer strong:before{content:"🕒";font-size:1.5rem}
+#lastPlayerTimer small{padding:2px 12px;border-radius:999px;background:#0c0716b8;color:#ffe9a8;font-size:.74rem;font-weight:800;text-shadow:none}
+#lastPlayerTimer.urgent strong{background:#c0162a;border-color:#ffb3bb;animation:lpPulseTimer .5s ease-in-out infinite alternate}
+@keyframes lpPulseTimer{from{transform:scale(1)}to{transform:scale(1.12)}}
+body.tv-mode #lastPlayerTimer.show,body.tv-mode #lastPlayerTimer.urgent{position:absolute;top:86px;left:50%;transform:translateX(-50%);animation:none;padding:0}
+body.tv-mode #lastPlayerTimer strong{font-size:clamp(2.4rem,5vw,4rem)}
+body.tv-mode #lastPlayerTimer strong:before{font-size:clamp(1.8rem,3.6vw,3rem)}
+body.tv-mode #lastPlayerTimer small{font-size:clamp(.9rem,1.6vw,1.3rem)}
+
+/* cronômetro direto na tela do jogo (pílula escura no topo, como nos jogos de festa) */
+#gameClock,#gameClock.show{margin:0;padding:0;max-width:none;border:0;border-radius:0;background:none;box-shadow:none;animation:none}
+#gameClock.show{display:flex;flex-direction:column;align-items:center;gap:4px;position:absolute;top:64px;left:50%;transform:translateX(-50%);z-index:46;pointer-events:none}
+#gameClock strong{display:inline-flex;align-items:center;gap:8px;padding:2px 24px 2px 16px;border-radius:999px;background:#0c0716ea;border:2px solid #ffffff2e;box-shadow:0 6px 18px #0008;color:#fff;font-size:2.1rem;line-height:1.2;font-weight:1000;font-variant-numeric:tabular-nums}
+#gameClock strong:before{content:"🕒";font-size:1.5rem}
+#gameClock small{padding:2px 12px;border-radius:999px;background:#0c0716b8;color:#ffe9a8;font-size:.74rem;font-weight:800;text-shadow:none}
+#gameClock.urgent strong{background:#c0162a;border-color:#ffb3bb;animation:lpPulseTimer .5s ease-in-out infinite alternate}
+@keyframes lpPulseTimer{from{transform:scale(1)}to{transform:scale(1.12)}}
+body.tv-mode #gameClock.show,body.tv-mode #gameClock.urgent{position:absolute;top:86px;left:50%;transform:translateX(-50%);animation:none;padding:0}
+body.tv-mode #gameClock strong{font-size:clamp(2.4rem,5vw,4rem)}
+body.tv-mode #gameClock strong:before{font-size:clamp(1.8rem,3.6vw,3rem)}
+body.tv-mode #gameClock small{font-size:clamp(.9rem,1.6vw,1.3rem)}
+
+#lastPlayerTimer.show~#gameClock{display:none!important}
+
+#hammerPick{display:none;position:absolute;z-index:42;left:0;right:0;bottom:8px;text-align:center;padding:0 8px}
+#hammerPick.show{display:block}
+#hammerPickTitle{display:inline-block;margin-bottom:8px;padding:6px 14px;border-radius:12px;background:#10091dcc;border:1px solid #ffb86b;color:#ffdf79;font-weight:1000;font-size:.95rem}
+#hammerPick .sp-btns button{max-width:130px;font-size:1.4rem}
+#hammerPick button[data-c="0"]{background:#a7e23a;color:#142}#hammerPick button[data-c="1"]{background:#f270d8;color:#312}
+#hammerPick button[data-c="2"]{background:#32d8cf;color:#023}#hammerPick button[data-c="3"]{background:#f6dc3d;color:#330}
+#touchControls[data-mode="hammer"] .joy,#touchControls[data-mode="hammer"] .touch-action,#touchControls[data-mode="hammer"] .tpower{display:none}

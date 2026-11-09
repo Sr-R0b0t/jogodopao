@@ -177,6 +177,7 @@ function netHostInput(slot,d){
  }else if(d.k==='sc')soccerSetChoice(slot,d.dir);
  else if(d.k==='bc')bridgeSetChoice(slot,d.c);
  else if(d.k==='gc')glassSetChoice(slot,d.c);
+ else if(d.k==='hc')hammerSetChoice(slot,d.c);
  else if(d.k==='mv')net.mv[slot]={x:clamp1(d.x),y:clamp1(d.y)};
  else if(d.k==='aim')remoteBowlAim(slot,d.v);
 }
@@ -199,6 +200,7 @@ function netSnapshot(){
  if(gameMode==='lava'){const lv=lavaSnapshot();if(lv)S.lv=lv}
  if(gameMode==='bridge'){const bg=bridgeSnapshot();if(bg)S.bg=bg}
  if(gameMode==='glass'){const gl=glassSnapshot();if(gl)S.gl=gl}
+ if(gameMode==='hammer'){const hm=hammerSnapshot();if(hm)S.hm=hm}
  if(gameMode==='ball')S.b=balls.map(b=>[r2(b.mesh.position.x),r2(b.mesh.position.y),r2(b.mesh.position.z),b.alive?1:0,b.falling?1:0,b.mesh.visible?1:0]);
  if(gameMode==='bowling')S.bw={o:bowlingOrder,t:bowlingTurn,s:bowlingScores,f:bowlingBallState?1:0,
   ball:[r2(bowlingBall.position.x),r2(bowlingBall.position.y),r2(bowlingBall.position.z)],
@@ -282,6 +284,7 @@ function netApplySnap(S){
  if(S.lv){lavaClient=S.lv;lavaClient.rt=performance.now()}
  if(S.bg)bridgeClient=S.bg;else if(gameMode!=='bridge')bridgeClient=null;
  if(S.gl)glassClient=S.gl;else if(gameMode!=='glass')glassClient=null;
+ if(S.hm)hammerClient=S.hm;else if(gameMode!=='hammer')hammerClient=null;
  if(S.sc){soccer=S.sc;applySoccerVisibility()}else if(gameMode!=='soccer')soccer=null;
  if(S.b)balls.forEach((b,i)=>{b.alive=!!S.b[i][3];b.falling=!!S.b[i][4];b.mesh.visible=!!S.b[i][5]});
  if(S.bw){

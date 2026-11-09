@@ -6,7 +6,7 @@ const $=id=>document.getElementById(id);
 const qs=new URLSearchParams(location.search);
 let ws=null,joined=false,closedByTv=false,retrying=false,tries=0;
 let me=-1,names=[],vip=-1,ui=null,myName='',code=(qs.get('sala')||'').toUpperCase().slice(0,5);
-let sentBr=-1,sentGl=-1,sentSh=-1,cdEnd=0,throwSent=false,lastTurnKey='';
+let sentBr=-1,sentGl,sentHm=-1,sentSh=-1,cdEnd=0,throwSent=false,lastTurnKey='';
 
 try{$('name').value=localStorage.getItem('jogoDoPao.name')||''}catch(e){}
 $('code').value=code;
@@ -108,7 +108,7 @@ function renderGrid(){
 }
 
 /* ---- Painéis ---- */
-const panels=['padStick','padBread','padBowl','padSoccer','padBridge','padGlass','padWait'];
+const panels=['padStick','padBread','padBowl','padSoccer','padBridge','padGlass','padHammer','padWait'];
 function showPanel(id){panels.forEach(p=>$(p).style.display=p===id?'flex':'none')}
 function render(){
  if(!joined)return;
@@ -147,6 +147,10 @@ function render(){
   stopStick();
   if(ui.sc&&sentSh!==ui.sh){showPanel('padSoccer');$('scTitle').textContent=ui.sc===1?'⚽ Onde você vai CHUTAR?':'🧤 Onde você vai DEFENDER?'}
   else{showPanel('padWait');$('waitTxt').textContent=ui.sc?'Escolha enviada! ✅':'Olhe para a TV…'}
+ }else if(mode==='hammer'){
+  stopStick();
+  if(ui.hg&&sentHm!==ui.hr){showPanel('padHammer');$('hmTitle').textContent=ui.hk===1?'🙈 Esconda-se! Escolha a plataforma':'🔨 Onde dar a marretada?'}
+  else{showPanel('padWait');$('waitTxt').textContent=ui.hw?'Aguarde os outros… 👀':(ui.hg===undefined?'Olhe para a TV…':'Escolha enviada! ✅')}
  }else if(mode==='glass'){
   stopStick();
   if(ui.gg&&sentGl!==ui.gr){showPanel('padGlass');$('glTitle').textContent='🔷 Sua vez! Escolha o vidro'}
@@ -222,6 +226,10 @@ document.querySelectorAll('.sc button').forEach(b=>b.addEventListener('click',()
  if(!ui||!ui.sc)return;buzz(20);sentSh=ui.sh;relay({k:'sc',dir:Number(b.dataset.d)});render();
 }));
 
+/* ---- Esconde e Marreta ---- */
+document.querySelectorAll('#padHammer button').forEach(b=>b.addEventListener('click',()=>{
+ if(!ui||!ui.hg)return;buzz(20);sentHm=ui.hr;relay({k:'hc',c:Number(b.dataset.c)});render();
+}));
 /* ---- Ponte de Vidro ---- */
 document.querySelectorAll('#padGlass button').forEach(b=>b.addEventListener('click',()=>{
  if(!ui||!ui.gg)return;buzz(20);sentGl=ui.gr;relay({k:'gc',c:Number(b.dataset.c)});render();

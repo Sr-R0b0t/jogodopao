@@ -66,7 +66,7 @@ function beginLastPlayerTimer(){
  document.getElementById('status').textContent=`Última chance para ${last.name}: 30 segundos!`;
  lastPlayerInterval=setInterval(()=>{
   const remain=Math.max(0,Math.ceil((lastPlayerDeadline-Date.now())/1000));
-  if(el){el.innerHTML=`⏳ ${last.name}, termine a prova!<strong>${remain}</strong> segundos restantes`;el.classList.toggle('urgent',remain<=10)}
+  if(el){el.innerHTML=`<strong>${remain}</strong><small>⏳ ${last.name}, termine a prova!</small>`;el.classList.toggle('urgent',remain<=10)}
   if(remain!==lastPlayerBeep&&remain<=10&&remain>0){lastPlayerBeep=remain;fx('beep',remain<=3?900:640)}
  },200);
  lastPlayerTimerId=setTimeout(()=>{
