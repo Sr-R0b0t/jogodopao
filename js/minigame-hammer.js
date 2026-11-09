@@ -67,7 +67,7 @@ function startHammer(){
 function hmNextRound(now){
  const B=hammer;B.r++;
  if(B.r>=B.R){hammerFinish();return}
- B.hider=B.order[B.r];B.rd=0;B.hits=0;B.hideChoice=undefined;B.picks={};B.rv=null;B.ph='draw';B.t0=now;B.left=0;B.key++;B.need=[];B.drawShown=-1;
+ B.hider=B.order[B.r];B.rd=0;B.hits=0;B.hideChoice=undefined;B.picks={};B.rv=null;B.ph='draw';B.t0=now;B.left=0;B.key++;B.need=[];B.drawShown=-1;B.drawFin=false;
  const act=activeIndices(),n=act.length;
  act.forEach((i,k)=>{const p=players[i];p.root.position.set((k-(n-1)/2)*Math.min(1.25,7.6/Math.max(1,n-1)),0,5.7);p.root.rotation.y=Math.PI;p.root.visible=true});
  document.getElementById('status').textContent='🎲 Sorteando quem vai se ESCONDER…';
@@ -109,9 +109,14 @@ function updateHammerMode(now,dt){
   if(shown!==B.drawShown){B.drawShown=shown;fx('beep',fin?880:520)}
   act.forEach(i=>{const p=players[i];p.root.position.z=(i===shown)?4.5:5.7;p.root.scale.setScalar(i===shown?1.2:.95)});
   if(fin){document.getElementById('status').textContent='🎲 '+players[B.hider].name+' foi sorteado para se ESCONDER!'}
-  if(el>2700){act.forEach(i=>players[i].root.scale.setScalar(.95));hmEndDraw(now)}
+  if(fin)B.drawFin=true;
+  if(el>2700){act.forEach(i=>players[i].root.scale.setScalar(.95));B.ph='count';B.t0=now;B.left=5;B.key++;B.lastCnt=6}
  }
- else if(B.ph==='hide'){
+ else if(B.ph==='count'){
+  const el=now-B.t0;B.left=Math.max(0,Math.ceil(5-el/1000));
+  if(B.left!==B.lastCnt){B.lastCnt=B.left;if(B.left>0)fx('beep',B.left<=1?880:600);document.getElementById('status').textContent='🙈 '+players[B.hider].name+' vai se esconder! Começa em '+B.left+'…'}
+  if(el>=5000)hmEndDraw(now);
+ }else if(B.ph==='hide'){
   const els=now-B.t0;B.left=Math.max(0,Math.ceil(HAMMER.hideSec-els/1000));
   if(B.hideChoice===undefined&&!isHumanSlot(B.hider)&&now>=B.botAt[B.hider])B.hideChoice=hmBotHide(B.hider);
   if(B.hideChoice===undefined&&els>HAMMER.hideSec*1000)B.hideChoice=Math.floor(Math.random()*4);
@@ -176,12 +181,31 @@ function hammerChoose(c){
  if(net.role==='client')netSendInput({k:'hc',c});else hammerSetChoice(humanIndex,c);
  hammerSentKey=B.key;if(audioEnabled)sfxClick();
 }
+const hmHp=B=>B.hp!==undefined?B.hp:HAMMER.hp-(B.hits||0);
+function hammerChip(i){
+ const B=hammerView();if(!B)return '';const h=hmHid(B);
+ if(h===undefined||h<0||B.ph==='intro')return '🔨 ATACANTE';
+ const pts=(B.pts&&B.pts[i])||0;
+ if(i===h){const hp=Math.max(0,hmHp(B));return '🙈 '+'❤'.repeat(hp)+'🖤'.repeat(HAMMER.hp-hp)+(pts?' +'+pts:'')}
+ return '🔨 ATACA'+(pts?' +'+pts:'');
+}
+function hammerBannerUpdate(B){
+ const el=document.getElementById('hammerBanner');if(!el)return;
+ let html='';
+ if(B&&gameMode==='hammer'){
+  const h=hmHid(B),nm=i=>(players[i]?players[i].name:'');
+  if(B.ph==='draw'){const ds=B.ds!==undefined?B.ds:B.drawShown,fin=B.fin!==undefined?B.fin:B.drawFin;
+   html=fin?'<small>🙈 VAI SE ESCONDER!</small><strong>'+nm(h)+'</strong><em>Os outros 3 vão marretar</em>':'<small>🎲 SORTEANDO O ESCONDEDOR…</small><strong>'+nm(ds)+'</strong>'}
+  else if(B.ph==='count')html='<small>🙈 '+nm(h)+' vai se esconder</small><strong class="num">'+B.left+'</strong><em>Prepare-se!</em>';
+ }
+ if(el.dataset.s!==html){el.dataset.s=html;el.innerHTML=html;el.classList.toggle('show',!!html)}
+}
 function hammerUiUpdate(){
  const panel=document.getElementById('hammerPick'),hud=document.getElementById('hammerHud');if(!panel||!hud)return;
- const B=hammerView(),on=gameMode==='hammer'&&!!B;
+ const B=hammerView(),on=gameMode==='hammer'&&!!B;hammerBannerUpdate(on?B:null);
  hud.classList.toggle('show',on);
  if(!on){panel.classList.remove('show');return}
- const act=activeIndices(),sig=act.map(i=>(B.pts?B.pts[i]:0)||0).join(',');if(sig!==hmHudSig){hmHudSig=sig;act.forEach(i=>{players[i].count=(B.pts&&B.pts[i])||0});if(typeof updateHud==='function')updateHud()}
+ const act=activeIndices(),sig=act.map(i=>(B.pts?B.pts[i]:0)||0).join(',')+'|'+hmHid(B)+'|'+hmHp(B)+'|'+(B.ph==='intro'?1:0);if(sig!==hmHudSig){hmHudSig=sig;if(typeof updateHud==='function')updateHud()}
  const hn=hmHid(B)>=0&&players[hmHid(B)]?players[hmHid(B)].name:'';
  const ph=B.ph==='draw'?'🎲 Sorteando o escondedor…':B.ph==='hide'?'🙈 '+hn+' (escondedor) • ⏱ '+B.left+'s':B.ph==='strike'?'🔨 Marretadores escolhendo • ⏱ '+B.left+'s':B.ph==='reveal'?'💥 Marretadas!':B.ph==='result'?'Resultado':B.ph==='setend'?(B.lost?'💔 Escondido perdeu!':'🏆 Escondido venceu!'):'Preparando…';
  hud.textContent='🔨 '+Math.min(Math.max(1,(B.r||0)+1),B.R||1)+'/'+(B.R||1)+' • Rodada '+((B.rd||0)+1)+'/'+HAMMER.rounds+' • '+(hmHid(B)>=0&&players[hmHid(B)]?players[hmHid(B)].name+' '+'❤'.repeat(Math.max(0,B.hp===undefined?HAMMER.hp:B.hp))+(B.hp===0?'💔':'')+' • ':'')+ph+'  |  '+act.map(i=>players[i].name+' '+((B.pts&&B.pts[i])||0)).join(' • ');
@@ -228,14 +252,11 @@ function hammerVisualUpdate(dt){
   });
   if(!rv.pads.includes(rv.hp)){const lab=hmLabels[rv.hp];lab.sp.visible=true;hmDrawLabel(rv.hp,['🙈 '+players[hmHid(B)].name.slice(0,9),'ninguém bateu'],'#8af0b3')}
  }
- // indicador privado para o escondido: onde ele está
- const hid=hmHid(B);
- if((B.ph==='hide'||B.ph==='strike')&&hid===humanIndex&&hmMine!==undefined&&hmMineKey>=B.key-1){const lab=hmLabels[hmMine];lab.sp.visible=true;hmDrawLabel(hmMine,['🙈 VOCÊ','está aqui'],'#ffdf79')}
 }
 function hammerSnapshot(){
  const B=hammer;if(!B)return null;const n=players.length,pts=new Array(n).fill(0),pk=new Array(n).fill(0);
  activeIndices().forEach(i=>{pts[i]=B.pts[i]||0;pk[i]=B.picks[i]!==undefined?1:0});
- const S={ph:B.ph,key:B.key,r:B.r,R:B.R,rd:B.rd,hp:HAMMER.hp-B.hits,lost:!!B.lost,h:B.hider,left:B.left,need:B.need,pts,pk};
+ const S={ds:B.drawShown,fin:!!B.drawFin,ph:B.ph,key:B.key,r:B.r,R:B.R,rd:B.rd,hp:HAMMER.hp-B.hits,lost:!!B.lost,h:B.hider,left:B.left,need:B.need,pts,pk};
  if((B.ph==='reveal'||B.ph==='result'||B.ph==='setend')&&B.rv)S.rv={pads:B.rv.pads,hp:B.rv.hp,caught:B.rv.caught,picks:B.rv.picks,lives:B.rv.lives};
  return S;
 }

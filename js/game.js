@@ -7,7 +7,7 @@ let running=false,ended=false,botTimers=[],lastTime=performance.now(),celebrateS
 function clearBots(){botTimers.forEach(clearTimeout);botTimers=[]}
 
 function updateHud(){
- players.forEach((p,i)=>{const b=balls[i];document.getElementById('tag'+i).classList.toggle('me',i===humanIndex);document.querySelector(`#tag${i} b`).textContent=gameMode==='ball'?(b.alive?'NA ARENA':(b.falling?'CAINDO!':'FORA!')):isShipMode()?'❤ '+p.count:gameMode==='bowling'?'🎳 '+(bowlingScores[i]||0):gameMode==='dodge'?(p.count>0?'EM JOGO':'QUEIMADO'):gameMode==='lava'?(p.count>0?'VIVO':'QUEIMADO'):gameMode==='bridge'?'👣 '+Math.min(BRIDGE.goal,bridgeDistOf(i))+' / '+BRIDGE.goal:gameMode==='glass'?'🔷 '+Math.min(GLASS.rows,p.count)+' / '+GLASS.rows:gameMode==='hammer'?'🔨 '+p.count+' pts':`${p.count} / 100`});
+ players.forEach((p,i)=>{const b=balls[i];document.getElementById('tag'+i).classList.toggle('me',i===humanIndex);document.querySelector(`#tag${i} b`).textContent=gameMode==='ball'?(b.alive?'NA ARENA':(b.falling?'CAINDO!':'FORA!')):isShipMode()?'❤ '+p.count:gameMode==='bowling'?'🎳 '+(bowlingScores[i]||0):gameMode==='dodge'?(p.count>0?'EM JOGO':'QUEIMADO'):gameMode==='lava'?(p.count>0?'VIVO':'QUEIMADO'):gameMode==='bridge'?'👣 '+Math.min(BRIDGE.goal,bridgeDistOf(i))+' / '+BRIDGE.goal:gameMode==='glass'?'🔷 '+Math.min(GLASS.rows,p.count)+' / '+GLASS.rows:gameMode==='hammer'?hammerChip(i):`${p.count} / 100`});
  document.getElementById('tap').textContent=gameMode==='ball'?'🎯 EMPURRÃO!':gameMode==='bowling'?'🎳 LANÇAR BOLA!':'👆 CLICAR!';
 }
 function applyMode(){
@@ -137,7 +137,7 @@ document.addEventListener('keydown',e=>{
 });
 
 /* Trava o scroll da página enquanto o minigame está na tela (evita rolar sem querer ao controlar no celular) */
-/* Cronômetro no topo da tela: contagem regressiva nos jogos de turno (pênalti, ponte, vidro) e tempo decorrido nos demais. */
+/* Cronômetro no topo da tela: contagem regressiva só na vez do jogador (pênalti, pontes, marreta). O tempo de jogo decorrido não aparece mais. */
 let gcStart=0,gcWasRunning=false,gcSig='';
 function gameClockUpdate(){
  const el=document.getElementById('gameClock');if(!el)return;
@@ -148,7 +148,6 @@ function gameClockUpdate(){
   else if(gameMode==='bridge'){const B=bridgeView();if(B&&B.ph==='pick'){txt=String(B.left);cap='Escolha seu caminho';urg=B.left<=3}}
   else if(gameMode==='hammer'){const B=hammerView();if(B&&(B.ph==='hide'||B.ph==='strike')){txt=String(B.left);cap=B.ph==='hide'?'Escondendo…':'Escolham onde bater';urg=B.left<=2}}
   else if(gameMode==='glass'){const B=glassView();if(B&&B.ph==='turn'&&B.cur>=0&&players[B.cur]){txt=String(B.left);cap='Vez de '+players[B.cur].name;urg=B.left<=2}}
-  else if(gameMode==='bread'||gameMode==='ball'||gameMode==='ship'||gameMode==='turbo'){const s=Math.max(0,Math.floor((now-gcStart)/1000));txt=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');cap='Tempo de jogo'}
  }
  const sig=txt+'|'+cap+'|'+urg;if(sig===gcSig)return;gcSig=sig;
  if(!txt){el.classList.remove('show','urgent');return}

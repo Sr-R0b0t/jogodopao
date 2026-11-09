@@ -458,3 +458,11 @@ body.tv-mode #gameClock small{font-size:clamp(.9rem,1.6vw,1.3rem)}
 #hammerPick button[data-c="0"]{background:#a7e23a;color:#142}#hammerPick button[data-c="1"]{background:#f270d8;color:#312}
 #hammerPick button[data-c="2"]{background:#32d8cf;color:#023}#hammerPick button[data-c="3"]{background:#f6dc3d;color:#330}
 #touchControls[data-mode="hammer"] .joy,#touchControls[data-mode="hammer"] .touch-action,#touchControls[data-mode="hammer"] .tpower{display:none}
+
+#hammerBanner{display:none;position:absolute;z-index:47;left:50%;top:46%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;padding:18px 34px;border-radius:24px;background:#10091de6;border:3px solid #ffb86b;box-shadow:0 12px 40px #000a;min-width:min(82%,380px)}
+#hammerBanner.show{display:block;animation:hmPop .35s ease-out}
+#hammerBanner small{display:block;color:#ffdf79;font-weight:1000;font-size:clamp(.9rem,2.2vw,1.4rem);letter-spacing:.04em}
+#hammerBanner strong{display:block;color:#fff;font-weight:1000;font-size:clamp(2rem,6vw,3.6rem);line-height:1.15;margin:6px 0}
+#hammerBanner strong.num{font-size:clamp(4rem,14vw,8rem);color:#ffdf79;line-height:1}
+#hammerBanner em{display:block;font-style:normal;color:#e8d4ff;font-weight:900;font-size:clamp(.85rem,2vw,1.2rem)}
+@keyframes hmPop{from{transform:translate(-50%,-50%) scale(.85);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}

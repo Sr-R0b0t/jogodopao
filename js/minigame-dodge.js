@@ -180,7 +180,7 @@ function updateDodgeMode(now,dt){
    else for(const e of dodgeTeams[1-b.team]){                     // acertou alguém do outro time?
     if(D.out[e])continue;const q=players[e].root.position;
     if(Math.hypot(q.x-b.x,q.z-b.z)<DODGE.hitR){
-     D.out[e]=true;D.outAt[e]=now;D.hits++;players[e].count=0;delete D.hold[e];
+     D.out[e]=true;D.outAt[e]=now;D.hits++;players[e].count=0;delete D.hold[e];if(typeof updateHud==='function')updateHud();
      if(audioEnabled)dodgeSfxHit();
      b.vx*=-.35;b.vz*=-.35;b.st=0;b.team=-1;b.y=DODGE.ballR;
      document.getElementById('status').textContent='💥 '+players[e].name+' foi queimado por '+players[b.owner].name+'!';

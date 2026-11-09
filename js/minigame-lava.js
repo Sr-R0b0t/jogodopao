@@ -108,7 +108,7 @@ function lavaBurn(i,now,sx,sz,kind){
  const L=lava;if(L.out[i])return;
  const p=players[i].root.position;let dx=p.x-sx,dz=p.z-sz;const l=Math.hypot(dx,dz)||1;dx/=l;dz/=l;
  L.out[i]=true;L.outAt[i]=now;L.knock[i]={vx:dx*(kind==='beam'?5:3.2),vz:dz*(kind==='beam'?5:3.2),y0:p.y};
- players[i].count=0;L.hits++;delete L.jump[i];
+ players[i].count=0;L.hits++;delete L.jump[i];if(typeof updateHud==='function')updateHud();
  if(audioEnabled)lavaSfxBurn();
  document.getElementById('status').textContent='🔥 '+players[i].name+' foi queimado'+(kind==='beam'?' pelo facho!':' por um punho de magma!');
  const alive=lavaAlive().length;
