@@ -137,8 +137,8 @@ function updatePageLock(){
  const lock=!!scr&&scr.style.display!=='none'&&!(ov&&ov.classList.contains('show'));
  if(lock!==pageLocked){pageLocked=lock;document.documentElement.classList.toggle('game-lock',lock);document.body.classList.toggle('game-lock',lock);if(lock)window.scrollTo(0,0)}
 }
-document.addEventListener('touchmove',e=>{if(pageLocked&&!e.target.closest('#scoreOverlay'))e.preventDefault()},{passive:false});
-document.addEventListener('wheel',e=>{if(pageLocked&&!e.target.closest('#scoreOverlay'))e.preventDefault()},{passive:false});
+document.addEventListener('touchmove',e=>{if(pageLocked&&!e.target.closest('#scoreOverlay,#historyModal'))e.preventDefault()},{passive:false});
+document.addEventListener('wheel',e=>{if(pageLocked&&!e.target.closest('#scoreOverlay,#historyModal'))e.preventDefault()},{passive:false});
 document.addEventListener('keydown',e=>{if(pageLocked&&['ArrowUp','ArrowDown','Space','PageUp','PageDown','Home','End'].includes(e.code)&&!/INPUT|SELECT|TEXTAREA/.test((e.target||{}).tagName||''))e.preventDefault()});
 
 /* Loop de animação */
