@@ -48,12 +48,13 @@ function dogState(g,state){
 function dogProc(p,state,dt){
  const g=p.glb,m=g.model,t=performance.now()/1000;g.pt=(g.pt||0)+dt;
  let y=0,ry=0;
- if(state==='dance'){y=Math.abs(Math.sin(g.pt*9))*.24;ry=g.pt*5}
+ if(state==='dance'){y=Math.abs(Math.sin(g.pt*9))*.24;ry=-g.pt*5}
  else if(state==='hop'){y=Math.abs(Math.sin(g.pt*11))*.16}
  else if(state==='kick'){y=Math.abs(Math.sin(g.pt*14))*.08}
  else if(state==='idle'){m.scale.y=g.sy*(1+Math.sin(t*2.2)*.012)}
  if(state!=='idle')m.scale.y=g.sy;
- m.position.y=y;m.rotation.y+=((state==='dance'?ry:0)-m.rotation.y)*(state==='dance'?1:Math.min(1,dt*8));
+ m.position.y=y;if(state!=='dance'){let r=m.rotation.y%(Math.PI*2);if(r>Math.PI)r-=Math.PI*2;else if(r<-Math.PI)r+=Math.PI*2;m.rotation.y=r}
+ m.rotation.y+=((state==='dance'?ry:0)-m.rotation.y)*(state==='dance'?1:Math.min(1,dt*8));
 }
 const glbOutlineMatDog=new THREE.MeshBasicMaterial({color:0x62ff9a,side:THREE.BackSide,toneMapped:false});
 glbOutlineMatDog.onBeforeCompile=sh=>{ // modelo da Pipoca é minúsculo em unidades próprias (escala ~650x): contorno proporcional
