@@ -100,6 +100,13 @@ function soccerNextShot(now){
  else setStatus('⚽ Chute '+s.sh+'/'+s.tot+': '+players[s.k].name+' vai chutar contra o goleiro '+players[s.g].name+'!');
 }
 /* Escolha de direção (dir: -1 esquerda, 0 meio, 1 direita) — batedor ou goleiro. */
+let socChipSig='';
+function soccerChip(i){
+ const s=soccer;if(!s)return '⚽ 0';const gb=s.goalsBy||s.gb||{};
+ if(s.duel)return (i===s.duel[0]||i===s.duel[1])?'⚽ '+(gb[i]||0)+(s.duel[0]===i?'':''):'—';
+ if(i===s.g)return '🧤 '+(s.saves||0)+' defesa'+(s.saves===1?'':'s');
+ return '⚽ '+(gb[i]||0)+' gol'+((gb[i]||0)===1?'':'s');
+}
 function soccerSetChoice(slot,dir){
  const s=soccer;if(!s||s.ph!=='pick'||(slot!==s.k&&slot!==s.g)||s.choice[slot]!==undefined)return;
  dir=Math.max(-1,Math.min(1,Math.round(Number(dir)||0)));s.choice[slot]=dir;
@@ -173,6 +180,7 @@ function soccerChoose(dir){
 }
 function soccerUiUpdate(){
  const panel=document.getElementById('soccerPick'),hud=document.getElementById('soccerHud');if(!panel||!hud)return;
+ if(gameMode==='soccer'&&soccer){const sg=soccer.goalsBy||soccer.gb||{},sig=JSON.stringify(sg)+'|'+soccer.saves+'|'+soccer.g+'|'+(soccer.duel||0);if(sig!==socChipSig){socChipSig=sig;if(typeof updateHud==='function')updateHud()}}
  const on=gameMode==='soccer'&&!!soccer;
  hud.classList.toggle('show',on);
  if(on&&soccer.duel){

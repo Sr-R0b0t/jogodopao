@@ -7,7 +7,7 @@ let running=false,ended=false,botTimers=[],lastTime=performance.now(),celebrateS
 function clearBots(){botTimers.forEach(clearTimeout);botTimers=[]}
 
 function updateHud(){
- players.forEach((p,i)=>{const b=balls[i];document.getElementById('tag'+i).classList.toggle('me',i===humanIndex);document.querySelector(`#tag${i} b`).textContent=gameMode==='ball'?(b.alive?'NA ARENA':(b.falling?'CAINDO!':'FORA!')):isShipMode()?'❤ '+p.count:gameMode==='bowling'?'🎳 '+(bowlingScores[i]||0):gameMode==='dodge'?(p.count>0?'EM JOGO':'QUEIMADO'):gameMode==='lava'?(p.count>0?'VIVO':'QUEIMADO'):gameMode==='bridge'?'👣 '+Math.min(BRIDGE.goal,bridgeDistOf(i))+' / '+BRIDGE.goal:gameMode==='glass'?'🔷 '+Math.min(GLASS.rows,p.count)+' / '+GLASS.rows:gameMode==='hammer'?hammerChip(i):`${p.count} / 100`});
+ players.forEach((p,i)=>{const b=balls[i];document.getElementById('tag'+i).classList.toggle('me',i===humanIndex);document.querySelector(`#tag${i} b`).textContent=gameMode==='ball'?(b.alive?'NA ARENA':(b.falling?'CAINDO!':'FORA!')):isShipMode()?'❤ '+p.count:gameMode==='bowling'?'🎳 '+(bowlingScores[i]||0):gameMode==='dodge'?(p.count>0?'EM JOGO':'QUEIMADO'):gameMode==='lava'?(p.count>0?'VIVO':'QUEIMADO'):gameMode==='bridge'?'👣 '+Math.min(BRIDGE.goal,bridgeDistOf(i))+' / '+BRIDGE.goal:gameMode==='glass'?'🔷 '+Math.min(GLASS.rows,p.count)+' / '+GLASS.rows:gameMode==='hammer'?hammerChip(i):gameMode==='soccer'?soccerChip(i):`${p.count} / 100`});
  document.getElementById('tap').textContent=gameMode==='ball'?'🎯 EMPURRÃO!':gameMode==='bowling'?'🎳 LANÇAR BOLA!':'👆 CLICAR!';
 }
 function applyMode(){
