@@ -29,6 +29,9 @@ const GLB_CHARACTERS={
   once:['jump','kick'],markY:2.8},
  pipoca:{url:'models/pipoca.glb',dog:true,height:1.65,modelHeight:.002129,center:[1.214e-4,5.806e-4],
   clips:{walk:'Armature|Unreal Take|baselayer'},once:[],markY:2.2},
+ do:{url:'models/do.glb',height:2.3,modelHeight:1.7,
+  clips:{idle:'Idle_9',walk:'Walking',run:'Running',dance:'Talk_with_Left_Hand_on_Hip',jump:'Jump_Over_Obstacle_2',kick:'Kick_a_Soccer_Ball',hop:'Hop_with_Arms_Raised'},
+  once:['jump','kick'],markY:2.8},
  kika:{url:'models/kika.glb',height:2.3,modelHeight:1.7,
   clips:{idle:'Idle_9',walk:'Walking',run:'Running',dance:'jazz_danc',jump:'Jump_Over_Obstacle_2',kick:'Kick_a_Soccer_Ball',hop:'Jump_with_Arms_Open'},
   once:['jump','kick'],markY:2.8}

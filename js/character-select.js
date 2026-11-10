@@ -4,7 +4,7 @@
 const characterPreviewRenderers=[]; // mantido vazio por compatibilidade
 const previewCache={};
 /* Na seleção de personagem, Fabola e Luana aparecem com as imagens PNG (os modelos 3D animados ficam só no jogo). */
-const PREVIEW_PNG={fox:'img/gui.png',monkey:'img/macaco.png',dragon:'img/dragao.png',luana:'img/luana.png',fabola:'img/fabola.png',rafa:'img/rafa.png',lorena:'img/lorena.png',ricardo:'img/ricardo.png',kika:'img/kika.png',pipoca:'img/pipoca.png'};
+const PREVIEW_PNG={fox:'img/gui.png',monkey:'img/macaco.png',dragon:'img/dragao.png',luana:'img/luana.png',fabola:'img/fabola.png',rafa:'img/rafa.png',lorena:'img/lorena.png',ricardo:'img/ricardo.png',kika:'img/kika.png',pipoca:'img/pipoca.png',do:'img/do.png'};
 function previewUrl(i,featured){return PREVIEW_PNG[specs[i].type]||previewCache[i+(featured?'f':'s')]||''}
 let previewsReady=false;
 function renderPreviewImages(){
@@ -43,7 +43,7 @@ function initializeCharacterPreviews(){
 const characterProfiles=[
  {name:'Pipoca',emoji:'🐶',description:'A cachorrinha fofa e peluda: pequena, veloz e cheia de energia na arena.'},
  {name:'Gui',emoji:'😎',description:'De barba feita na régua e tênis no pé. Famoso com a mulherada e sempre na moda.'},
- {name:'Sapo',emoji:'🐸',description:'Saltitante e imprevisível na batalha pela vitória.'},
+ {name:'Dó',emoji:'👵🏾',description:'Gosta de observar a rua, fumar e prosear. Na comemoração, conversa com a mão.'},
  {name:'Panda',emoji:'🐼',description:'Calmo por fora, competitivo quando a partida começa.'},
  {name:'Macaco',emoji:'🐵',description:'Cheio de energia e pronto para bagunçar a arena.'},
  {name:'Dragão',emoji:'🐲',description:'Pequeno, valente e cheio de fogo. Um bebê dragão pronto para a briga.'},

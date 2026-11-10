@@ -231,7 +231,7 @@ function makeCharacter(type,color,accent){
 const specs=[
  {name:'PIPOCA',team:'#d6a15c',type:'pipoca',color:'#e08a3c',accent:'#ffe3b8',angle:-Math.PI/2},
  {name:'GUI',team:'#ff8a1f',type:'fox',color:'#f4721f',accent:'#ffe6bf',angle:-Math.PI/2+Math.PI*2/8},
- {name:'SAPO',team:'#7dff3a',type:'frog',color:'#55bd3f',accent:'#f7e2b0',angle:-Math.PI/2+Math.PI*4/8},
+ {name:'DÓ',team:'#c04fb0',type:'do',color:'#8f2a86',accent:'#f6dcb0',angle:-Math.PI/2+Math.PI*4/8},
  {name:'PANDA',team:'#a24dff',type:'panda',color:'#26222c',accent:'#fbf8f2',angle:-Math.PI/2+Math.PI*6/8},
  {name:'MACACO',team:'#c47a3a',type:'monkey',color:'#a8683f',accent:'#ffe0ad',angle:-Math.PI/2+Math.PI*8/8},
  {name:'DRAGÃO',team:'#14e0a0',type:'dragon',color:'#58b043',accent:'#f6e2b0',angle:-Math.PI/2+Math.PI*10/8},
