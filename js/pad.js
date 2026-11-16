@@ -6,7 +6,7 @@ const $=id=>document.getElementById(id);
 const qs=new URLSearchParams(location.search);
 let ws=null,joined=false,closedByTv=false,retrying=false,tries=0;
 let me=-1,names=[],vip=-1,ui=null,myName='',code=(qs.get('sala')||'').toUpperCase().slice(0,5);
-let sentBr=-1,sentGl,sentHm=-1,sentSh=-1,cdEnd=0,throwSent=false,lastTurnKey='';
+let sentBr=-1,sentGl,sentHm=-1,sentPt=-1,sentSh=-1,cdEnd=0,throwSent=false,lastTurnKey='';
 
 try{$('name').value=localStorage.getItem('jogoDoPao.name')||''}catch(e){}
 $('code').value=code;
@@ -108,7 +108,7 @@ function renderGrid(){
 }
 
 /* ---- Painéis ---- */
-const panels=['padStick','padBread','padBowl','padSoccer','padBridge','padGlass','padHammer','padWait'];
+const panels=['padStick','padBread','padBowl','padSoccer','padBridge','padGlass','padHammer','padPotato','padWait'];
 function showPanel(id){panels.forEach(p=>$(p).style.display=p===id?'flex':'none')}
 function render(){
  if(!joined)return;
@@ -147,6 +147,10 @@ function render(){
   stopStick();
   if(ui.sc&&sentSh!==ui.sh){showPanel('padSoccer');$('scTitle').textContent=ui.sc===1?'⚽ Onde você vai CHUTAR?':'🧤 Onde você vai DEFENDER?'}
   else{showPanel('padWait');$('waitTxt').textContent=ui.sc?'Escolha enviada! ✅':'Olhe para a TV…'}
+ }else if(mode==='potato'){
+  stopStick();
+  if(ui.pg&&sentPt!==ui.pk){showPanel('padPotato');$('ptTitle').textContent='🥔 Você está com a batata! Jogue para…';const box=$('ptBtns'),key=JSON.stringify(ui.pt);if(box.dataset.k!==key){box.dataset.k=key;box.innerHTML='';ui.pt.forEach(([sl,nm,col])=>{const b=document.createElement('button');b.type='button';b.textContent=nm;b.style.background=col;b.addEventListener('click',()=>{if(!ui||!ui.pg)return;buzz(30);sentPt=ui.pk;relay({k:'pt',c:sl});render()});box.append(b)})}}
+  else{showPanel('padWait');$('waitTxt').textContent=ui.pw?'Cuidado! A batata pode chegar em você… 🥔':'Olhe para a TV…'}
  }else if(mode==='hammer'){
   stopStick();
   if(ui.hg&&sentHm!==ui.hr){showPanel('padHammer');$('hmTitle').textContent=ui.hk===1?'🙈 Esconda-se! Escolha a plataforma':'🔨 Onde dar a marretada?'}

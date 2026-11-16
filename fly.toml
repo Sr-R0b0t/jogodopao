@@ -1,0 +1,24 @@
+# Jogo do Pão no Fly.io — região São Paulo (gru)
+app = "jogo-do-pao"          # troque por um nome único se já existir (ex.: jogo-do-pao-fabio)
+primary_region = "gru"
+
+[build]
+
+[env]
+  PORT = "8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "off"   # sempre ligada: sem espera para abrir a sala
+  auto_start_machines = true
+  min_machines_running = 1     # UMA máquina só: as salas ficam na memória do servidor
+
+  [http_service.concurrency]
+    type = "connections"
+    soft_limit = 200
+    hard_limit = 250
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

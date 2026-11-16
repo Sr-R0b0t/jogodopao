@@ -93,9 +93,9 @@ function hmReveal(now){
  const B=hammer,order=[],picks=B.picks;
  hmStrikers().forEach(i=>{if(!order.includes(picks[i]))order.push(picks[i])});
  const hp=B.hideChoice,hitters=hmStrikers().filter(i=>picks[i]===hp),caught=hitters.length>0,gains={};
- if(caught)B.hits++;
+ if(caught)B.hits+=hitters.length;
  B.lastPad[B.hider]=hp;
- B.lost=false;B.rv={pads:order,hp,caught,hitters,picks:Object.assign({},picks),fired:0,lives:HAMMER.hp-B.hits};B.ph='reveal';B.t0=now;B.key++;B.need=[];
+ B.lost=false;B.rv={pads:order,hp,caught,hitters,picks:Object.assign({},picks),fired:0,lives:Math.max(0,HAMMER.hp-B.hits),dmg:hitters.length};B.ph='reveal';B.t0=now;B.key++;B.need=[];
  const hr=players[B.hider].root;hr.position.set(HM_PADS[hp].x,-1.1,HM_PADS[hp].z);hr.rotation.set(0,Math.PI,0);hr.scale.setScalar(.95);
  document.getElementById('status').textContent='🔨 As marretas vão cair! '+players[B.hider].name+' estava na plataforma '+HM_PADS[hp].n+'…';
 }
@@ -142,12 +142,12 @@ function updateHammerMode(now,dt){
   if(el>n*HAMMER.revealGap+800){
    B.ph='result';B.t0=now;B.key++;hr.rotation.y=Math.PI;
    const nm=i=>players[i].name;
-   document.getElementById('status').textContent=rv.caught?'💥 '+nm(B.hider)+' levou marretada de '+rv.hitters.map(nm).join(', ')+'! Vidas: '+'❤'.repeat(rv.lives)+(rv.lives?'':' 💔'):'🙈 '+nm(B.hider)+' escapou desta rodada! Vidas: '+'❤'.repeat(rv.lives);
+   document.getElementById('status').textContent=rv.caught?'💥 '+nm(B.hider)+' levou '+rv.dmg+(rv.dmg===1?' marretada':' marretadas')+' de '+rv.hitters.map(nm).join(', ')+'! Vidas: '+'❤'.repeat(rv.lives)+(rv.lives?'':' 💔'):'🙈 '+nm(B.hider)+' escapou desta rodada! Vidas: '+'❤'.repeat(rv.lives);
    fx(rv.caught?'jingleLose':'jingle')
   }
  }else if(B.ph==='result'){
   if(now-B.t0>HAMMER.resultMs){
-   if(B.rd<HAMMER.rounds-1){B.rd++;B.rv=null;B.picks={};B.hideChoice=undefined;hmEndDraw(now)}
+   if(B.hits<HAMMER.hp&&B.rd<HAMMER.rounds-1){B.rd++;B.rv=null;B.picks={};B.hideChoice=undefined;hmEndDraw(now)}
    else hmSetEnd(now);
   }
  }else if(B.ph==='setend'){
@@ -181,7 +181,7 @@ function hammerChoose(c){
  if(net.role==='client')netSendInput({k:'hc',c});else hammerSetChoice(humanIndex,c);
  hammerSentKey=B.key;if(audioEnabled)sfxClick();
 }
-const hmHp=B=>B.hp!==undefined?B.hp:HAMMER.hp-(B.hits||0);
+const hmHp=B=>B.hp!==undefined?B.hp:Math.max(0,HAMMER.hp-(B.hits||0));
 function hammerChip(i){
  const B=hammerView();if(!B)return '';const h=hmHid(B);
  if(h===undefined||h<0||B.ph==='intro')return '🔨 ATACANTE';
@@ -256,7 +256,7 @@ function hammerVisualUpdate(dt){
 function hammerSnapshot(){
  const B=hammer;if(!B)return null;const n=players.length,pts=new Array(n).fill(0),pk=new Array(n).fill(0);
  activeIndices().forEach(i=>{pts[i]=B.pts[i]||0;pk[i]=B.picks[i]!==undefined?1:0});
- const S={ds:B.drawShown,fin:!!B.drawFin,ph:B.ph,key:B.key,r:B.r,R:B.R,rd:B.rd,hp:HAMMER.hp-B.hits,lost:!!B.lost,h:B.hider,left:B.left,need:B.need,pts,pk};
- if((B.ph==='reveal'||B.ph==='result'||B.ph==='setend')&&B.rv)S.rv={pads:B.rv.pads,hp:B.rv.hp,caught:B.rv.caught,picks:B.rv.picks,lives:B.rv.lives};
+ const S={ds:B.drawShown,fin:!!B.drawFin,ph:B.ph,key:B.key,r:B.r,R:B.R,rd:B.rd,hp:Math.max(0,HAMMER.hp-B.hits),lost:!!B.lost,h:B.hider,left:B.left,need:B.need,pts,pk};
+ if((B.ph==='reveal'||B.ph==='result'||B.ph==='setend')&&B.rv)S.rv={pads:B.rv.pads,hp:B.rv.hp,caught:B.rv.caught,picks:B.rv.picks,lives:B.rv.lives,dmg:B.rv.dmg};
  return S;
 }

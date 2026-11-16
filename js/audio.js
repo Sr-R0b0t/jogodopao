@@ -117,6 +117,9 @@ const FX_LIB={
  cream:()=>sfxCream(),finish:()=>sfxFinish(),bite:()=>sfxBite(),click:()=>sfxClick(),
  jingle:()=>[784,659,523,392].forEach((f,i)=>tone(f,.22,'triangle',.09,i*.12)),
  beep:a=>tone(a||640,.09,'square',.07),
+ tick:h=>tone(520+(h||0)*500,.05,'square',.05),
+ boom:()=>{noisePop(.5,.3,700);tone(90,.45,'sawtooth',.14,0,35)},
+ whoosh:()=>tone(300,.16,'sine',.08,0,900),
  hammer:()=>{noisePop(.3,.3,500);tone(110,.2,'square',.12,0,50)},
  jingleLose:()=>[392,330,262,196].forEach((f,i)=>tone(f,.22,'sawtooth',.06,i*.12)),
  glassbreak:()=>{noisePop(.35,.22,2600);tone(1500,.22,'triangle',.08,0,500)}

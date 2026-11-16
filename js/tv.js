@@ -210,6 +210,7 @@ function tvFrame(now){
    }
    if(gameMode==='soccer'&&soccer&&soccer.ph==='pick'&&soccer.need&&soccer.need.includes(slot)){st.sc=slot===soccer.k?1:2;st.sh=soccer.sh}
    if(gameMode==='bridge'&&bridge&&bridge.ph==='pick'){if(bridge.need&&bridge.need.includes(slot)){st.bg=1;st.br=bridge.n;st.bo=bridge.opts}else if(isActive(slot))st.bw=1}
+   if(gameMode==='potato'&&potato&&potato.ph==='play'){if(potato.h===slot){const v=potatoValid(potato);if(v.length){st.pg=1;st.pk=potato.key;st.pt=v.map(i=>[i,players[i].name,tvColor(i)])}else st.pw=1}else if(potato.al.includes(slot))st.pw=1}
    if(gameMode==='hammer'&&hammer&&(hammer.ph==='hide'||hammer.ph==='strike')){if(hammer.need&&hammer.need.includes(slot)){st.hg=1;st.hr=hammer.key;st.hk=hammer.ph==='hide'?1:2}else if(isActive(slot))st.hw=1}
    if(gameMode==='glass'&&glass&&glass.ph==='turn'){if(glass.need&&glass.need.includes(slot)){st.gg=1;st.gr=glass.n}else if(isActive(slot))st.gw=1}
    if(isTurbo()&&ship&&ship.cd)st.cdT=ship.cd[slot];

@@ -129,6 +129,7 @@ function animateGlbPlayer(p,i,dt){
  else if(p.finished)state='dance';                                                   // terminou a corrida do pão
  else if(gameMode==='bread'&&running)state='run';                               // clicando = correndo
  else if((gameMode==='ball'&&running&&balls[i].alive||isShipMode()&&running&&p.count>0||gameMode==='dodge'&&running&&p.count>0)&&g.speed>.6)state='walk';  // equilibrando na bola
+ else if(gameMode==='potato'){const B=typeof potatoView==='function'?potatoView():null;state=(B&&(B.al||[]).includes(i))?(ended||(B.ph==='done')?'dance':(B.ph==='play'&&B.h===i?'hop':'idle')):'idle'}
  else if(gameMode==='hammer'){state=(ended||(typeof hammerView==='function'&&hammerView()&&hammerView().ph==='result'&&hammerView().rv&&!hammerView().rv.caught&&hmHid(hammerView())===i))?'dance':'idle'}
  else if(gameMode==='glass'){state=(ended||(typeof glassView==='function'&&glassView()&&glassView().ph==='done'))&&p.count>GLASS.rows?'dance':(pos.y>.2?'jump':(running&&g.speed>.3?'walk':'idle'))}   // ponte de vidro
  else if(gameMode==='bridge'){state=(typeof bridgeView==='function'&&bridgeView()&&bridgeView().ph==='done'&&p.count>=BRIDGE.goal)||(ended&&p.count>=BRIDGE.goal)?'dance':(running&&g.speed>.3?'walk':'idle')}   // ponte de pedras

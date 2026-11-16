@@ -269,7 +269,7 @@ body.tv-mode .tv-box:not([hidden]){display:flex;gap:30px;align-items:center;just
 body.tv-mode #netJoinBox,body.tv-mode .online-card>label,body.tv-mode .net-code,body.tv-mode .online-adv,body.tv-mode #netWait{display:none!important}
 body.tv-mode{padding:0}
 body.tv-mode main{width:100vw;max-width:none}
-body.tv-mode .game-kicker,body.tv-mode .game-title,body.tv-mode .game-description,body.tv-mode #gameNote,body.tv-mode #screenMinigames .controls,body.tv-mode #touchControls,body.tv-mode #bowlingControls,body.tv-mode #bowlingMoveControls,body.tv-mode #hammerPick,body.tv-mode #soccerPick,body.tv-mode #glassPick,body.tv-mode #bridgePick,body.tv-mode #bowlingArrowHint,body.tv-mode #result{display:none!important}
+body.tv-mode .game-kicker,body.tv-mode .game-title,body.tv-mode .game-description,body.tv-mode #gameNote,body.tv-mode #screenMinigames .controls,body.tv-mode #touchControls,body.tv-mode #bowlingControls,body.tv-mode #bowlingMoveControls,body.tv-mode #potatoPick,body.tv-mode #hammerPick,body.tv-mode #soccerPick,body.tv-mode #glassPick,body.tv-mode #bridgePick,body.tv-mode #bowlingArrowHint,body.tv-mode #result{display:none!important}
 body.tv-mode #scene{height:calc(100vh - 78px);min-height:0;border-radius:0;border-width:0 0 3px}
 body.tv-mode #screenMinigames .flow-top{padding:2px 0;min-height:0}
 body.tv-mode .status{margin:4px 0;font-size:clamp(.9rem,1.5vw,1.3rem)}
@@ -466,3 +466,10 @@ body.tv-mode #gameClock small{font-size:clamp(.9rem,1.6vw,1.3rem)}
 #hammerBanner strong.num{font-size:clamp(4rem,14vw,8rem);color:#ffdf79;line-height:1}
 #hammerBanner em{display:block;font-style:normal;color:#e8d4ff;font-weight:900;font-size:clamp(.85rem,2vw,1.2rem)}
 @keyframes hmPop{from{transform:translate(-50%,-50%) scale(.85);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
+
+#potatoPick{display:none;position:absolute;z-index:42;left:0;right:0;bottom:8px;text-align:center;padding:0 8px}
+#potatoPick.show{display:block}
+#potatoPickTitle{display:inline-block;margin-bottom:8px;padding:6px 14px;border-radius:12px;background:#10091dcc;border:1px solid #ffb86b;color:#ffdf79;font-weight:1000;font-size:.95rem}
+#potatoBtns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+#potatoBtns button{border:0;border-radius:14px;padding:12px 16px;font-weight:1000;font-size:1.05rem;color:#1c1022;box-shadow:0 4px 0 #0006;cursor:pointer}
+#potatoBtns button.sel{outline:4px solid #fff;transform:translateY(-3px)}
